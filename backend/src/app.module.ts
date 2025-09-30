@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
+import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
 @Module({
   imports: [
@@ -24,6 +26,14 @@ import { DatabaseModule } from './database/database.module';
     }),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // CRITICAL: Global tenant isolation interceptor
+    // This interceptor MUST be registered globally to ensure ALL requests
+    // are tenant-scoped for Row Level Security (RLS) to work properly
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantInterceptor,
+    },
+  ],
 })
 export class AppModule {}
