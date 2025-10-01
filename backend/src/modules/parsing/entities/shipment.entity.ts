@@ -8,110 +8,110 @@ import {
 @Entity('shipment')
 export class Shipment {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column('uuid')
-  tenant_id: string;
+  tenant_id!: string;
 
   @Column('uuid')
-  upload_id: string;
+  upload_id!: string;
 
   @Column('uuid', { nullable: true })
-  invoice_line_id: string;
+  invoice_line_id!: string;
 
   @Column({ type: 'date' })
-  date: Date;
+  date!: Date;
 
   @Column('uuid', { nullable: true })
-  carrier_id: string;
+  carrier_id!: string;
 
   @Column({ length: 50, nullable: true })
-  service_level: string;
+  service_level!: string;
 
   @Column({ length: 100, nullable: true })
-  reference_number: string;
+  reference_number!: string;
 
   @Column({ length: 10, nullable: true })
-  origin_zip: string;
+  origin_zip!: string;
 
   @Column({ length: 2, default: 'DE' })
-  origin_country: string;
+  origin_country!: string;
 
   @Column({ length: 10, nullable: true })
-  dest_zip: string;
+  dest_zip!: string;
 
   @Column({ length: 2, default: 'DE' })
-  dest_country: string;
+  dest_country!: string;
 
   @Column({ type: 'integer', nullable: true })
-  zone_de: number;
+  zone_de!: number;
 
   @Column({ type: 'integer', nullable: true })
-  zone_at: number;
+  zone_at!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  weight_kg: number;
+  weight_kg!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 3, nullable: true })
-  volume_cbm: number;
+  volume_cbm!: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  pallets: number;
+  pallets!: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  length_m: number;
+  length_m!: number;
 
   @Column({ length: 20, nullable: true })
-  chargeable_basis: string;
+  chargeable_basis!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  chargeable_weight_kg: number;
+  chargeable_weight_kg!: number;
 
   @Column({ type: 'char', length: 3, default: 'EUR' })
-  currency: string;
+  currency!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  actual_total_amount: number;
+  actual_total_amount!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  actual_base_amount: number;
+  actual_base_amount!: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  diesel_pct: number;
+  diesel_pct!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  diesel_amount: number;
+  diesel_amount!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  toll_amount: number;
+  toll_amount!: number;
 
   @Column({ length: 2, nullable: true })
-  toll_country: string;
+  toll_country!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  other_surcharge_amount: number;
+  other_surcharge_amount!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 8, nullable: true })
-  fx_rate: number;
+  fx_rate!: number;
 
   @Column({ type: 'char', length: 3, nullable: true })
-  report_currency: string;
+  report_currency!: string;
 
   @Column({ type: 'jsonb', nullable: true })
   report_amounts_cached: any;
 
   @Column({ type: 'jsonb', nullable: true })
-  source_data: any;
+  source_data!: any;
 
   @Column({ length: 50, nullable: true })
-  extraction_method: string;
+  extraction_method!: string;
 
   @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true })
-  confidence_score: number;
+  confidence_score!: number;
 
   // New fields for quality tracking
   @Column({ type: 'uuid', nullable: true })
-  project_id: string;
+  project_id!: string;
 
   @Column({
     type: 'decimal',
@@ -120,7 +120,7 @@ export class Shipment {
     nullable: true,
     comment: 'Data completeness score (0.00 - 1.00)'
   })
-  completeness_score: number;
+  completeness_score!: number;
 
   @Column({
     type: 'text',
@@ -128,31 +128,31 @@ export class Shipment {
     nullable: true,
     comment: 'Array of missing required field names'
   })
-  missing_fields: string[];
+  missing_fields!: string[];
 
   @Column({
     type: 'jsonb',
     nullable: true,
     comment: 'Structured data quality issues'
   })
-  data_quality_issues: any;
+  data_quality_issues!: any;
 
   @Column({
     type: 'text',
     nullable: true,
     comment: 'Consultant notes and annotations'
   })
-  consultant_notes: string;
+  consultant_notes!: string;
 
   @Column({
     type: 'boolean',
     default: false,
     comment: 'True if manually corrected by consultant'
   })
-  manual_override: boolean;
+  manual_override!: boolean;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 
   toSafeObject() {
     return {

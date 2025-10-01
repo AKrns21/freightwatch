@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import * as fs from 'fs/promises';
 import { CsvParserService } from './csv-parser.service';
 import { Shipment } from './entities/shipment.entity';
+import { ServiceMapperService } from './service-mapper.service';
 
 jest.mock('fs/promises');
 
 describe('CsvParserService', () => {
   let service: CsvParserService;
   let shipmentRepository: jest.Mocked<Repository<Shipment>>;
+  let serviceMapperService: jest.Mocked<ServiceMapperService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,11 +23,33 @@ describe('CsvParserService', () => {
             create: jest.fn(),
           },
         },
+        {
+          provide: ServiceMapperService,
+          useValue: {
+            normalize: jest.fn().mockImplementation(async (serviceText: string) => {
+              const normalized = serviceText.toLowerCase().trim();
+              if (/express|24h|next.*day|overnight|eilsendung|schnell/i.test(normalized)) {
+                return 'EXPRESS';
+              }
+              if (/same.*day|sameday/i.test(normalized)) {
+                return 'SAME_DAY';
+              }
+              if (/eco|economy|slow|spar|günstig|cheap|sparversand|langsam/i.test(normalized)) {
+                return 'ECONOMY';
+              }
+              if (/premium|priority|first.*class|firstclass/i.test(normalized)) {
+                return 'PREMIUM';
+              }
+              return 'STANDARD';
+            }),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<CsvParserService>(CsvParserService);
     shipmentRepository = module.get(getRepositoryToken(Shipment));
+    serviceMapperService = module.get(ServiceMapperService);
   });
 
   afterEach(() => {
@@ -134,11 +158,11 @@ describe('CsvParserService', () => {
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(5);
-      expect(result[0].service_level).toBe('express');
-      expect(result[1].service_level).toBe('express'); // 24h -> express
-      expect(result[2].service_level).toBe('economy');
-      expect(result[3].service_level).toBe('standard');
-      expect(result[4].service_level).toBe('custom service');
+      expect(result[0].service_level).toBe('EXPRESS');
+      expect(result[1].service_level).toBe('EXPRESS'); // 24h -> EXPRESS
+      expect(result[2].service_level).toBe('ECONOMY');
+      expect(result[3].service_level).toBe('STANDARD');
+      expect(result[4].service_level).toBe('STANDARD'); // Unknown -> STANDARD
     });
 
     it('should handle cost strings with currency symbols and formatting', async () => {
@@ -215,7 +239,7 @@ special_value,01.03.2024,10.00,additional_data`;
       expect(shipment.source_data).toEqual({
         custom_field: 'special_value',
         datum: '01.03.2024',
-        kosten: 10,
+        kosten: '10.00', // String because dynamicTyping is false
         extra_info: 'additional_data',
       });
     });
@@ -260,9 +284,9 @@ special_value,01.03.2024,10.00,additional_data`;
       const result = await service.parse('/test.csv', 'tenant', 'upload');
 
       expect(result).toHaveLength(4);
-      expect(result[0].weight_kg).toBeNull(); // negative weight
-      expect(result[1].weight_kg).toBeNull(); // invalid weight
-      expect(result[2].weight_kg).toBeNull(); // invalid weight
+      expect(result[0].weight_kg).toBeUndefined(); // negative weight not set
+      expect(result[1].weight_kg).toBeUndefined(); // invalid weight not set
+      expect(result[2].weight_kg).toBeUndefined(); // invalid weight not set
       expect(result[3].weight_kg).toBe(15.5); // valid weight
     });
   });

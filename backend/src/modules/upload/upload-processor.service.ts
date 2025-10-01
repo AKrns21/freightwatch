@@ -9,8 +9,20 @@ import { Shipment } from '../parsing/entities/shipment.entity';
 import { CsvParserService } from '../parsing/csv-parser.service';
 import { TariffEngineService } from '../tariff/tariff-engine.service';
 import { UploadService } from './upload.service';
+import { TemplateMatcherService } from '../parsing/services/template-matcher.service';
+import { LlmParserService } from '../parsing/services/llm-parser.service';
+import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
 
-interface ParseCsvJobData {
+/**
+ * UploadProcessor - Phase 3 Refactored
+ *
+ * Hybrid Approach:
+ * 1. Try Template Matching (fast, deterministic)
+ * 2. Fall back to LLM Analysis (flexible, learns from corrections)
+ * 3. Manual Review if needed (low confidence or errors)
+ */
+
+interface ParseFileJobData {
   uploadId: string;
   tenantId: string;
 }
@@ -30,158 +42,301 @@ export class UploadProcessor {
     private readonly csvParserService: CsvParserService,
     private readonly tariffEngineService: TariffEngineService,
     private readonly uploadService: UploadService,
+    private readonly templateMatcher: TemplateMatcherService,
+    private readonly llmParser: LlmParserService,
   ) {}
 
-  @Process('parse-csv')
-  async handleParseCsv(job: Job<ParseCsvJobData>): Promise<void> {
+  @Process('parse-file')
+  async handleParseFile(job: Job<ParseFileJobData>): Promise<void> {
     const { uploadId, tenantId } = job.data;
 
-    this.logger.log(`Starting CSV processing for upload ${uploadId}, tenant ${tenantId}`);
+    this.logger.log({
+      event: 'upload_processing_start',
+      upload_id: uploadId,
+      tenant_id: tenantId,
+    });
 
     try {
-      // 1. Get upload from database
       const upload = await this.uploadRepository.findOne({
         where: { id: uploadId, tenant_id: tenantId },
       });
 
       if (!upload) {
-        throw new Error(`Upload ${uploadId} not found for tenant ${tenantId}`);
+        throw new Error(`Upload ${uploadId} not found`);
       }
 
-      if (!upload.storage_url) {
-        throw new Error(`Upload ${uploadId} has no storage URL`);
+      // Step 1: Try Template Matching
+      this.logger.log({
+        event: 'template_matching_start',
+        upload_id: uploadId,
+      });
+
+      const templateMatch = await this.templateMatcher.findMatch(upload, tenantId);
+
+      if (templateMatch && templateMatch.confidence >= 0.8) {
+        this.logger.log({
+          event: 'template_match_found',
+          upload_id: uploadId,
+          template_id: templateMatch.template.id,
+          template_name: templateMatch.template.name,
+          confidence: templateMatch.confidence,
+        });
+
+        // Parse with template
+        await this.parseWithTemplate(upload, templateMatch.template, tenantId);
+
+        await this.uploadRepository.update(uploadId, {
+          status: 'parsed',
+          parse_method: 'template',
+          confidence: templateMatch.confidence,
+        });
+
+        this.logger.log({
+          event: 'upload_processing_complete',
+          upload_id: uploadId,
+          parse_method: 'template',
+        });
+
+        return;
       }
 
-      // 2. Call csvParser.parse to get shipments
-      const parsedShipments = await this.csvParserService.parse(
+      // Step 2: Fall back to LLM analysis
+      if (!this.llmParser.isAvailable()) {
+        this.logger.warn({
+          event: 'llm_not_available',
+          upload_id: uploadId,
+          message: 'No template match and LLM not available',
+        });
+
+        await this.uploadRepository.update(uploadId, {
+          status: 'needs_manual_review',
+          parse_method: 'manual',
+          parsing_issues: [{
+            type: 'no_template_match',
+            message: 'No matching template found and LLM not configured',
+            timestamp: new Date(),
+          }],
+        });
+
+        return;
+      }
+
+      this.logger.log({
+        event: 'llm_analysis_start',
+        upload_id: uploadId,
+      });
+
+      const llmResult = await this.llmParser.analyzeFile(
+        upload.filename,
+        upload.mime_type,
         upload.storage_url,
-        tenantId,
-        uploadId,
       );
 
-      this.logger.log(`Parsed ${parsedShipments.length} shipments from upload ${uploadId}`);
+      await this.uploadRepository.update(uploadId, {
+        status: llmResult.needs_review ? 'needs_review' : 'parsed',
+        parse_method: 'llm',
+        confidence: llmResult.confidence,
+        llm_analysis: llmResult,
+        suggested_mappings: llmResult.column_mappings,
+        parsing_issues: llmResult.issues,
+      });
 
-      // 3. Process each shipment: map carrier name → carrier_id and save
-      const processedShipments: Shipment[] = [];
-      
-      for (const shipment of parsedShipments) {
-        try {
-          // Map carrier name to carrier_id via carrier_alias
-          if (shipment.carrier_name && !shipment.carrier_id) {
-            const carrierId = await this.mapCarrierNameToId(
-              shipment.carrier_name,
-              tenantId,
-            );
-            
-            if (carrierId) {
-              shipment.carrier_id = carrierId;
-              this.logger.debug(
-                `Mapped carrier "${shipment.carrier_name}" to ${carrierId} for shipment ${shipment.id || 'new'}`,
-              );
-            } else {
-              this.logger.warn(
-                `No carrier mapping found for "${shipment.carrier_name}" in tenant ${tenantId}`,
-              );
-            }
-          }
+      this.logger.log({
+        event: 'llm_analysis_complete',
+        upload_id: uploadId,
+        confidence: llmResult.confidence,
+        needs_review: llmResult.needs_review,
+      });
 
-          // Save shipment to database
-          const savedShipment = await this.shipmentRepository.save(shipment);
-          processedShipments.push(savedShipment);
-
-        } catch (error) {
-          this.logger.error(
-            `Error processing shipment: ${(error as Error).message}`,
-            (error as Error).stack,
-          );
-          // Continue processing other shipments
-        }
+      // If LLM is confident enough, parse automatically
+      if (!llmResult.needs_review && llmResult.confidence >= 0.7) {
+        await this.parseWithLlmMappings(upload, llmResult.column_mappings, tenantId);
       }
-
-      this.logger.log(`Saved ${processedShipments.length} shipments to database`);
-
-      // 4. Calculate benchmarks for each shipment
-      let benchmarkCount = 0;
-      
-      for (const shipment of processedShipments) {
-        try {
-          if (shipment.carrier_id) {
-            // Only calculate benchmarks for shipments with valid carrier mapping
-            await this.tariffEngineService.calculateExpectedCost(shipment);
-            benchmarkCount++;
-            
-            this.logger.debug(
-              `Calculated benchmark for shipment ${shipment.id}`,
-            );
-          } else {
-            this.logger.warn(
-              `Skipping benchmark calculation for shipment ${shipment.id} - no carrier_id`,
-            );
-          }
-        } catch (error) {
-          this.logger.error(
-            `Error calculating benchmark for shipment ${shipment.id}: ${(error as Error).message}`,
-            (error as Error).stack,
-          );
-          // Continue processing other shipments
-        }
-      }
-
-      this.logger.log(`Calculated ${benchmarkCount} benchmarks for upload ${uploadId}`);
-
-      // 5. Update upload.status = 'parsed'
-      await this.uploadService.updateStatus(uploadId, tenantId, 'parsed');
-
-      this.logger.log(`Successfully completed processing upload ${uploadId}`);
 
     } catch (error) {
-      this.logger.error(
-        `Error processing upload ${uploadId}: ${(error as Error).message}`,
-        (error as Error).stack,
-      );
+      this.logger.error({
+        event: 'upload_processing_error',
+        upload_id: uploadId,
+        error: (error as Error).message,
+        stack: (error as Error).stack,
+      });
 
-      // 6. On error: update upload.status = 'failed', parse_errors = error
-      await this.uploadService.updateStatus(
-        uploadId,
-        tenantId,
-        'failed',
-        {
+      await this.uploadRepository.update(uploadId, {
+        status: 'error',
+        parse_errors: {
           message: (error as Error).message,
           stack: (error as Error).stack,
           timestamp: new Date().toISOString(),
         },
-      );
+      });
 
-      throw error; // Re-throw so the job is marked as failed
+      throw error;
     }
   }
 
+  /**
+   * Parse file using a template
+   */
+  private async parseWithTemplate(
+    upload: Upload,
+    template: ParsingTemplate,
+    tenantId: string,
+  ): Promise<void> {
+    this.logger.log({
+      event: 'parsing_with_template',
+      upload_id: upload.id,
+      template_id: template.id,
+    });
+
+    // For CSV/Excel files
+    if (upload.mime_type?.includes('csv') || upload.mime_type?.includes('excel')) {
+      const shipments = await this.csvParserService.parseWithTemplate(
+        upload,
+        template,
+      );
+
+      await this.saveShipments(shipments, tenantId);
+      await this.calculateBenchmarks(shipments);
+    }
+    // TODO: Add support for PDF and other formats
+  }
+
+  /**
+   * Parse file using LLM-suggested mappings
+   */
+  private async parseWithLlmMappings(
+    upload: Upload,
+    mappings: any[],
+    tenantId: string,
+  ): Promise<void> {
+    this.logger.log({
+      event: 'parsing_with_llm_mappings',
+      upload_id: upload.id,
+    });
+
+    // Create temporary template from LLM mappings
+    const tempTemplate: Partial<ParsingTemplate> = {
+      name: `LLM-generated for ${upload.filename}`,
+      file_type: 'csv',
+      mappings: mappings.reduce((acc, m) => {
+        acc[m.field] = {
+          keywords: [m.column],
+          column: m.column,
+        };
+        return acc;
+      }, {}),
+    };
+
+    const shipments = await this.csvParserService.parseWithTemplate(
+      upload,
+      tempTemplate as ParsingTemplate,
+    );
+
+    await this.saveShipments(shipments, tenantId);
+    await this.calculateBenchmarks(shipments);
+  }
+
+  /**
+   * Save shipments to database with carrier mapping
+   */
+  private async saveShipments(
+    shipments: Shipment[],
+    tenantId: string,
+  ): Promise<void> {
+    const processedShipments: Shipment[] = [];
+
+    for (const shipment of shipments) {
+      try {
+        // Map carrier name to carrier_id
+        if (shipment.carrier_name && !shipment.carrier_id) {
+          const carrierId = await this.mapCarrierNameToId(
+            shipment.carrier_name,
+            tenantId,
+          );
+
+          if (carrierId) {
+            shipment.carrier_id = carrierId;
+          } else {
+            this.logger.warn({
+              event: 'carrier_mapping_failed',
+              carrier_name: shipment.carrier_name,
+              tenant_id: tenantId,
+            });
+          }
+        }
+
+        const savedShipment = await this.shipmentRepository.save(shipment);
+        processedShipments.push(savedShipment);
+      } catch (error) {
+        this.logger.error({
+          event: 'shipment_save_error',
+          error: (error as Error).message,
+        });
+      }
+    }
+
+    this.logger.log({
+      event: 'shipments_saved',
+      count: processedShipments.length,
+    });
+  }
+
+  /**
+   * Calculate benchmarks for shipments
+   */
+  private async calculateBenchmarks(shipments: Shipment[]): Promise<void> {
+    let benchmarkCount = 0;
+
+    for (const shipment of shipments) {
+      try {
+        if (shipment.carrier_id) {
+          await this.tariffEngineService.calculateExpectedCost(shipment);
+          benchmarkCount++;
+        }
+      } catch (error) {
+        this.logger.error({
+          event: 'benchmark_calculation_error',
+          shipment_id: shipment.id,
+          error: (error as Error).message,
+        });
+      }
+    }
+
+    this.logger.log({
+      event: 'benchmarks_calculated',
+      count: benchmarkCount,
+    });
+  }
+
+  /**
+   * Map carrier name to carrier ID using carrier_alias table
+   */
   private async mapCarrierNameToId(
     carrierName: string,
     tenantId: string,
   ): Promise<string | null> {
     try {
-      // Look for tenant-specific alias first, then global fallback
       const alias = await this.carrierAliasRepository.findOne({
         where: [
-          {
-            tenant_id: tenantId,
-            alias_text: carrierName,
-          },
-          {
-            tenant_id: null, // Global alias
-            alias_text: carrierName,
-          },
+          { tenant_id: tenantId, alias_text: carrierName },
+          { tenant_id: null, alias_text: carrierName }, // Global fallback
         ],
       });
 
       return alias?.carrier_id || null;
     } catch (error) {
-      this.logger.error(
-        `Error mapping carrier name "${carrierName}": ${(error as Error).message}`,
-        (error as Error).stack,
-      );
+      this.logger.error({
+        event: 'carrier_mapping_error',
+        carrier_name: carrierName,
+        error: (error as Error).message,
+      });
       return null;
     }
+  }
+
+  // Keep legacy handler for backwards compatibility
+  @Process('parse-csv')
+  async handleParseCsv(job: Job<ParseFileJobData>): Promise<void> {
+    return this.handleParseFile(job);
   }
 }
