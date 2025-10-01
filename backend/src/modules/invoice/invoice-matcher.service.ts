@@ -450,7 +450,7 @@ export class InvoiceMatcherService {
         ...line.meta,
         match_criteria: ['manual'],
         matched_at: new Date().toISOString(),
-      },
+      } as any,
     });
 
     this.logger.log({

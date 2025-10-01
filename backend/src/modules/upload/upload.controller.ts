@@ -27,7 +27,7 @@ class UploadFileDto {
   sourceType: string;
 }
 
-@Controller('api/upload')
+@Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 

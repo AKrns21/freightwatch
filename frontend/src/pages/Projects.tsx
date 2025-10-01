@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import { Project, ApiResponse } from '../types';
+import type { Project, ApiResponse } from '../types';
 
 /**
  * ProjectsPage - Project Overview (Phase 7.1)

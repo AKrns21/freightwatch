@@ -336,7 +336,7 @@ describe('FxService', () => {
         ]),
       };
 
-      fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       const result = await service.getAvailableCurrencies();
 
@@ -355,7 +355,7 @@ describe('FxService', () => {
         ]),
       };
 
-      fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       const result = await service.getAvailableCurrencies();
 

@@ -258,9 +258,9 @@ export class InvoiceParserService {
     const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
       filename: context.filename,
       mime_type: 'application/pdf',
-      tenant_id: context.tenant_id,
+      content_preview: '',
       analysis_type: 'invoice_extraction',
-    });
+    } as any);
 
     // Extract invoice structure from LLM analysis
     const header = this.extractHeaderFromLlmResult(llmResult);
@@ -273,7 +273,7 @@ export class InvoiceParserService {
       lines,
       parsing_method: 'llm',
       confidence: llmResult.confidence,
-      issues: llmResult.issues.map((i) => i.message),
+      issues: llmResult.issues.map((i: any) => i.message || i.description || String(i)),
     };
   }
 

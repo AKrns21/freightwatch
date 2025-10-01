@@ -242,9 +242,9 @@ export class TariffPdfParserService {
     const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
       filename: context.filename,
       mime_type: 'application/pdf',
-      tenant_id: context.tenant_id,
+      content_preview: '',
       analysis_type: 'tariff_extraction',
-    });
+    } as any);
 
     // Extract tariff structure from LLM analysis
     if (!llmResult.tariff_structure) {
@@ -257,19 +257,17 @@ export class TariffPdfParserService {
 
     this.validateEntries(entries);
 
+    const structure: any = llmResult.tariff_structure;
     return {
       carrier_id: context.carrier_id || 'unknown',
-      carrier_name:
-        llmResult.tariff_structure.carrier_name || 'Unknown',
-      lane_type:
-        llmResult.tariff_structure.lane_type || 'domestic_de',
-      valid_from:
-        llmResult.tariff_structure.valid_from || new Date(),
-      valid_until: llmResult.tariff_structure.valid_until,
+      carrier_name: structure.carrier_name || structure.carrier || 'Unknown',
+      lane_type: structure.lane_type || 'domestic_de',
+      valid_from: typeof structure.valid_from === 'string' ? new Date(structure.valid_from) : (structure.valid_from || new Date()),
+      valid_until: structure.valid_until ? (typeof structure.valid_until === 'string' ? new Date(structure.valid_until) : structure.valid_until) : undefined,
       entries,
       parsing_method: 'llm',
       confidence: llmResult.confidence,
-      issues: llmResult.issues.map((i) => i.message),
+      issues: llmResult.issues.map((i: any) => i.message || i.description || String(i)),
     };
   }
 
@@ -408,11 +406,10 @@ export class TariffPdfParserService {
           tenant_id: tenantId,
           carrier_id: parseResult.carrier_id,
           lane_type: parseResult.lane_type,
-          zone: entry.zone,
           weight_min: entry.weight_min,
           weight_max: entry.weight_max,
           valid_from: parseResult.valid_from,
-        },
+        } as any,
       });
 
       if (existing) {

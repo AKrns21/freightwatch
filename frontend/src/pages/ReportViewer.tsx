@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { Report, ApiResponse } from '../types';
+import type { Report, ApiResponse } from '../types';
 
 /**
  * ReportViewerPage - Display Cost Analysis Report (Phase 7.3)

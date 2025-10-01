@@ -88,6 +88,14 @@ export class Upload {
   })
   parsing_issues: any;
 
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    default: '{}',
+    comment: 'Additional metadata (review info, reprocess info, etc.)'
+  })
+  meta: any;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -115,6 +123,7 @@ export class Upload {
       reviewed_by: this.reviewed_by,
       reviewed_at: this.reviewed_at,
       parsing_issues: this.parsing_issues,
+      meta: this.meta,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };

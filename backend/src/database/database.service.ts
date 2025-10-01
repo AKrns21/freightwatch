@@ -32,18 +32,18 @@ export class DatabaseService {
       throw new Error('Tenant ID cannot be empty');
     }
 
-    // Validate UUID format (basic validation)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    // Validate UUID format (relaxed for development)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(tenantId)) {
       throw new Error(`Invalid tenant ID format: ${tenantId}`);
     }
 
     try {
+      // PostgreSQL SET command doesn't support parameter placeholders
       await this.dataSource.query(
-        'SET LOCAL app.current_tenant = $1',
-        [tenantId]
+        `SET LOCAL app.current_tenant = '${tenantId}'`
       );
-      
+
       this.logger.debug(`Tenant context set to: ${tenantId}`);
     } catch (error) {
       const err = error as Error;

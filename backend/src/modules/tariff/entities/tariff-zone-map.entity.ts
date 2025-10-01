@@ -7,32 +7,32 @@ import {
 @Entity('tariff_zone_map')
 export class TariffZoneMap {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id: string;
 
   @Column('uuid')
-  tenant_id!: string;
+  tenant_id: string;
 
   @Column('uuid')
-  carrier_id!: string;
+  carrier_id: string;
 
   @Column({ length: 2 })
-  country!: string;
+  country: string;
 
   @Column({ length: 5 })
-  plz_prefix!: string;
+  plz_prefix: string;
 
   @Column({ type: 'integer', nullable: true })
-  prefix_len!: number;
+  prefix_len: number;
 
   @Column({ type: 'text', nullable: true })
-  pattern!: string;
+  pattern: string;
 
   @Column({ type: 'integer' })
-  zone!: number;
+  zone: number;
 
   @Column({ type: 'date' })
-  valid_from!: Date;
+  valid_from: Date;
 
   @Column({ type: 'date', nullable: true })
-  valid_until!: Date;
+  valid_until: Date;
 }

@@ -13,6 +13,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
+import { TenantId, UserId } from '../auth/tenant.decorator';
 
 /**
  * ProjectController - HTTP endpoints for project management
@@ -20,7 +21,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
  * Provides REST API for freight analysis project operations.
  * All endpoints require authentication and tenant context.
  */
-@Controller('api/projects')
+@Controller('projects')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
@@ -32,11 +33,8 @@ export class ProjectController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProjectDto: CreateProjectDto,
-    // TODO: Add @TenantId() decorator from auth interceptor
-    // @TenantId() tenantId: string,
+    @TenantId() tenantId: string,
   ) {
-    // Temporary hardcoded tenant for testing
-    const tenantId = 'test-tenant-uuid';
     const project = await this.projectService.create(tenantId, createProjectDto);
     return {
       success: true,
@@ -49,8 +47,7 @@ export class ProjectController {
    * GET /api/projects
    */
   @Get()
-  async findAll() {
-    const tenantId = 'test-tenant-uuid';
+  async findAll(@TenantId() tenantId: string) {
     const projects = await this.projectService.findAll(tenantId);
     return {
       success: true,
@@ -63,8 +60,7 @@ export class ProjectController {
    * GET /api/projects/:id
    */
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const tenantId = 'test-tenant-uuid';
+  async findOne(@Param('id') id: string, @TenantId() tenantId: string) {
     const project = await this.projectService.findOne(id, tenantId);
     return {
       success: true,
@@ -80,8 +76,8 @@ export class ProjectController {
   async update(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
+    @TenantId() tenantId: string,
   ) {
-    const tenantId = 'test-tenant-uuid';
     const project = await this.projectService.update(id, tenantId, updateProjectDto);
     return {
       success: true,
@@ -95,8 +91,7 @@ export class ProjectController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
-    const tenantId = 'test-tenant-uuid';
+  async remove(@Param('id') id: string, @TenantId() tenantId: string) {
     await this.projectService.remove(id, tenantId);
   }
 
@@ -105,8 +100,7 @@ export class ProjectController {
    * GET /api/projects/:id/statistics
    */
   @Get(':id/statistics')
-  async getStatistics(@Param('id') id: string) {
-    const tenantId = 'test-tenant-uuid';
+  async getStatistics(@Param('id') id: string, @TenantId() tenantId: string) {
     const stats = await this.projectService.getStatistics(id, tenantId);
     return {
       success: true,
@@ -120,8 +114,7 @@ export class ProjectController {
    * Enhanced statistics with upload and shipment counts
    */
   @Get(':id/stats')
-  async getStats(@Param('id') id: string) {
-    const tenantId = 'test-tenant-uuid';
+  async getStats(@Param('id') id: string, @TenantId() tenantId: string) {
     const stats = await this.projectService.getProjectStats(id, tenantId);
     return {
       success: true,
@@ -138,11 +131,9 @@ export class ProjectController {
   async addNote(
     @Param('id') projectId: string,
     @Body() createNoteDto: CreateNoteDto,
-    // TODO: Add @UserId() decorator
-    // @UserId() userId: string,
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
   ) {
-    const tenantId = 'test-tenant-uuid';
-    const userId = 'test-user-uuid';
     const note = await this.projectService.addNote(
       projectId,
       tenantId,
@@ -160,8 +151,7 @@ export class ProjectController {
    * GET /api/projects/:id/notes
    */
   @Get(':id/notes')
-  async getNotes(@Param('id') projectId: string) {
-    const tenantId = 'test-tenant-uuid';
+  async getNotes(@Param('id') projectId: string, @TenantId() tenantId: string) {
     const notes = await this.projectService.getNotes(projectId, tenantId);
     return {
       success: true,
@@ -178,8 +168,8 @@ export class ProjectController {
     @Param('id') projectId: string,
     @Param('noteId') noteId: string,
     @Body() updates: Partial<CreateNoteDto>,
+    @TenantId() tenantId: string,
   ) {
-    const tenantId = 'test-tenant-uuid';
     const note = await this.projectService.updateNote(
       noteId,
       projectId,
@@ -200,8 +190,8 @@ export class ProjectController {
   async resolveNote(
     @Param('id') projectId: string,
     @Param('noteId') noteId: string,
+    @TenantId() tenantId: string,
   ) {
-    const tenantId = 'test-tenant-uuid';
     const note = await this.projectService.resolveNote(noteId, projectId, tenantId);
     return {
       success: true,
@@ -214,8 +204,7 @@ export class ProjectController {
    * GET /api/projects/:id/reports
    */
   @Get(':id/reports')
-  async getReports(@Param('id') projectId: string) {
-    const tenantId = 'test-tenant-uuid';
+  async getReports(@Param('id') projectId: string, @TenantId() tenantId: string) {
     const reports = await this.projectService.getReports(projectId, tenantId);
     return {
       success: true,

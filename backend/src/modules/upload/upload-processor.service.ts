@@ -126,17 +126,21 @@ export class UploadProcessor {
         upload_id: uploadId,
       });
 
+      const fileBuffer = await this.uploadService.loadFile(upload.storage_url);
       const llmResult = await this.llmParser.analyzeFile(
-        upload.filename,
-        upload.mime_type,
-        upload.storage_url,
+        fileBuffer,
+        {
+          filename: upload.filename,
+          mime_type: upload.mime_type,
+          content_preview: '',
+        } as any
       );
 
       await this.uploadRepository.update(uploadId, {
         status: llmResult.needs_review ? 'needs_review' : 'parsed',
         parse_method: 'llm',
         confidence: llmResult.confidence,
-        llm_analysis: llmResult,
+        llm_analysis: llmResult as any,
         suggested_mappings: llmResult.column_mappings,
         parsing_issues: llmResult.issues,
       });
@@ -167,7 +171,7 @@ export class UploadProcessor {
           message: (error as Error).message,
           stack: (error as Error).stack,
           timestamp: new Date().toISOString(),
-        },
+        } as any,
       });
 
       throw error;
@@ -248,9 +252,10 @@ export class UploadProcessor {
     for (const shipment of shipments) {
       try {
         // Map carrier name to carrier_id
-        if (shipment.carrier_name && !shipment.carrier_id) {
+        const carrierName = (shipment as any).carrier_name;
+        if (carrierName && !shipment.carrier_id) {
           const carrierId = await this.mapCarrierNameToId(
-            shipment.carrier_name,
+            carrierName,
             tenantId,
           );
 
@@ -259,7 +264,7 @@ export class UploadProcessor {
           } else {
             this.logger.warn({
               event: 'carrier_mapping_failed',
-              carrier_name: shipment.carrier_name,
+              carrier_name: carrierName,
               tenant_id: tenantId,
             });
           }

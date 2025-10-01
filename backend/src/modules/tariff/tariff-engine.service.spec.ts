@@ -5,7 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TariffEngineService } from './tariff-engine.service';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
-import { TariffRule } from './entities/tariff-rule.entity';
+// import { TariffRule } from './entities/tariff-rule.entity'; // TODO: Create entity
 import { DieselFloater } from './entities/diesel-floater.entity';
 import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
@@ -16,7 +16,7 @@ describe('TariffEngineService', () => {
   let service: TariffEngineService;
   let tariffTableRepository: jest.Mocked<Repository<TariffTable>>;
   let tariffRateRepository: jest.Mocked<Repository<TariffRate>>;
-  let tariffRuleRepository: jest.Mocked<Repository<TariffRule>>;
+  let tariffRuleRepository: jest.Mocked<Repository<any>>;
   let dieselFloaterRepository: jest.Mocked<Repository<DieselFloater>>;
   let shipmentBenchmarkRepository: jest.Mocked<Repository<ShipmentBenchmark>>;
   let zoneCalculatorService: jest.Mocked<ZoneCalculatorService>;
@@ -55,7 +55,7 @@ describe('TariffEngineService', () => {
           },
         },
         {
-          provide: getRepositoryToken(TariffRule),
+          provide: getRepositoryToken('TariffRule' as any),
           useValue: {
             find: jest.fn(),
           },
@@ -90,7 +90,7 @@ describe('TariffEngineService', () => {
     service = module.get<TariffEngineService>(TariffEngineService);
     tariffTableRepository = module.get(getRepositoryToken(TariffTable));
     tariffRateRepository = module.get(getRepositoryToken(TariffRate));
-    tariffRuleRepository = module.get(getRepositoryToken(TariffRule));
+    tariffRuleRepository = module.get(getRepositoryToken('TariffRule' as any));
     dieselFloaterRepository = module.get(getRepositoryToken(DieselFloater));
     shipmentBenchmarkRepository = module.get(getRepositoryToken(ShipmentBenchmark));
     zoneCalculatorService = module.get(ZoneCalculatorService);
@@ -556,7 +556,7 @@ describe('TariffEngineService', () => {
         tariff_table: mockTariffTable,
       };
 
-      const mockLdmRule: TariffRule = {
+      const mockLdmRule: any = {
         id: 'rule-123',
         tenant_id: mockTenantId,
         carrier_id: mockCarrierId,
@@ -611,7 +611,7 @@ describe('TariffEngineService', () => {
         tariff_table: mockTariffTable,
       };
 
-      const mockPalletRule: TariffRule = {
+      const mockPalletRule: any = {
         id: 'rule-456',
         tenant_id: mockTenantId,
         carrier_id: mockCarrierId,
@@ -666,7 +666,7 @@ describe('TariffEngineService', () => {
         tariff_table: mockTariffTable,
       };
 
-      const mockRules: TariffRule[] = [
+      const mockRules: any[] = [
         {
           id: 'rule-123',
           tenant_id: mockTenantId,

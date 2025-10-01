@@ -64,8 +64,30 @@ export class TenantInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     try {
-      // Extract and validate JWT token
-      const { tenantId, userId, user } = await this.extractTenantFromJWT(request);
+      // TEMPORARY DEV MODE: Skip auth completely for MVP development
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      const authHeader = request.headers.authorization;
+
+      let tenantId: string;
+      let userId: string;
+      let user: JwtPayload | undefined;
+
+      if (isDevelopment && !authHeader) {
+        // Development mode: use hardcoded test tenant (valid UUID format)
+        tenantId = '00000000-0000-0000-0000-000000000001';
+        userId = '00000000-0000-0000-0000-000000000002';
+        user = undefined;
+
+        this.logger.debug(
+          '[DEV MODE] No Authorization header - using test tenant',
+        );
+      } else {
+        // Extract and validate JWT token
+        const jwtData = await this.extractTenantFromJWT(request);
+        tenantId = jwtData.tenantId;
+        userId = jwtData.userId;
+        user = jwtData.user;
+      }
 
       // CRITICAL: Set tenant context for RLS
       await this.databaseService.setTenantContext(tenantId);

@@ -81,14 +81,17 @@ export class ReportAggregationService {
     // Load all benchmarks
     const benchmarks = await this.benchmarkRepo.find({
       where: {
-        shipment: { project_id: projectId, tenant_id: tenantId },
+        tenant_id: tenantId,
       },
       relations: ['shipment'],
     });
 
+    // Filter by project_id if needed
+    const filtered = benchmarks.filter(b => b.shipment?.project_id === projectId);
+
     // Create benchmark map for quick lookup
     const benchmarkMap = new Map<string, ShipmentBenchmark>();
-    for (const benchmark of benchmarks) {
+    for (const benchmark of filtered) {
       benchmarkMap.set(benchmark.shipment.id, benchmark);
     }
 

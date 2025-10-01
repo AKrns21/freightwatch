@@ -219,7 +219,7 @@ export class UploadService {
 
     // Update suggested mappings
     await this.uploadRepository.update(uploadId, {
-      suggested_mappings: mappings,
+      suggested_mappings: mappings as any,
       status: 'pending',
     });
 

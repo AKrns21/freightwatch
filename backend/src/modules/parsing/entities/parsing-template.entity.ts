@@ -75,6 +75,12 @@ export class ParsingTemplate {
   @Column({ type: 'timestamptz', nullable: true })
   last_used_at: Date;
 
+  @Column({ type: 'text', nullable: true })
+  notes: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  created_by: string;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -99,6 +105,8 @@ export class ParsingTemplate {
       verified_at: this.verified_at,
       usage_count: this.usage_count,
       last_used_at: this.last_used_at,
+      notes: this.notes,
+      created_by: this.created_by,
       created_at: this.created_at,
       deleted_at: this.deleted_at,
     };

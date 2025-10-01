@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { UploadReviewData, ApiResponse } from '../types';
+import type { UploadReviewData, ApiResponse } from '../types';
 
 /**
  * UploadReviewPage - Review LLM Analysis & Mappings (Phase 7.2)

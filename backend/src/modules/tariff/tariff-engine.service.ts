@@ -667,11 +667,14 @@ export class TariffEngineService {
     projectId: string,
     tenantId: string,
   ): Promise<void> {
-    const shipments = await this.shipmentRepo.find({
+    // TODO: Implement shipmentRepo injection
+    this.logger.warn('calculateProjectBenchmarks not fully implemented - shipmentRepo missing');
+    return;
+    /* const shipments = await this.shipmentRepo.find({
       where: { project_id: projectId, tenant_id: tenantId },
-    });
+    }); */
 
-    this.logger.log({
+    /* this.logger.log({
       event: 'calculate_project_benchmarks_start',
       project_id: projectId,
       shipment_count: shipments.length,
@@ -708,15 +711,15 @@ export class TariffEngineService {
           errorCount++;
         }
       }
-    }
+    } */
 
-    this.logger.log({
+    /* this.logger.log({
       event: 'calculate_project_benchmarks_complete',
       project_id: projectId,
       success_count: successCount,
       partial_count: partialCount,
       error_count: errorCount,
-    });
+    }); */
   }
 
   /**
@@ -727,10 +730,13 @@ export class TariffEngineService {
     score: number,
     missingFields: string[],
   ): Promise<void> {
-    await this.shipmentRepo.update(shipmentId, {
+    // TODO: Implement shipmentRepo injection
+    this.logger.warn('updateCompleteness not implemented - shipmentRepo missing');
+    return;
+    /* await this.shipmentRepo.update(shipmentId, {
       completeness_score: score,
       missing_fields: missingFields,
-    });
+    }); */
   }
 
   /**

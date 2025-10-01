@@ -37,8 +37,8 @@ import { DatabaseService } from './database.service';
         // Connection pool options for node-postgres
         poolSize: configService.get<number>('DB_MAX_CONNECTIONS', 10),
         
-        // Schema synchronization - ONLY for development
-        synchronize: configService.get<string>('NODE_ENV') === 'development',
+        // Schema synchronization - DISABLED due to entity conflicts
+        synchronize: false,
         
         // Migrations
         migrations: [__dirname + '/migrations/*{.ts,.js}'],

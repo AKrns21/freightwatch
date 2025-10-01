@@ -125,7 +125,8 @@ export class UploadProcessorV2 {
         {
           filename: upload.filename,
           mime_type: upload.mime_type,
-        }
+          content_preview: '',
+        } as any
       );
 
       // Save LLM analysis
@@ -161,7 +162,7 @@ export class UploadProcessorV2 {
           message: error.message,
           stack: error.stack,
           timestamp: new Date().toISOString(),
-        },
+        } as any,
       });
 
       throw error;
