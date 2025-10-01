@@ -10,27 +10,27 @@ import { TariffTable } from './tariff-table.entity';
 @Entity('tariff_rate')
 export class TariffRate {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column('uuid')
-  tariff_table_id: string;
+  tariff_table_id!: string;
 
   @Column({ type: 'integer' })
-  zone: number;
+  zone!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  weight_from_kg: number;
+  weight_from_kg!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  weight_to_kg: number;
+  weight_to_kg!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  rate_per_shipment: number;
+  rate_per_shipment!: number | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  rate_per_kg: number;
+  rate_per_kg!: number | null;
 
   @ManyToOne(() => TariffTable, table => table.rates)
   @JoinColumn({ name: 'tariff_table_id' })
-  tariff_table: TariffTable;
+  tariff_table!: TariffTable;
 }

@@ -229,21 +229,23 @@ export class FxService {
 
   async getAvailableCurrencies(date?: Date): Promise<string[]> {
     try {
-      const query = this.fxRateRepository
-        .createQueryBuilder('fx')
-        .select('DISTINCT fx.from_ccy', 'currency')
-        .union(
-          this.fxRateRepository
-            .createQueryBuilder('fx')
-            .select('DISTINCT fx.to_ccy', 'currency'),
-        );
+      let query = this.fxRateRepository
+        .createQueryBuilder('fx');
 
       if (date) {
-        query.where('fx.rate_date <= :date', { date });
+        query = query.where('fx.rate_date <= :date', { date });
       }
 
-      const result = await query.orderBy('currency').getRawMany();
-      const currencies = result.map(row => row.currency).filter(Boolean);
+      const fromCurrencies = await query
+        .select('DISTINCT fx.from_ccy', 'currency')
+        .getRawMany();
+
+      const toCurrencies = await query
+        .select('DISTINCT fx.to_ccy', 'currency')
+        .getRawMany();
+
+      const allCurrencies = [...fromCurrencies, ...toCurrencies];
+      const currencies = [...new Set(allCurrencies.map((row: any) => row.currency))].filter(Boolean);
       
       // Add EUR as base currency if not present
       if (!currencies.includes('EUR')) {

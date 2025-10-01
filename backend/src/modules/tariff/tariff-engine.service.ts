@@ -1,8 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual, LessThan } from 'typeorm';
+import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual, LessThan, In } from 'typeorm';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
+import { TariffRule } from './entities/tariff-rule.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
@@ -18,6 +19,8 @@ export class TariffEngineService {
     private readonly tariffTableRepository: Repository<TariffTable>,
     @InjectRepository(TariffRate)
     private readonly tariffRateRepository: Repository<TariffRate>,
+    @InjectRepository(TariffRule)
+    private readonly tariffRuleRepository: Repository<TariffRule>,
     private readonly zoneCalculatorService: ZoneCalculatorService,
     private readonly fxService: FxService,
   ) {}
@@ -42,13 +45,19 @@ export class TariffEngineService {
         shipment.date,
       );
 
+      const chargeableWeightResult = await this.calculateChargeableWeight(
+        shipment.tenant_id,
+        shipment.carrier_id,
+        shipment,
+      );
+
       const tariffRate = await this.findTariffRate(
         applicableTariff.id,
         zone,
-        shipment.weight_kg || 0,
+        chargeableWeightResult.value,
       );
 
-      const baseAmount = this.calculateBaseAmount(tariffRate, shipment.weight_kg || 0);
+      const baseAmount = this.calculateBaseAmount(tariffRate, chargeableWeightResult.value);
 
       const convertedAmount = await this.convertCurrency(
         baseAmount,
@@ -60,13 +69,13 @@ export class TariffEngineService {
       const costBreakdown: CostBreakdownItem[] = [
         {
           item: 'base_rate',
-          description: `Zone ${zone} base rate`,
+          description: `Zone ${zone} base rate (${chargeableWeightResult.basis})`,
           zone: zone,
-          weight: shipment.weight_kg || 0,
-          rate: tariffRate.rate_per_shipment || tariffRate.rate_per_kg,
+          weight: chargeableWeightResult.value,
+          rate: tariffRate.rate_per_shipment || tariffRate.rate_per_kg || 0,
           amount: convertedAmount.amount,
           currency: shipment.currency,
-          note: convertedAmount.fx_note,
+          note: chargeableWeightResult.note + (convertedAmount.fx_note ? `. ${convertedAmount.fx_note}` : ''),
         },
       ];
 
@@ -80,7 +89,7 @@ export class TariffEngineService {
           zone_calculated: zone,
           fx_rate_used: convertedAmount.fx_rate,
           fx_rate_date: convertedAmount.fx_rate ? shipment.date : undefined,
-          calc_version: '1.0-base-only',
+          calc_version: '1.1-chargeable-weight',
         },
       };
 
@@ -271,6 +280,114 @@ export class TariffEngineService {
       return {
         amount,
         fx_note: `Conversion failed, using original ${fromCurrency} amount`,
+      };
+    }
+  }
+
+  private async calculateChargeableWeight(
+    tenantId: string,
+    carrierId: string | null,
+    shipment: Shipment,
+  ): Promise<{ value: number; basis: string; note: string }> {
+    let maxWeight = shipment.weight_kg || 0;
+    let basis = 'kg';
+    const notes: string[] = [];
+
+    if (maxWeight === 0) {
+      return {
+        value: 0,
+        basis: 'kg',
+        note: 'No weight provided',
+      };
+    }
+
+    try {
+      const applicableRules = await this.tariffRuleRepository.find({
+        where: {
+          tenant_id: tenantId,
+          carrier_id: carrierId || undefined,
+          rule_type: In(['ldm_conversion', 'min_pallet_weight']),
+          valid_from: LessThanOrEqual(shipment.date),
+          valid_until: Or(MoreThanOrEqual(shipment.date), IsNull()),
+        },
+      });
+
+      this.logger.debug(
+        `Found ${applicableRules.length} chargeable weight rules for tenant ${tenantId}, carrier ${carrierId}`,
+      );
+
+      // Apply LDM conversion rule if exists and length is provided
+      const ldmRule = applicableRules.find(rule => rule.rule_type === 'ldm_conversion');
+      if (ldmRule && shipment.length_m && shipment.length_m > 0) {
+        const ldmToKg = ldmRule.param_json?.ldm_to_kg;
+        if (ldmToKg && typeof ldmToKg === 'number') {
+          const minWeightFromLM = shipment.length_m * ldmToKg;
+          
+          this.logger.debug(
+            `LDM conversion: ${shipment.length_m}m × ${ldmToKg} = ${minWeightFromLM}kg`,
+          );
+
+          if (minWeightFromLM > maxWeight) {
+            maxWeight = minWeightFromLM;
+            basis = 'lm';
+            notes.push(`LDM weight: ${shipment.length_m}m × ${ldmToKg}kg/m = ${minWeightFromLM}kg`);
+          } else {
+            notes.push(`LDM weight ${minWeightFromLM}kg < actual weight, using actual`);
+          }
+        } else {
+          this.logger.warn(`LDM conversion rule found but ldm_to_kg parameter invalid: ${ldmToKg}`);
+        }
+      }
+
+      // Apply minimum pallet weight rule if exists and pallets are provided
+      const palletRule = applicableRules.find(rule => rule.rule_type === 'min_pallet_weight');
+      if (palletRule && shipment.pallets && shipment.pallets > 0) {
+        const minWeightPerPallet = palletRule.param_json?.min_weight_per_pallet_kg;
+        if (minWeightPerPallet && typeof minWeightPerPallet === 'number') {
+          const minWeightFromPallets = shipment.pallets * minWeightPerPallet;
+          
+          this.logger.debug(
+            `Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg = ${minWeightFromPallets}kg`,
+          );
+
+          if (minWeightFromPallets > maxWeight) {
+            maxWeight = minWeightFromPallets;
+            basis = 'pallet';
+            notes.push(`Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg/pallet = ${minWeightFromPallets}kg`);
+          } else {
+            notes.push(`Pallet weight ${minWeightFromPallets}kg < chargeable weight, using current`);
+          }
+        } else {
+          this.logger.warn(`Pallet weight rule found but min_weight_per_pallet_kg parameter invalid: ${minWeightPerPallet}`);
+        }
+      }
+
+      const finalNote = notes.length > 0 
+        ? notes.join('; ') 
+        : `Using actual weight: ${shipment.weight_kg}kg`;
+
+      const result = {
+        value: round(maxWeight),
+        basis,
+        note: finalNote,
+      };
+
+      this.logger.debug(
+        `Chargeable weight calculated: ${result.value}kg (basis: ${result.basis})`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error calculating chargeable weight: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+
+      // Fallback to actual weight on error
+      return {
+        value: round(maxWeight),
+        basis: 'kg',
+        note: `Error calculating chargeable weight, using actual: ${shipment.weight_kg}kg`,
       };
     }
   }

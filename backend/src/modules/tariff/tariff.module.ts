@@ -4,6 +4,7 @@ import { TariffZoneMap } from './entities/tariff-zone-map.entity';
 import { FxRate } from './entities/fx-rate.entity';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
+import { TariffRule } from './entities/tariff-rule.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { TariffEngineService } from './tariff-engine.service';
@@ -13,7 +14,8 @@ import { TariffEngineService } from './tariff-engine.service';
     TariffZoneMap, 
     FxRate, 
     TariffTable, 
-    TariffRate
+    TariffRate,
+    TariffRule
   ])],
   providers: [
     ZoneCalculatorService, 

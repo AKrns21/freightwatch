@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TariffEngineService } from './tariff-engine.service';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
+import { TariffRule } from './entities/tariff-rule.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
@@ -13,6 +14,7 @@ describe('TariffEngineService', () => {
   let service: TariffEngineService;
   let tariffTableRepository: jest.Mocked<Repository<TariffTable>>;
   let tariffRateRepository: jest.Mocked<Repository<TariffRate>>;
+  let tariffRuleRepository: jest.Mocked<Repository<TariffRule>>;
   let zoneCalculatorService: jest.Mocked<ZoneCalculatorService>;
   let fxService: jest.Mocked<FxService>;
 
@@ -49,6 +51,12 @@ describe('TariffEngineService', () => {
           },
         },
         {
+          provide: getRepositoryToken(TariffRule),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
           provide: ZoneCalculatorService,
           useValue: {
             calculateZone: jest.fn(),
@@ -66,6 +74,7 @@ describe('TariffEngineService', () => {
     service = module.get<TariffEngineService>(TariffEngineService);
     tariffTableRepository = module.get(getRepositoryToken(TariffTable));
     tariffRateRepository = module.get(getRepositoryToken(TariffRate));
+    tariffRuleRepository = module.get(getRepositoryToken(TariffRule));
     zoneCalculatorService = module.get(ZoneCalculatorService);
     fxService = module.get(FxService);
   });
@@ -107,6 +116,7 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]); // No chargeable weight rules
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
@@ -115,18 +125,18 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown).toHaveLength(1);
       expect(result.cost_breakdown[0]).toEqual({
         item: 'base_rate',
-        description: 'Zone 3 base rate',
+        description: 'Zone 3 base rate (kg)',
         zone: 3,
         weight: 450,
         rate: 294.30,
         amount: 294.30,
         currency: 'EUR',
-        note: undefined,
+        note: 'Using actual weight: 450kg',
       });
       expect(result.calculation_metadata.tariff_table_id).toBe('tariff-123');
       expect(result.calculation_metadata.lane_type).toBe('DE');
       expect(result.calculation_metadata.zone_calculated).toBe(3);
-      expect(result.calculation_metadata.calc_version).toBe('1.0-base-only');
+      expect(result.calculation_metadata.calc_version).toBe('1.1-chargeable-weight');
     });
 
     it('should determine correct lane types', async () => {
@@ -167,6 +177,7 @@ describe('TariffEngineService', () => {
 
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
 
       for (const testCase of testCases) {
         const testShipment = {
@@ -226,6 +237,7 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
@@ -267,6 +279,7 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
       fxService.getRate.mockResolvedValue(0.9850); // EUR to CHF
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
@@ -274,7 +287,7 @@ describe('TariffEngineService', () => {
       expect(fxService.getRate).toHaveBeenCalledWith('EUR', 'CHF', testDate);
       expect(result.expected_base_amount).toBe(289.89); // 294.30 * 0.9850
       expect(result.cost_breakdown[0].currency).toBe('CHF');
-      expect(result.cost_breakdown[0].note).toBe('Converted from EUR using rate 0.985');
+      expect(result.cost_breakdown[0].note).toBe('Using actual weight: 450kg. Converted from EUR using rate 0.985');
       expect(result.calculation_metadata.fx_rate_used).toBe(0.9850);
     });
 
@@ -306,6 +319,7 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockRejectedValue(new Error('Zone not found'));
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
@@ -316,6 +330,7 @@ describe('TariffEngineService', () => {
     it('should throw error when no applicable tariff found', async () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(null);
+      tariffRuleRepository.find.mockResolvedValue([]);
 
       await expect(
         service.calculateExpectedCost(mockShipment as Shipment)
@@ -339,6 +354,7 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(null);
+      tariffRuleRepository.find.mockResolvedValue([]);
 
       await expect(
         service.calculateExpectedCost(mockShipment as Shipment)
@@ -378,13 +394,189 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
       fxService.getRate.mockRejectedValue(new Error('FX rate not found'));
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
 
       expect(result.expected_base_amount).toBe(294.30); // Original amount
-      expect(result.cost_breakdown[0].note).toBe('Conversion failed, using original EUR amount');
+      expect(result.cost_breakdown[0].note).toBe('Using actual weight: 450kg. Conversion failed, using original EUR amount');
       expect(result.calculation_metadata.fx_rate_used).toBeUndefined();
+    });
+
+    it('should apply LDM conversion rule when length is higher weight', async () => {
+      const ldmShipment = {
+        ...mockShipment,
+        weight_kg: 300,
+        length_m: 2.5,
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 4000,
+        weight_to_kg: 5000,
+        rate_per_shipment: 2500.00,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      const mockLdmRule: TariffRule = {
+        id: 'rule-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        rule_type: 'ldm_conversion',
+        param_json: { ldm_to_kg: 1850 },
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([mockLdmRule]);
+
+      const result = await service.calculateExpectedCost(ldmShipment as Shipment);
+
+      expect(result.expected_base_amount).toBe(2500.00);
+      expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (lm)');
+      expect(result.cost_breakdown[0].weight).toBe(4625); // 2.5 × 1850
+      expect(result.cost_breakdown[0].note).toBe('LDM weight: 2.5m × 1850kg/m = 4625kg');
+      expect(result.calculation_metadata.calc_version).toBe('1.1-chargeable-weight');
+    });
+
+    it('should apply minimum pallet weight rule when pallet weight is higher', async () => {
+      const palletShipment = {
+        ...mockShipment,
+        weight_kg: 200,
+        pallets: 3,
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 650,
+        weight_to_kg: 750,
+        rate_per_shipment: 400.00,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      const mockPalletRule: TariffRule = {
+        id: 'rule-456',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        rule_type: 'min_pallet_weight',
+        param_json: { min_weight_per_pallet_kg: 250 },
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([mockPalletRule]);
+
+      const result = await service.calculateExpectedCost(palletShipment as Shipment);
+
+      expect(result.expected_base_amount).toBe(400.00);
+      expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (pallet)');
+      expect(result.cost_breakdown[0].weight).toBe(750); // 3 × 250
+      expect(result.cost_breakdown[0].note).toBe('Pallet weight: 3 × 250kg/pallet = 750kg');
+    });
+
+    it('should use actual weight when chargeable weight rules result in lower weight', async () => {
+      const heavyShipment = {
+        ...mockShipment,
+        weight_kg: 800,
+        length_m: 0.3, // LDM weight would be 555kg (0.3 × 1850)
+        pallets: 2,     // Pallet weight would be 500kg (2 × 250)
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 750,
+        weight_to_kg: 850,
+        rate_per_shipment: 500.00,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      const mockRules: TariffRule[] = [
+        {
+          id: 'rule-123',
+          tenant_id: mockTenantId,
+          carrier_id: mockCarrierId,
+          rule_type: 'ldm_conversion',
+          param_json: { ldm_to_kg: 1850 },
+          valid_from: new Date('2023-01-01'),
+          valid_until: null,
+        },
+        {
+          id: 'rule-456',
+          tenant_id: mockTenantId,
+          carrier_id: mockCarrierId,
+          rule_type: 'min_pallet_weight',
+          param_json: { min_weight_per_pallet_kg: 250 },
+          valid_from: new Date('2023-01-01'),
+          valid_until: null,
+        },
+      ];
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue(mockRules);
+
+      const result = await service.calculateExpectedCost(heavyShipment as Shipment);
+
+      expect(result.expected_base_amount).toBe(500.00);
+      expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (kg)');
+      expect(result.cost_breakdown[0].weight).toBe(800); // Using actual weight
+      expect(result.cost_breakdown[0].note).toBe('LDM weight 555kg < actual weight, using actual; Pallet weight 500kg < chargeable weight, using current');
     });
   });
 });
