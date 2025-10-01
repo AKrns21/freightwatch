@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { ConsultantNote } from './entities/consultant-note.entity';
 import { Report } from './entities/report.entity';
+import { Upload } from '../upload/entities/upload.entity';
+import { Shipment } from '../parsing/entities/shipment.entity';
 import { ProjectService } from './project.service';
 import { ProjectController } from './project.controller';
 
@@ -18,6 +20,8 @@ import { ProjectController } from './project.controller';
       Project,
       ConsultantNote,
       Report,
+      Upload,
+      Shipment,
     ]),
   ],
   controllers: [ProjectController],

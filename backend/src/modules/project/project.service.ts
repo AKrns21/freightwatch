@@ -7,6 +7,8 @@ import { Report } from './entities/report.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
+import { Upload } from '../upload/entities/upload.entity';
+import { Shipment } from '../parsing/entities/shipment.entity';
 
 /**
  * ProjectService - Manages freight analysis projects
@@ -25,6 +27,10 @@ export class ProjectService {
     private readonly noteRepo: Repository<ConsultantNote>,
     @InjectRepository(Report)
     private readonly reportRepo: Repository<Report>,
+    @InjectRepository(Upload)
+    private readonly uploadRepo: Repository<Upload>,
+    @InjectRepository(Shipment)
+    private readonly shipmentRepo: Repository<Shipment>,
   ) {}
 
   /**
@@ -241,6 +247,55 @@ export class ProjectService {
         latest_version: latestReport?.version || 0,
         latest_completeness: latestReport?.data_completeness || 0,
       },
+    };
+  }
+
+  /**
+   * Get project stats (Phase 5)
+   * Enhanced statistics including upload and shipment data
+   */
+  async getProjectStats(projectId: string, tenantId: string): Promise<any> {
+    const project = await this.findOne(projectId, tenantId);
+
+    // Count uploads
+    const uploadCount = await this.uploadRepo.count({
+      where: { project_id: projectId, tenant_id: tenantId },
+    });
+
+    // Count shipments
+    const shipmentCount = await this.shipmentRepo.count({
+      where: { project_id: projectId, tenant_id: tenantId },
+    });
+
+    // Calculate average completeness
+    const completenessResult = await this.shipmentRepo
+      .createQueryBuilder('s')
+      .select('AVG(s.completeness_score)', 'avg_completeness')
+      .where('s.project_id = :projectId', { projectId })
+      .andWhere('s.tenant_id = :tenantId', { tenantId })
+      .getRawOne();
+
+    // Count notes
+    const noteCount = await this.noteRepo.count({
+      where: { project_id: projectId },
+    });
+
+    // Count reports
+    const reportCount = await this.reportRepo.count({
+      where: { project_id: projectId },
+    });
+
+    return {
+      project_id: projectId,
+      name: project.name,
+      upload_count: uploadCount,
+      shipment_count: shipmentCount,
+      avg_completeness: parseFloat(completenessResult.avg_completeness || '0'),
+      note_count: noteCount,
+      report_count: reportCount,
+      phase: project.phase,
+      status: project.status,
+      created_at: project.created_at,
     };
   }
 }

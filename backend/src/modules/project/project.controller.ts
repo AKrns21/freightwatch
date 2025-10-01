@@ -101,13 +101,28 @@ export class ProjectController {
   }
 
   /**
-   * Get project statistics
+   * Get project statistics (legacy endpoint)
    * GET /api/projects/:id/statistics
    */
   @Get(':id/statistics')
   async getStatistics(@Param('id') id: string) {
     const tenantId = 'test-tenant-uuid';
     const stats = await this.projectService.getStatistics(id, tenantId);
+    return {
+      success: true,
+      data: stats,
+    };
+  }
+
+  /**
+   * Get project stats (Phase 5)
+   * GET /api/projects/:id/stats
+   * Enhanced statistics with upload and shipment counts
+   */
+  @Get(':id/stats')
+  async getStats(@Param('id') id: string) {
+    const tenantId = 'test-tenant-uuid';
+    const stats = await this.projectService.getProjectStats(id, tenantId);
     return {
       success: true,
       data: stats,
