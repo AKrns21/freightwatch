@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as fs from 'fs/promises';
 import * as Papa from 'papaparse';
 import { Shipment } from './entities/shipment.entity';
+import { ServiceMapperService } from './service-mapper.service';
 import { round } from '../../utils/round';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class CsvParserService {
   constructor(
     @InjectRepository(Shipment)
     private readonly shipmentRepository: Repository<Shipment>,
+    private readonly serviceMapperService: ServiceMapperService,
   ) {}
 
   async parse(filePath: string, tenantId: string, uploadId: string): Promise<Shipment[]> {
@@ -37,7 +39,7 @@ export class CsvParserService {
       
       for (const [index, row] of parseResult.data.entries()) {
         try {
-          const shipment = this.mapRowToShipment(row as any, tenantId, uploadId);
+          const shipment = await this.mapRowToShipment(row as any, tenantId, uploadId);
           if (shipment) {
             shipments.push(shipment);
           }
@@ -60,7 +62,7 @@ export class CsvParserService {
     }
   }
 
-  private mapRowToShipment(row: any, tenantId: string, uploadId: string): Shipment | null {
+  private async mapRowToShipment(row: any, tenantId: string, uploadId: string): Promise<Shipment | null> {
     if (!row || typeof row !== 'object') {
       return null;
     }
@@ -129,7 +131,12 @@ export class CsvParserService {
       'service', 'service_level', 'produkt', 'service_type'
     ]);
     if (serviceValue) {
-      shipment.service_level = this.normalizeServiceLevel(serviceValue.toString());
+      const carrierId = null; // TODO: Extract carrier ID from row data if available
+      shipment.service_level = await this.serviceMapperService.normalize(
+        tenantId,
+        carrierId,
+        serviceValue.toString(),
+      );
     }
 
     const baseAmountValue = this.extractField(row, [
@@ -244,19 +251,4 @@ export class CsvParserService {
     return null;
   }
 
-  private normalizeServiceLevel(value: string): string {
-    const normalized = value.toLowerCase().trim();
-    
-    if (normalized.includes('express') || normalized.includes('24h') || normalized.includes('next day')) {
-      return 'express';
-    }
-    if (normalized.includes('economy') || normalized.includes('eco') || normalized.includes('günstig')) {
-      return 'economy';
-    }
-    if (normalized.includes('standard') || normalized.includes('normal')) {
-      return 'standard';
-    }
-    
-    return normalized.substring(0, 50);
-  }
 }
