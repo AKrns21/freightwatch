@@ -6,6 +6,7 @@ import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '../parsing/entities/shipment.entity';
 import { UploadService } from './upload.service';
 import { UploadController } from './upload.controller';
+import { UploadReviewController } from './upload-review.controller';
 import { UploadProcessor } from './upload-processor.service';
 import { ParsingModule } from '../parsing/parsing.module';
 import { TariffModule } from '../tariff/tariff.module';
@@ -19,7 +20,7 @@ import { TariffModule } from '../tariff/tariff.module';
     ParsingModule,
     TariffModule,
   ],
-  controllers: [UploadController],
+  controllers: [UploadController, UploadReviewController],
   providers: [UploadService, UploadProcessor],
   exports: [UploadService],
 })

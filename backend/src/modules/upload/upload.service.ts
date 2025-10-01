@@ -148,9 +148,9 @@ export class UploadService {
   }
 
   async updateStatus(
-    id: string, 
-    tenantId: string, 
-    status: string, 
+    id: string,
+    tenantId: string,
+    status: string,
     parseErrors?: any,
   ): Promise<Upload | null> {
     const upload = await this.findById(id, tenantId);
@@ -164,5 +164,176 @@ export class UploadService {
     }
 
     return this.uploadRepository.save(upload);
+  }
+
+  /**
+   * Get file preview (first N lines)
+   */
+  async getPreview(
+    uploadId: string,
+    tenantId: string,
+    lines: number = 50,
+  ): Promise<{ lines: string[]; total_lines: number }> {
+    const upload = await this.findById(uploadId, tenantId);
+    if (!upload) {
+      throw new Error(`Upload ${uploadId} not found`);
+    }
+
+    try {
+      const fileBuffer = await this.loadFile(upload.storage_url);
+      const content = fileBuffer.toString('utf-8');
+      const allLines = content.split('\n');
+
+      return {
+        lines: allLines.slice(0, lines),
+        total_lines: allLines.length,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get preview for ${uploadId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get shipments for an upload
+   */
+  async getShipments(uploadId: string, tenantId: string): Promise<any[]> {
+    // TODO: Import Shipment entity and use proper repository
+    // For now, return empty array as placeholder
+    this.logger.warn('getShipments not yet implemented');
+    return [];
+  }
+
+  /**
+   * Apply corrected mappings and re-parse
+   */
+  async applyMappings(
+    uploadId: string,
+    tenantId: string,
+    mappings: Record<string, string>,
+  ): Promise<void> {
+    const upload = await this.findById(uploadId, tenantId);
+    if (!upload) {
+      throw new Error(`Upload ${uploadId} not found`);
+    }
+
+    // Update suggested mappings
+    await this.uploadRepository.update(uploadId, {
+      suggested_mappings: mappings,
+      status: 'pending',
+    });
+
+    // Re-queue for parsing
+    await this.uploadQueue.add('parse-csv', {
+      uploadId,
+      tenantId,
+      forceMappings: mappings,
+    });
+
+    this.logger.log({
+      event: 'mappings_applied',
+      upload_id: uploadId,
+      mapping_count: Object.keys(mappings).length,
+    });
+  }
+
+  /**
+   * Mark upload as reviewed by consultant
+   */
+  async markAsReviewed(
+    uploadId: string,
+    tenantId: string,
+    userId: string,
+    notes?: string,
+  ): Promise<void> {
+    const upload = await this.findById(uploadId, tenantId);
+    if (!upload) {
+      throw new Error(`Upload ${uploadId} not found`);
+    }
+
+    await this.uploadRepository.update(uploadId, {
+      status: 'reviewed',
+      meta: {
+        ...upload.meta,
+        reviewed_by: userId,
+        reviewed_at: new Date().toISOString(),
+        review_notes: notes,
+      },
+    });
+
+    this.logger.log({
+      event: 'upload_reviewed',
+      upload_id: uploadId,
+      reviewed_by: userId,
+    });
+  }
+
+  /**
+   * Queue upload for re-processing
+   */
+  async reprocess(
+    uploadId: string,
+    tenantId: string,
+    options: { reason?: string; force_llm?: boolean },
+  ): Promise<void> {
+    const upload = await this.findById(uploadId, tenantId);
+    if (!upload) {
+      throw new Error(`Upload ${uploadId} not found`);
+    }
+
+    // Update status
+    await this.uploadRepository.update(uploadId, {
+      status: 'pending',
+      meta: {
+        ...upload.meta,
+        reprocess_reason: options.reason,
+        reprocess_requested_at: new Date().toISOString(),
+      },
+    });
+
+    // Re-queue
+    await this.uploadQueue.add('parse-csv', {
+      uploadId,
+      tenantId,
+      forceLlm: options.force_llm,
+    });
+
+    this.logger.log({
+      event: 'upload_requeued',
+      upload_id: uploadId,
+      reason: options.reason,
+      force_llm: options.force_llm,
+    });
+  }
+
+  /**
+   * Get data quality metrics for upload
+   */
+  async getQualityMetrics(
+    uploadId: string,
+    tenantId: string,
+  ): Promise<{
+    completeness: number;
+    missing_fields: string[];
+    data_issues: any[];
+    total_rows: number;
+    valid_rows: number;
+  }> {
+    const upload = await this.findById(uploadId, tenantId);
+    if (!upload) {
+      throw new Error(`Upload ${uploadId} not found`);
+    }
+
+    // TODO: Implement proper quality metrics calculation
+    // This requires loading shipments and analyzing their completeness
+    this.logger.warn('getQualityMetrics not fully implemented');
+
+    return {
+      completeness: upload.confidence || 0,
+      missing_fields: [],
+      data_issues: upload.parsing_issues || [],
+      total_rows: 0,
+      valid_rows: 0,
+    };
   }
 }
