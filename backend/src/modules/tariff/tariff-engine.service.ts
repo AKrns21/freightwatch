@@ -5,6 +5,7 @@ import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { TariffRule } from './entities/tariff-rule.entity';
 import { DieselFloater } from './entities/diesel-floater.entity';
+import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
@@ -24,6 +25,8 @@ export class TariffEngineService {
     private readonly tariffRuleRepository: Repository<TariffRule>,
     @InjectRepository(DieselFloater)
     private readonly dieselFloaterRepository: Repository<DieselFloater>,
+    @InjectRepository(ShipmentBenchmark)
+    private readonly shipmentBenchmarkRepository: Repository<ShipmentBenchmark>,
     private readonly zoneCalculatorService: ZoneCalculatorService,
     private readonly fxService: FxService,
   ) {}
@@ -156,24 +159,81 @@ export class TariffEngineService {
         },
       ];
 
+      // Calculate delta and classification
+      const expectedTotal = round(totalAmount);
+      const actualTotal = shipment.actual_total_amount || 0;
+      const deltaAmount = round(actualTotal - expectedTotal);
+      const deltaPct = expectedTotal > 0 ? round((deltaAmount / expectedTotal) * 100) : 0;
+      
+      let classification: string;
+      if (deltaPct < -5) {
+        classification = 'unter';
+      } else if (deltaPct > 5) {
+        classification = 'drüber';
+      } else {
+        classification = 'im_markt';
+      }
+
+      // For MVP: use EUR as default tenant currency
+      const tenantCurrency = 'EUR';
+      let reportAmounts: any = null;
+      let reportFxRate: number | null = null;
+
+      // Reporting currency conversion if needed
+      if (shipment.currency !== tenantCurrency) {
+        try {
+          reportFxRate = await this.fxService.getRate(shipment.currency, tenantCurrency, shipment.date);
+          
+          reportAmounts = {
+            expected_base_amount: round(convertedAmount.amount * reportFxRate),
+            expected_toll_amount: round(tollAmount * reportFxRate),
+            expected_diesel_amount: round(dieselAmount * reportFxRate),
+            expected_total_amount: round(expectedTotal * reportFxRate),
+            actual_total_amount: round(actualTotal * reportFxRate),
+            delta_amount: round(deltaAmount * reportFxRate),
+            currency: tenantCurrency,
+          };
+
+          this.logger.debug(
+            `Converted amounts to tenant currency ${tenantCurrency} using rate ${reportFxRate}`,
+          );
+        } catch (error) {
+          this.logger.warn(
+            `Failed to convert to tenant currency ${tenantCurrency}: ${(error as Error).message}`,
+          );
+        }
+      }
+
       const result: BenchmarkResult = {
         expected_base_amount: round(convertedAmount.amount),
         expected_toll_amount: round(tollAmount),
         expected_diesel_amount: dieselAmount,
-        expected_total_amount: round(totalAmount),
+        expected_total_amount: expectedTotal,
+        actual_total_amount: actualTotal,
+        delta_amount: deltaAmount,
+        delta_pct: deltaPct,
+        classification,
         cost_breakdown: costBreakdown,
+        report_amounts: reportAmounts,
         calculation_metadata: {
           tariff_table_id: applicableTariff.id,
           lane_type: laneType,
           zone_calculated: zone,
           fx_rate_used: convertedAmount.fx_rate,
           fx_rate_date: convertedAmount.fx_rate ? shipment.date : undefined,
-          calc_version: '1.3-toll-handling',
+          diesel_basis_used: dieselFloater.basis,
+          diesel_pct_used: dieselFloater.pct,
+          calc_version: '1.4-complete-benchmark',
         },
       };
 
+      // Create shipment benchmark record
+      if (shipment.id) {
+        await this.createShipmentBenchmark(shipment, result, reportFxRate, tenantCurrency);
+      }
+
       this.logger.debug(
-        `Calculated expected cost: ${result.expected_total_amount} ${shipment.currency} for shipment ${shipment.id}`,
+        `Calculated expected cost: ${result.expected_total_amount} ${shipment.currency} for shipment ${shipment.id} (delta: ${deltaAmount}, ${deltaPct}%, ${classification})`,
       );
 
       return result;
@@ -238,6 +298,48 @@ export class TariffEngineService {
         pct: 18.5,
         basis: 'base',
       };
+    }
+  }
+
+  private async createShipmentBenchmark(
+    shipment: Shipment,
+    result: BenchmarkResult,
+    reportFxRate: number | null,
+    tenantCurrency: string,
+  ): Promise<void> {
+    try {
+      const benchmark = new ShipmentBenchmark();
+      benchmark.shipment_id = shipment.id;
+      benchmark.tenant_id = shipment.tenant_id;
+      benchmark.expected_base_amount = result.expected_base_amount;
+      benchmark.expected_toll_amount = result.expected_toll_amount || null;
+      benchmark.expected_diesel_amount = result.expected_diesel_amount || null;
+      benchmark.expected_total_amount = result.expected_total_amount;
+      benchmark.actual_total_amount = result.actual_total_amount || 0;
+      benchmark.delta_amount = result.delta_amount || 0;
+      benchmark.delta_pct = result.delta_pct || 0;
+      benchmark.classification = result.classification || 'im_markt';
+      benchmark.currency = shipment.currency;
+      benchmark.report_currency = shipment.currency !== tenantCurrency ? tenantCurrency : null;
+      benchmark.fx_rate_used = reportFxRate;
+      benchmark.fx_rate_date = reportFxRate ? shipment.date : null;
+      benchmark.diesel_basis_used = result.calculation_metadata.diesel_basis_used || null;
+      benchmark.diesel_pct_used = result.calculation_metadata.diesel_pct_used || null;
+      benchmark.cost_breakdown = result.cost_breakdown;
+      benchmark.report_amounts = result.report_amounts;
+      benchmark.calculation_metadata = result.calculation_metadata;
+
+      await this.shipmentBenchmarkRepository.save(benchmark);
+
+      this.logger.debug(
+        `Created shipment benchmark record for shipment ${shipment.id}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error creating shipment benchmark record: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+      // Don't throw error - benchmark creation is not critical for the main flow
     }
   }
 
