@@ -119,6 +119,18 @@ export class UploadService {
     return crypto.createHash('sha256').update(buffer).digest('hex');
   }
 
+  /**
+   * Load file from storage
+   */
+  async loadFile(storagePath: string): Promise<Buffer> {
+    try {
+      return await fs.readFile(storagePath);
+    } catch (error) {
+      this.logger.error(`Failed to load file from ${storagePath}`, error);
+      throw error;
+    }
+  }
+
   async findByTenant(tenantId: string): Promise<Upload[]> {
     return this.uploadRepository.find({
       where: { tenant_id: tenantId },
