@@ -67,6 +67,9 @@ export class Report {
   @Column({ type: 'timestamptz', default: () => 'now()' })
   generated_at: Date;
 
+  @CreateDateColumn()
+  created_at: Date;
+
   @Column({ type: 'text', nullable: true })
   notes: string;
 
@@ -95,6 +98,7 @@ export class Report {
       date_range_end: this.date_range_end,
       generated_by: this.generated_by,
       generated_at: this.generated_at,
+      created_at: this.created_at,
       notes: this.notes,
       deleted_at: this.deleted_at,
     };

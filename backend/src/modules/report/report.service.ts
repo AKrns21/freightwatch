@@ -77,6 +77,12 @@ export class ReportService {
       tenantId,
     );
 
+    // Calculate date range from shipments
+    const dateRangeResult = await this.aggregationService.getDateRange(
+      projectId,
+      tenantId,
+    );
+
     // Build data snapshot
     const dataSnapshot: Record<string, any> = {
       version: nextVersion,
@@ -116,8 +122,14 @@ export class ReportService {
     const report = this.reportRepo.create({
       project_id: projectId,
       version: nextVersion,
+      report_type: project.phase, // Use project phase as report type
+      title: `${project.phase} Report v${nextVersion}`,
       data_snapshot: dataSnapshot,
       data_completeness: dataCompleteness,
+      shipment_count: statistics.total_shipments,
+      date_range_start: dateRangeResult.start_date,
+      date_range_end: dateRangeResult.end_date,
+      generated_by: tenantId,
       notes: options.notes,
     });
 

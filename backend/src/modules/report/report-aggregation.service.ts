@@ -307,4 +307,25 @@ export class ReportAggregationService {
 
     return benchmarks;
   }
+
+  /**
+   * Get date range for shipments in project
+   */
+  async getDateRange(
+    projectId: string,
+    tenantId: string,
+  ): Promise<{ start_date: Date | null; end_date: Date | null }> {
+    const result = await this.shipmentRepo
+      .createQueryBuilder('s')
+      .select('MIN(s.date)', 'start_date')
+      .addSelect('MAX(s.date)', 'end_date')
+      .where('s.project_id = :projectId', { projectId })
+      .andWhere('s.tenant_id = :tenantId', { tenantId })
+      .getRawOne();
+
+    return {
+      start_date: result.start_date || null,
+      end_date: result.end_date || null,
+    };
+  }
 }
