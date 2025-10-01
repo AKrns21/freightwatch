@@ -6,6 +6,7 @@ import { TariffEngineService } from './tariff-engine.service';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { TariffRule } from './entities/tariff-rule.entity';
+import { DieselFloater } from './entities/diesel-floater.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
@@ -15,6 +16,7 @@ describe('TariffEngineService', () => {
   let tariffTableRepository: jest.Mocked<Repository<TariffTable>>;
   let tariffRateRepository: jest.Mocked<Repository<TariffRate>>;
   let tariffRuleRepository: jest.Mocked<Repository<TariffRule>>;
+  let dieselFloaterRepository: jest.Mocked<Repository<DieselFloater>>;
   let zoneCalculatorService: jest.Mocked<ZoneCalculatorService>;
   let fxService: jest.Mocked<FxService>;
 
@@ -57,6 +59,12 @@ describe('TariffEngineService', () => {
           },
         },
         {
+          provide: getRepositoryToken(DieselFloater),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+        {
           provide: ZoneCalculatorService,
           useValue: {
             calculateZone: jest.fn(),
@@ -75,6 +83,7 @@ describe('TariffEngineService', () => {
     tariffTableRepository = module.get(getRepositoryToken(TariffTable));
     tariffRateRepository = module.get(getRepositoryToken(TariffRate));
     tariffRuleRepository = module.get(getRepositoryToken(TariffRule));
+    dieselFloaterRepository = module.get(getRepositoryToken(DieselFloater));
     zoneCalculatorService = module.get(ZoneCalculatorService);
     fxService = module.get(FxService);
   });
@@ -116,13 +125,26 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
-      tariffRuleRepository.find.mockResolvedValue([]); // No chargeable weight rules
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater); // No chargeable weight rules
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
+      const expectedDieselAmount = Math.round(294.30 * (18.5 / 100) * 100) / 100; // 54.45
+      const expectedTotal = 294.30 + expectedDieselAmount; // 348.75
+
       expect(result.expected_base_amount).toBe(294.30);
-      expect(result.expected_total_amount).toBe(294.30);
-      expect(result.cost_breakdown).toHaveLength(1);
+      expect(result.expected_diesel_amount).toBe(expectedDieselAmount);
+      expect(result.expected_total_amount).toBe(expectedTotal);
+      expect(result.cost_breakdown).toHaveLength(2);
       expect(result.cost_breakdown[0]).toEqual({
         item: 'base_rate',
         description: 'Zone 3 base rate (kg)',
@@ -133,10 +155,19 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         note: 'Using actual weight: 450kg',
       });
+      expect(result.cost_breakdown[1]).toEqual({
+        item: 'diesel_surcharge',
+        description: 'Diesel surcharge (18.5% on base)',
+        base: 294.30,
+        pct: 18.5,
+        value: expectedDieselAmount,
+        amount: expectedDieselAmount,
+        currency: 'EUR',
+      });
       expect(result.calculation_metadata.tariff_table_id).toBe('tariff-123');
       expect(result.calculation_metadata.lane_type).toBe('DE');
       expect(result.calculation_metadata.zone_calculated).toBe(3);
-      expect(result.calculation_metadata.calc_version).toBe('1.1-chargeable-weight');
+      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
     });
 
     it('should determine correct lane types', async () => {
@@ -178,6 +209,15 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
 
       for (const testCase of testCases) {
         const testShipment = {
@@ -238,6 +278,15 @@ describe('TariffEngineService', () => {
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
@@ -280,6 +329,15 @@ describe('TariffEngineService', () => {
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
       fxService.getRate.mockResolvedValue(0.9850); // EUR to CHF
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
@@ -320,6 +378,15 @@ describe('TariffEngineService', () => {
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
@@ -331,6 +398,15 @@ describe('TariffEngineService', () => {
       zoneCalculatorService.calculateZone.mockResolvedValue(3);
       tariffTableRepository.findOne.mockResolvedValue(null);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
 
       await expect(
         service.calculateExpectedCost(mockShipment as Shipment)
@@ -355,6 +431,15 @@ describe('TariffEngineService', () => {
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(null);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
 
       await expect(
         service.calculateExpectedCost(mockShipment as Shipment)
@@ -395,6 +480,15 @@ describe('TariffEngineService', () => {
       tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
       tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
       tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
       fxService.getRate.mockRejectedValue(new Error('FX rate not found'));
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
@@ -456,7 +550,7 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (lm)');
       expect(result.cost_breakdown[0].weight).toBe(4625); // 2.5 × 1850
       expect(result.cost_breakdown[0].note).toBe('LDM weight: 2.5m × 1850kg/m = 4625kg');
-      expect(result.calculation_metadata.calc_version).toBe('1.1-chargeable-weight');
+      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
     });
 
     it('should apply minimum pallet weight rule when pallet weight is higher', async () => {
@@ -577,6 +671,112 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (kg)');
       expect(result.cost_breakdown[0].weight).toBe(800); // Using actual weight
       expect(result.cost_breakdown[0].note).toBe('LDM weight 555kg < actual weight, using actual; Pallet weight 500kg < chargeable weight, using current');
+    });
+
+    it('should calculate diesel surcharge correctly', async () => {
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 400,
+        weight_to_kg: 500,
+        rate_per_shipment: 294.30,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      const mockDieselFloater: DieselFloater = {
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue(mockDieselFloater);
+
+      const result = await service.calculateExpectedCost(mockShipment as Shipment);
+
+      // Base: 294.30 EUR, Diesel: 18.5% = 54.45 EUR (rounded), Total: 348.75 EUR
+      expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_diesel_amount).toBe(54.45);
+      expect(result.expected_total_amount).toBe(348.75);
+      expect(result.cost_breakdown).toHaveLength(2);
+      expect(result.cost_breakdown[1]).toEqual({
+        item: 'diesel_surcharge',
+        description: 'Diesel surcharge (18.5% on base)',
+        base: 294.30,
+        pct: 18.5,
+        value: 54.45,
+        amount: 54.45,
+        currency: 'EUR',
+      });
+      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
+    });
+
+    it('should use default diesel floater when none found', async () => {
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 400,
+        weight_to_kg: 500,
+        rate_per_shipment: 294.30,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue(null); // No diesel floater found
+
+      const result = await service.calculateExpectedCost(mockShipment as Shipment);
+
+      // Should use default 18.5% fallback
+      expect(result.expected_diesel_amount).toBe(54.45); // 294.30 * 0.185 = 54.45
+      expect(result.cost_breakdown[1]).toEqual({
+        item: 'diesel_surcharge',
+        description: 'Diesel surcharge (18.5% on base)',
+        base: 294.30,
+        pct: 18.5,
+        value: 54.45,
+        amount: 54.45,
+        currency: 'EUR',
+      });
     });
   });
 });

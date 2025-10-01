@@ -4,6 +4,7 @@ import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual, LessThan, In 
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { TariffRule } from './entities/tariff-rule.entity';
+import { DieselFloater } from './entities/diesel-floater.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
@@ -21,6 +22,8 @@ export class TariffEngineService {
     private readonly tariffRateRepository: Repository<TariffRate>,
     @InjectRepository(TariffRule)
     private readonly tariffRuleRepository: Repository<TariffRule>,
+    @InjectRepository(DieselFloater)
+    private readonly dieselFloaterRepository: Repository<DieselFloater>,
     private readonly zoneCalculatorService: ZoneCalculatorService,
     private readonly fxService: FxService,
   ) {}
@@ -66,6 +69,34 @@ export class TariffEngineService {
         shipment.date,
       );
 
+      // Get diesel floater and calculate diesel surcharge
+      const dieselFloater = await this.getDieselFloater(
+        shipment.tenant_id,
+        shipment.carrier_id,
+        shipment.date,
+      );
+
+      let dieselBase: number;
+      switch (dieselFloater.basis) {
+        case 'base':
+          dieselBase = convertedAmount.amount;
+          break;
+        case 'base_plus_toll':
+          // For MVP: dieselBase = baseCost + tollAmount (tollAmount = 0 for now)
+          dieselBase = convertedAmount.amount + 0;
+          break;
+        case 'total':
+          // For MVP: ignore circular dependency, use base cost
+          dieselBase = convertedAmount.amount;
+          break;
+        default:
+          dieselBase = convertedAmount.amount;
+          break;
+      }
+
+      const dieselAmount = round(dieselBase * (dieselFloater.pct / 100));
+      const totalAmount = convertedAmount.amount + dieselAmount;
+
       const costBreakdown: CostBreakdownItem[] = [
         {
           item: 'base_rate',
@@ -77,11 +108,21 @@ export class TariffEngineService {
           currency: shipment.currency,
           note: chargeableWeightResult.note + (convertedAmount.fx_note ? `. ${convertedAmount.fx_note}` : ''),
         },
+        {
+          item: 'diesel_surcharge',
+          description: `Diesel surcharge (${dieselFloater.pct}% on ${dieselFloater.basis})`,
+          base: dieselBase,
+          pct: dieselFloater.pct,
+          value: dieselAmount,
+          amount: dieselAmount,
+          currency: shipment.currency,
+        },
       ];
 
       const result: BenchmarkResult = {
         expected_base_amount: round(convertedAmount.amount),
-        expected_total_amount: round(convertedAmount.amount),
+        expected_diesel_amount: dieselAmount,
+        expected_total_amount: round(totalAmount),
         cost_breakdown: costBreakdown,
         calculation_metadata: {
           tariff_table_id: applicableTariff.id,
@@ -89,7 +130,7 @@ export class TariffEngineService {
           zone_calculated: zone,
           fx_rate_used: convertedAmount.fx_rate,
           fx_rate_date: convertedAmount.fx_rate ? shipment.date : undefined,
-          calc_version: '1.1-chargeable-weight',
+          calc_version: '1.2-diesel-surcharge',
         },
       };
 
@@ -104,6 +145,61 @@ export class TariffEngineService {
         (error as Error).stack,
       );
       throw error;
+    }
+  }
+
+  private async getDieselFloater(
+    tenantId: string,
+    carrierId: string,
+    date: Date,
+  ): Promise<{ pct: number; basis: string }> {
+    try {
+      const dieselFloater = await this.dieselFloaterRepository.findOne({
+        where: {
+          tenant_id: tenantId,
+          carrier_id: carrierId,
+          valid_from: LessThanOrEqual(date),
+          valid_until: Or(MoreThanOrEqual(date), IsNull()),
+        },
+        order: {
+          valid_from: 'DESC',
+        },
+      });
+
+      if (dieselFloater) {
+        this.logger.debug(
+          `Found diesel floater: ${dieselFloater.floater_pct}% (basis: ${dieselFloater.basis})`,
+        );
+        return {
+          pct: Number(dieselFloater.floater_pct),
+          basis: dieselFloater.basis,
+        };
+      }
+
+      // Fallback to default diesel floater
+      this.logger.warn({
+        event: 'diesel_floater_fallback',
+        tenant_id: tenantId,
+        carrier_id: carrierId,
+        date: date.toISOString().split('T')[0],
+        message: 'No diesel floater found, using default 18.5%',
+      });
+
+      return {
+        pct: 18.5, // Default fallback
+        basis: 'base',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error finding diesel floater: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+      
+      // Return fallback on error
+      return {
+        pct: 18.5,
+        basis: 'base',
+      };
     }
   }
 

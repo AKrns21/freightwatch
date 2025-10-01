@@ -5,6 +5,7 @@ import { FxRate } from './entities/fx-rate.entity';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { TariffRule } from './entities/tariff-rule.entity';
+import { DieselFloater } from './entities/diesel-floater.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { TariffEngineService } from './tariff-engine.service';
@@ -15,7 +16,8 @@ import { TariffEngineService } from './tariff-engine.service';
     FxRate, 
     TariffTable, 
     TariffRate,
-    TariffRule
+    TariffRule,
+    DieselFloater
   ])],
   providers: [
     ZoneCalculatorService, 

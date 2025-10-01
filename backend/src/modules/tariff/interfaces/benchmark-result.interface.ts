@@ -22,6 +22,9 @@ export interface CostBreakdownItem {
   zone?: number;
   weight?: number;
   rate?: number;
+  base?: number;
+  pct?: number;
+  value?: number;
   amount: number;
   currency: string;
   note?: string;
