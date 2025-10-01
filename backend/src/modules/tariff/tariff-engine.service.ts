@@ -3,15 +3,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual, LessThan, In } from 'typeorm';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
-import { TariffRule } from './entities/tariff-rule.entity';
 import { DieselFloater } from './entities/diesel-floater.entity';
 import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
+import { Carrier } from '../upload/entities/carrier.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '../parsing/entities/shipment.entity';
 import { BenchmarkResult, CostBreakdownItem } from './interfaces/benchmark-result.interface';
 import { round } from '../../utils/round';
 
+/**
+ * TariffEngineService - Phase 2 Refactored
+ *
+ * Changes:
+ * - Removed TariffRule entity/repository (table dropped in migration 003)
+ * - Added Carrier repository to access conversion_rules JSONB
+ * - Business rules now loaded from carrier.conversion_rules instead of tariff_rule table
+ */
 @Injectable()
 export class TariffEngineService {
   private readonly logger = new Logger(TariffEngineService.name);
@@ -21,12 +29,12 @@ export class TariffEngineService {
     private readonly tariffTableRepository: Repository<TariffTable>,
     @InjectRepository(TariffRate)
     private readonly tariffRateRepository: Repository<TariffRate>,
-    @InjectRepository(TariffRule)
-    private readonly tariffRuleRepository: Repository<TariffRule>,
     @InjectRepository(DieselFloater)
     private readonly dieselFloaterRepository: Repository<DieselFloater>,
     @InjectRepository(ShipmentBenchmark)
     private readonly shipmentBenchmarkRepository: Repository<ShipmentBenchmark>,
+    @InjectRepository(Carrier)
+    private readonly carrierRepository: Repository<Carrier>,
     private readonly zoneCalculatorService: ZoneCalculatorService,
     private readonly fxService: FxService,
   ) {}
@@ -553,27 +561,35 @@ export class TariffEngineService {
     }
 
     try {
-      const applicableRules = await this.tariffRuleRepository.find({
-        where: {
-          tenant_id: tenantId,
-          carrier_id: carrierId || undefined,
-          rule_type: In(['ldm_conversion', 'min_pallet_weight']),
-          valid_from: LessThanOrEqual(shipment.date),
-          valid_until: Or(MoreThanOrEqual(shipment.date), IsNull()),
-        },
-      });
+      // Phase 2 Refactoring: Load conversion rules from carrier.conversion_rules JSONB
+      // instead of tariff_rule table
+      let conversionRules: Record<string, any> = {};
 
-      this.logger.debug(
-        `Found ${applicableRules.length} chargeable weight rules for tenant ${tenantId}, carrier ${carrierId}`,
-      );
+      if (carrierId) {
+        const carrier = await this.carrierRepository.findOne({
+          where: { id: carrierId },
+        });
+
+        if (carrier && carrier.conversion_rules) {
+          conversionRules = carrier.conversion_rules;
+          this.logger.debug(
+            `Loaded conversion rules for carrier ${carrierId}:`,
+            JSON.stringify(conversionRules),
+          );
+        } else {
+          this.logger.debug(
+            `No conversion rules found for carrier ${carrierId}, using defaults`,
+          );
+        }
+      }
 
       // Apply LDM conversion rule if exists and length is provided
-      const ldmRule = applicableRules.find(rule => rule.rule_type === 'ldm_conversion');
-      if (ldmRule && shipment.length_m && shipment.length_m > 0) {
-        const ldmToKg = ldmRule.param_json?.ldm_to_kg;
+      const ldmConversionRule = conversionRules.ldm_conversion;
+      if (ldmConversionRule && shipment.length_m && shipment.length_m > 0) {
+        const ldmToKg = ldmConversionRule.ldm_to_kg;
         if (ldmToKg && typeof ldmToKg === 'number') {
           const minWeightFromLM = shipment.length_m * ldmToKg;
-          
+
           this.logger.debug(
             `LDM conversion: ${shipment.length_m}m × ${ldmToKg} = ${minWeightFromLM}kg`,
           );
@@ -591,12 +607,12 @@ export class TariffEngineService {
       }
 
       // Apply minimum pallet weight rule if exists and pallets are provided
-      const palletRule = applicableRules.find(rule => rule.rule_type === 'min_pallet_weight');
-      if (palletRule && shipment.pallets && shipment.pallets > 0) {
-        const minWeightPerPallet = palletRule.param_json?.min_weight_per_pallet_kg;
+      const palletWeightRule = conversionRules.min_pallet_weight;
+      if (palletWeightRule && shipment.pallets && shipment.pallets > 0) {
+        const minWeightPerPallet = palletWeightRule.min_kg_per_pallet;
         if (minWeightPerPallet && typeof minWeightPerPallet === 'number') {
           const minWeightFromPallets = shipment.pallets * minWeightPerPallet;
-          
+
           this.logger.debug(
             `Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg = ${minWeightFromPallets}kg`,
           );
@@ -609,12 +625,12 @@ export class TariffEngineService {
             notes.push(`Pallet weight ${minWeightFromPallets}kg < chargeable weight, using current`);
           }
         } else {
-          this.logger.warn(`Pallet weight rule found but min_weight_per_pallet_kg parameter invalid: ${minWeightPerPallet}`);
+          this.logger.warn(`Pallet weight rule found but min_kg_per_pallet parameter invalid: ${minWeightPerPallet}`);
         }
       }
 
-      const finalNote = notes.length > 0 
-        ? notes.join('; ') 
+      const finalNote = notes.length > 0
+        ? notes.join('; ')
         : `Using actual weight: ${shipment.weight_kg}kg`;
 
       const result = {
