@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
 @Module({
@@ -15,6 +16,9 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
     
     // Database module with TypeORM and RLS support
     DatabaseModule,
+    
+    // Upload processing module
+    UploadModule,
     
     // Redis/Bull queue module
     BullModule.forRoot({

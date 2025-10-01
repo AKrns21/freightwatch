@@ -1,6 +1,8 @@
 import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InjectQueue } from '@nestjs/bull';
 import { Repository } from 'typeorm';
+import { Queue } from 'bull';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -19,6 +21,8 @@ export class UploadService {
   constructor(
     @InjectRepository(Upload)
     private readonly uploadRepository: Repository<Upload>,
+    @InjectQueue('upload')
+    private readonly uploadQueue: Queue,
   ) {}
 
   async uploadFile(
@@ -69,6 +73,18 @@ export class UploadService {
       this.logger.log(
         `File uploaded successfully for tenant ${tenantId}: ${file.originalname} -> ${storagePath}`,
       );
+
+      // Enqueue CSV parsing job for new uploads
+      if (file.mimetype === 'text/csv' || file.originalname.toLowerCase().endsWith('.csv')) {
+        await this.uploadQueue.add('parse-csv', {
+          uploadId: savedUpload.id,
+          tenantId: savedUpload.tenant_id,
+        });
+
+        this.logger.log(
+          `Enqueued CSV parsing job for upload ${savedUpload.id}`,
+        );
+      }
 
       return {
         upload: savedUpload,
