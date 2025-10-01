@@ -39,6 +39,30 @@ export class TemplateService {
   ) {}
 
   /**
+   * Create template from mappings (Phase 4)
+   * Alias for createFromUpload with swapped parameter order
+   */
+  async createFromMappings(
+    tenantId: string,
+    uploadId: string,
+    mappings: any[],
+    templateName: string,
+  ): Promise<ParsingTemplate> {
+    // Convert array mappings to Record format
+    const mappingsRecord: Record<string, string> = {};
+    for (const mapping of mappings) {
+      if (mapping.field && mapping.column) {
+        mappingsRecord[mapping.field] = mapping.column;
+      }
+    }
+
+    return this.createFromUpload(uploadId, tenantId, {
+      name: templateName,
+      mappings: mappingsRecord,
+    });
+  }
+
+  /**
    * Create template from an upload
    */
   async createFromUpload(
