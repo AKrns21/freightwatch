@@ -69,6 +69,36 @@ export class TariffEngineService {
         shipment.date,
       );
 
+      // Calculate toll amount
+      let tollAmount: number;
+      let tollNote: string;
+      
+      if (shipment.toll_amount && shipment.toll_amount > 0) {
+        // Use actual toll amount from invoice
+        tollAmount = shipment.toll_amount;
+        tollNote = 'from_invoice';
+        this.logger.debug(`Using invoice toll amount: ${tollAmount} ${shipment.currency}`);
+      } else {
+        // Estimate toll using heuristic
+        const estimatedToll = this.estimateToll(
+          zone, 
+          chargeableWeightResult.value, 
+          shipment.dest_country || 'DE'
+        );
+        
+        // Convert estimated toll to shipment currency if needed
+        const convertedToll = await this.convertCurrency(
+          estimatedToll,
+          applicableTariff.currency,
+          shipment.currency,
+          shipment.date,
+        );
+        
+        tollAmount = convertedToll.amount;
+        tollNote = 'estimated_heuristic';
+        this.logger.debug(`Estimated toll amount: ${tollAmount} ${shipment.currency} (zone: ${zone}, weight: ${chargeableWeightResult.value}kg)`);
+      }
+
       // Get diesel floater and calculate diesel surcharge
       const dieselFloater = await this.getDieselFloater(
         shipment.tenant_id,
@@ -82,12 +112,11 @@ export class TariffEngineService {
           dieselBase = convertedAmount.amount;
           break;
         case 'base_plus_toll':
-          // For MVP: dieselBase = baseCost + tollAmount (tollAmount = 0 for now)
-          dieselBase = convertedAmount.amount + 0;
+          dieselBase = convertedAmount.amount + tollAmount;
           break;
         case 'total':
-          // For MVP: ignore circular dependency, use base cost
-          dieselBase = convertedAmount.amount;
+          // For MVP: ignore circular dependency, use base cost + toll
+          dieselBase = convertedAmount.amount + tollAmount;
           break;
         default:
           dieselBase = convertedAmount.amount;
@@ -95,7 +124,7 @@ export class TariffEngineService {
       }
 
       const dieselAmount = round(dieselBase * (dieselFloater.pct / 100));
-      const totalAmount = convertedAmount.amount + dieselAmount;
+      const totalAmount = convertedAmount.amount + tollAmount + dieselAmount;
 
       const costBreakdown: CostBreakdownItem[] = [
         {
@@ -107,6 +136,14 @@ export class TariffEngineService {
           amount: convertedAmount.amount,
           currency: shipment.currency,
           note: chargeableWeightResult.note + (convertedAmount.fx_note ? `. ${convertedAmount.fx_note}` : ''),
+        },
+        {
+          item: 'toll',
+          description: `Toll charges (${tollNote})`,
+          value: tollAmount,
+          amount: tollAmount,
+          currency: shipment.currency,
+          note: tollNote,
         },
         {
           item: 'diesel_surcharge',
@@ -121,6 +158,7 @@ export class TariffEngineService {
 
       const result: BenchmarkResult = {
         expected_base_amount: round(convertedAmount.amount),
+        expected_toll_amount: round(tollAmount),
         expected_diesel_amount: dieselAmount,
         expected_total_amount: round(totalAmount),
         cost_breakdown: costBreakdown,
@@ -130,7 +168,7 @@ export class TariffEngineService {
           zone_calculated: zone,
           fx_rate_used: convertedAmount.fx_rate,
           fx_rate_date: convertedAmount.fx_rate ? shipment.date : undefined,
-          calc_version: '1.2-diesel-surcharge',
+          calc_version: '1.3-toll-handling',
         },
       };
 
@@ -201,6 +239,21 @@ export class TariffEngineService {
         basis: 'base',
       };
     }
+  }
+
+  private estimateToll(zone: number, weightKg: number, country: string): number {
+    // NOTE: This 3.5t threshold is a vehicle class heuristic (truck vs van),
+    // not directly applicable to shipment weight. Use as rough estimate for MVP.
+    if (weightKg < 3500) return 0;
+
+    const tollByCountry: { [key: string]: { [zone: number]: number } } = {
+      'DE': { 1: 5, 2: 8, 3: 12, 4: 15, 5: 18, 6: 15 },
+      'AT': { 1: 6, 2: 10, 3: 14, 4: 18, 5: 22, 6: 18 },
+      'CH': { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 20 },
+      'FR': { 1: 7, 2: 11, 3: 15, 4: 19, 5: 23, 6: 19 },
+    };
+
+    return tollByCountry[country]?.[zone] || 0;
   }
 
   private determineLaneType(originCountry: string, destCountry: string): string {

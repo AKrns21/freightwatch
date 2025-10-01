@@ -138,13 +138,15 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
+      const expectedTollAmount = 0; // Under 3.5t threshold  
       const expectedDieselAmount = Math.round(294.30 * (18.5 / 100) * 100) / 100; // 54.45
-      const expectedTotal = 294.30 + expectedDieselAmount; // 348.75
+      const expectedTotal = 294.30 + expectedTollAmount + expectedDieselAmount; // 348.75
 
       expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_toll_amount).toBe(expectedTollAmount);
       expect(result.expected_diesel_amount).toBe(expectedDieselAmount);
       expect(result.expected_total_amount).toBe(expectedTotal);
-      expect(result.cost_breakdown).toHaveLength(2);
+      expect(result.cost_breakdown).toHaveLength(3);
       expect(result.cost_breakdown[0]).toEqual({
         item: 'base_rate',
         description: 'Zone 3 base rate (kg)',
@@ -156,6 +158,14 @@ describe('TariffEngineService', () => {
         note: 'Using actual weight: 450kg',
       });
       expect(result.cost_breakdown[1]).toEqual({
+        item: 'toll',
+        description: 'Toll charges (estimated_heuristic)',
+        value: expectedTollAmount,
+        amount: expectedTollAmount,
+        currency: 'EUR',
+        note: 'estimated_heuristic',
+      });
+      expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
         base: 294.30,
@@ -167,7 +177,7 @@ describe('TariffEngineService', () => {
       expect(result.calculation_metadata.tariff_table_id).toBe('tariff-123');
       expect(result.calculation_metadata.lane_type).toBe('DE');
       expect(result.calculation_metadata.zone_calculated).toBe(3);
-      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
+      expect(result.calculation_metadata.calc_version).toBe('1.3-toll-handling');
     });
 
     it('should determine correct lane types', async () => {
@@ -550,7 +560,7 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (lm)');
       expect(result.cost_breakdown[0].weight).toBe(4625); // 2.5 × 1850
       expect(result.cost_breakdown[0].note).toBe('LDM weight: 2.5m × 1850kg/m = 4625kg');
-      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
+      expect(result.calculation_metadata.calc_version).toBe('1.3-toll-handling');
     });
 
     it('should apply minimum pallet weight rule when pallet weight is higher', async () => {
@@ -716,12 +726,21 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
-      // Base: 294.30 EUR, Diesel: 18.5% = 54.45 EUR (rounded), Total: 348.75 EUR
+      // Base: 294.30 EUR, Toll: 0 EUR (under threshold), Diesel: 18.5% = 54.45 EUR (rounded), Total: 348.75 EUR
       expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_toll_amount).toBe(0);
       expect(result.expected_diesel_amount).toBe(54.45);
       expect(result.expected_total_amount).toBe(348.75);
-      expect(result.cost_breakdown).toHaveLength(2);
+      expect(result.cost_breakdown).toHaveLength(3);
       expect(result.cost_breakdown[1]).toEqual({
+        item: 'toll',
+        description: 'Toll charges (estimated_heuristic)',
+        value: 0,
+        amount: 0,
+        currency: 'EUR',
+        note: 'estimated_heuristic',
+      });
+      expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
         base: 294.30,
@@ -730,7 +749,7 @@ describe('TariffEngineService', () => {
         amount: 54.45,
         currency: 'EUR',
       });
-      expect(result.calculation_metadata.calc_version).toBe('1.2-diesel-surcharge');
+      expect(result.calculation_metadata.calc_version).toBe('1.3-toll-handling');
     });
 
     it('should use default diesel floater when none found', async () => {
@@ -768,13 +787,201 @@ describe('TariffEngineService', () => {
 
       // Should use default 18.5% fallback
       expect(result.expected_diesel_amount).toBe(54.45); // 294.30 * 0.185 = 54.45
-      expect(result.cost_breakdown[1]).toEqual({
+      expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
         base: 294.30,
         pct: 18.5,
         value: 54.45,
         amount: 54.45,
+        currency: 'EUR',
+      });
+    });
+
+    it('should use invoice toll amount when provided', async () => {
+      const shipmentWithToll = {
+        ...mockShipment,
+        toll_amount: 15.50,
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 400,
+        weight_to_kg: 500,
+        rate_per_shipment: 294.30,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
+
+      const result = await service.calculateExpectedCost(shipmentWithToll as Shipment);
+
+      expect(result.expected_toll_amount).toBe(15.50);
+      expect(result.cost_breakdown[1]).toEqual({
+        item: 'toll',
+        description: 'Toll charges (from_invoice)',
+        value: 15.50,
+        amount: 15.50,
+        currency: 'EUR',
+        note: 'from_invoice',
+      });
+    });
+
+    it('should estimate toll for heavy shipments', async () => {
+      const heavyShipment = {
+        ...mockShipment,
+        weight_kg: 4000, // Above 3.5t threshold
+        dest_country: 'DE',
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 3500,
+        weight_to_kg: 4500,
+        rate_per_shipment: 600.00,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue({
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      } as DieselFloater);
+
+      const result = await service.calculateExpectedCost(heavyShipment as Shipment);
+
+      // Zone 3 DE toll should be 12 EUR
+      expect(result.expected_toll_amount).toBe(12);
+      expect(result.cost_breakdown[1]).toEqual({
+        item: 'toll',
+        description: 'Toll charges (estimated_heuristic)',
+        value: 12,
+        amount: 12,
+        currency: 'EUR',
+        note: 'estimated_heuristic',
+      });
+    });
+
+    it('should calculate diesel surcharge on base_plus_toll', async () => {
+      const heavyShipment = {
+        ...mockShipment,
+        weight_kg: 4000, // Above 3.5t threshold
+        dest_country: 'DE',
+      };
+
+      const mockTariffTable: TariffTable = {
+        id: 'tariff-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        name: 'DE Tariff',
+        lane_type: 'DE',
+        currency: 'EUR',
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+        created_at: new Date(),
+        rates: [],
+      };
+
+      const mockTariffRate: TariffRate = {
+        id: 'rate-456',
+        tariff_table_id: 'tariff-123',
+        zone: 3,
+        weight_from_kg: 3500,
+        weight_to_kg: 4500,
+        rate_per_shipment: 300.00,
+        rate_per_kg: null,
+        tariff_table: mockTariffTable,
+      };
+
+      const mockDieselFloater: DieselFloater = {
+        id: 'diesel-123',
+        tenant_id: mockTenantId,
+        carrier_id: mockCarrierId,
+        floater_pct: 18.5,
+        basis: 'base_plus_toll', // Key difference
+        valid_from: new Date('2023-01-01'),
+        valid_until: null,
+      };
+
+      zoneCalculatorService.calculateZone.mockResolvedValue(3);
+      tariffTableRepository.findOne.mockResolvedValue(mockTariffTable);
+      tariffRateRepository.findOne.mockResolvedValue(mockTariffRate);
+      tariffRuleRepository.find.mockResolvedValue([]);
+      dieselFloaterRepository.findOne.mockResolvedValue(mockDieselFloater);
+
+      const result = await service.calculateExpectedCost(heavyShipment as Shipment);
+
+      // Base: 300.00, Toll: 12.00, Diesel base: 312.00 (base + toll)
+      // Diesel: 312.00 * 0.185 = 57.72, Total: 300 + 12 + 57.72 = 369.72
+      const expectedBase = 300.00;
+      const expectedToll = 12.00;
+      const expectedDieselBase = expectedBase + expectedToll; // 312.00
+      const expectedDiesel = Math.round(expectedDieselBase * 0.185 * 100) / 100; // 57.72
+      const expectedTotal = expectedBase + expectedToll + expectedDiesel;
+
+      expect(result.expected_base_amount).toBe(expectedBase);
+      expect(result.expected_toll_amount).toBe(expectedToll);
+      expect(result.expected_diesel_amount).toBe(expectedDiesel);
+      expect(result.expected_total_amount).toBe(expectedTotal);
+      expect(result.cost_breakdown[2]).toEqual({
+        item: 'diesel_surcharge',
+        description: 'Diesel surcharge (18.5% on base_plus_toll)',
+        base: expectedDieselBase,
+        pct: 18.5,
+        value: expectedDiesel,
+        amount: expectedDiesel,
         currency: 'EUR',
       });
     });
