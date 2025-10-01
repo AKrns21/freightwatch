@@ -109,6 +109,48 @@ export class Shipment {
   @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true })
   confidence_score: number;
 
+  // New fields for quality tracking
+  @Column({ type: 'uuid', nullable: true })
+  project_id: string;
+
+  @Column({
+    type: 'decimal',
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    comment: 'Data completeness score (0.00 - 1.00)'
+  })
+  completeness_score: number;
+
+  @Column({
+    type: 'text',
+    array: true,
+    nullable: true,
+    comment: 'Array of missing required field names'
+  })
+  missing_fields: string[];
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: 'Structured data quality issues'
+  })
+  data_quality_issues: any;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'Consultant notes and annotations'
+  })
+  consultant_notes: string;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    comment: 'True if manually corrected by consultant'
+  })
+  manual_override: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -148,6 +190,12 @@ export class Shipment {
       source_data: this.source_data,
       extraction_method: this.extraction_method,
       confidence_score: this.confidence_score,
+      project_id: this.project_id,
+      completeness_score: this.completeness_score,
+      missing_fields: this.missing_fields,
+      data_quality_issues: this.data_quality_issues,
+      consultant_notes: this.consultant_notes,
+      manual_override: this.manual_override,
       created_at: this.created_at,
     };
   }

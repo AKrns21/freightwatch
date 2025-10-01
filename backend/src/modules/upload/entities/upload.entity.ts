@@ -41,6 +41,53 @@ export class Upload {
   @Column({ length: 64, nullable: true, comment: 'For unmatched carrier templates' })
   raw_text_hash: string;
 
+  // New fields for project-based workflow
+  @Column({ type: 'uuid', nullable: true })
+  project_id: string;
+
+  @Column({
+    length: 50,
+    nullable: true,
+    comment: 'template, llm, manual, hybrid'
+  })
+  parse_method: string;
+
+  @Column({
+    type: 'decimal',
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    comment: 'Parsing confidence (0.00 - 1.00)'
+  })
+  confidence: number;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: 'LLM-suggested column mappings'
+  })
+  suggested_mappings: any;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: 'Complete LLM analysis result'
+  })
+  llm_analysis: any;
+
+  @Column({ type: 'uuid', nullable: true })
+  reviewed_by: string;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  reviewed_at: Date;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: 'Array of parsing issues found'
+  })
+  parsing_issues: any;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -60,6 +107,14 @@ export class Upload {
       status: this.status,
       parse_errors: this.parse_errors,
       raw_text_hash: this.raw_text_hash,
+      project_id: this.project_id,
+      parse_method: this.parse_method,
+      confidence: this.confidence,
+      suggested_mappings: this.suggested_mappings,
+      llm_analysis: this.llm_analysis,
+      reviewed_by: this.reviewed_by,
+      reviewed_at: this.reviewed_at,
+      parsing_issues: this.parsing_issues,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };
