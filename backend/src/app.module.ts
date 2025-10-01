@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { ProjectModule } from './modules/project/project.module';
 import { ReportModule } from './modules/report/report.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
 @Module({
@@ -27,6 +28,9 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
     // Report generation module (NEW)
     ReportModule,
+
+    // Invoice processing module (NEW)
+    InvoiceModule,
 
     // Redis/Bull queue module
     BullModule.forRoot({
