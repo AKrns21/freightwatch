@@ -642,4 +642,103 @@ export class TariffEngineService {
       };
     }
   }
+
+  /**
+   * Calculate benchmarks for all shipments in a project
+   * NEW: Wrapper with Partial Data Support
+   */
+  async calculateBenchmarkForProject(
+    projectId: string,
+    tenantId: string,
+  ): Promise<void> {
+    const shipments = await this.shipmentRepo.find({
+      where: { project_id: projectId, tenant_id: tenantId },
+    });
+
+    this.logger.log({
+      event: 'calculate_project_benchmarks_start',
+      project_id: projectId,
+      shipment_count: shipments.length,
+    });
+
+    let successCount = 0;
+    let partialCount = 0;
+    let errorCount = 0;
+
+    for (const shipment of shipments) {
+      try {
+        // Use existing logic
+        await this.calculateBenchmark(shipment.id, tenantId);
+
+        // Update completeness
+        await this.updateCompleteness(shipment.id, 1.0, []);
+        successCount++;
+      } catch (error) {
+        this.logger.warn({
+          event: 'partial_benchmark',
+          shipment_id: shipment.id,
+          error: (error as Error).message,
+        });
+
+        // Identify missing fields
+        const missingFields = this.identifyMissingFields(shipment);
+
+        if (missingFields.length > 0) {
+          // Mark as partial
+          await this.updateCompleteness(shipment.id, 0.5, missingFields);
+          partialCount++;
+        } else {
+          // Error unrelated to missing data
+          errorCount++;
+        }
+      }
+    }
+
+    this.logger.log({
+      event: 'calculate_project_benchmarks_complete',
+      project_id: projectId,
+      success_count: successCount,
+      partial_count: partialCount,
+      error_count: errorCount,
+    });
+  }
+
+  /**
+   * Update shipment completeness tracking
+   */
+  private async updateCompleteness(
+    shipmentId: string,
+    score: number,
+    missingFields: string[],
+  ): Promise<void> {
+    await this.shipmentRepo.update(shipmentId, {
+      completeness_score: score,
+      missing_fields: missingFields,
+    });
+  }
+
+  /**
+   * Identify which required fields are missing from a shipment
+   */
+  private identifyMissingFields(shipment: Shipment): string[] {
+    const required = [
+      'origin_zip',
+      'dest_zip',
+      'weight_kg',
+      'carrier_id',
+      'date',
+      'actual_total_amount',
+    ];
+
+    const missing: string[] = [];
+
+    for (const field of required) {
+      const value = shipment[field];
+      if (value === null || value === undefined || value === '') {
+        missing.push(field);
+      }
+    }
+
+    return missing;
+  }
 }
