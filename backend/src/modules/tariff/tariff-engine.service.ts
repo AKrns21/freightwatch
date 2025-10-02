@@ -409,11 +409,32 @@ export class TariffEngineService {
       this.logger.warn(
         `Zone calculation failed for ${shipment.dest_country}-${shipment.dest_zip}: ${(error as Error).message}`,
       );
-      
-      // Fallback to default zone based on lane type
+
+      // FALLBACK STRATEGY (MVP-only):
+      // Use default zone when zone mapping is missing in database.
+      // This is a temporary fallback for MVP development phase.
+      //
+      // Default zones:
+      // - DE domestic: Zone 1 (most common German postal codes)
+      // - International: Zone 3 (typical mid-range zone)
+      //
+      // TODO (Post-MVP): Replace with proper error handling that fails the calculation
+      // and requires complete zone mapping data in database before processing shipments.
+      // This fallback should be removed once all carrier zone mappings are complete.
+      //
+      // Rationale: During MVP, we need to process shipments even with incomplete
+      // zone mapping data. These fallbacks are logged as warnings for later review.
       const defaultZone = laneType === 'DE' ? 1 : 3;
-      this.logger.debug(`Using fallback zone: ${defaultZone}`);
-      
+
+      this.logger.warn({
+        event: 'zone_fallback_used',
+        shipment_id: shipment.id,
+        lane_type: laneType,
+        dest_zip: shipment.dest_zip,
+        fallback_zone: defaultZone,
+        message: 'Using fallback zone - zone mapping incomplete in database',
+      });
+
       return defaultZone;
     }
   }

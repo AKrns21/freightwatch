@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { ProjectModule } from './modules/project/project.module';
@@ -16,6 +17,13 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    // Global rate limiting module
+    // Protects against brute-force attacks and API abuse
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // Time window in milliseconds (60 seconds)
+      limit: 100, // Max requests per TTL window per IP
+    }]),
 
     // Database module with TypeORM and RLS support
     DatabaseModule,
@@ -49,6 +57,12 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: TenantInterceptor,
+    },
+    // Global rate limiting guard
+    // Protects all endpoints from brute-force and DDoS attacks
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
