@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ReportService, GenerateReportOptions } from './report.service';
 import { ReportAggregationService } from './report-aggregation.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
 /**
  * ReportController - Report API Endpoints

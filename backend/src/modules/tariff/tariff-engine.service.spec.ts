@@ -10,7 +10,7 @@ import { DieselFloater } from './entities/diesel-floater.entity';
 import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
-import { Shipment } from '../parsing/entities/shipment.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 describe('TariffEngineService', () => {
   let service: TariffEngineService;

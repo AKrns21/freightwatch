@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InvoiceLine } from './entities/invoice-line.entity';
-import { Shipment } from '../parsing/entities/shipment.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 /**
  * Match result for invoice line to shipment

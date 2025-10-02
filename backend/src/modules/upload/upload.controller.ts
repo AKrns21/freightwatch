@@ -10,7 +10,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { TenantId } from '../auth/tenant.decorator';
+import { TenantId } from '@/modules/auth/tenant.decorator';
 import { UploadService } from './upload.service';
 
 const ALLOWED_MIME_TYPES = [
@@ -24,7 +24,7 @@ const ALLOWED_EXTENSIONS = ['.csv', '.xls', '.xlsx', '.pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 class UploadFileDto {
-  sourceType: string;
+  sourceType!: string;
 }
 
 @Controller('upload')
@@ -38,7 +38,7 @@ export class UploadController {
       limits: {
         fileSize: MAX_FILE_SIZE,
       },
-      fileFilter: (req, file, callback) => {
+      fileFilter: (_req, file, callback) => {
         if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
           const fileName = file.originalname;
           const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();

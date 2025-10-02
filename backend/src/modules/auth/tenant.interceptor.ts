@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 import { tap, finalize } from 'rxjs/operators';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { DatabaseService } from '../../database/database.service';
+import { DatabaseService } from '@/database/database.service';
 
 /**
  * JWT Payload interface for tenant-aware authentication
@@ -140,8 +140,8 @@ export class TenantInterceptor implements NestInterceptor {
       );
       throw error;
     }
-  }
 
+  }
   /**
    * Extract tenant ID from JWT token
    * 
@@ -217,20 +217,5 @@ export class TenantInterceptor implements NestInterceptor {
       throw new UnauthorizedException('Invalid JWT token');
     }
   }
-
-  /**
-   * Verify JWT token signature (for production use)
-   * 
-   * @param token - JWT token to verify
-   * @param secret - JWT secret or public key
-   * @returns Decoded payload if valid
-   * @private
-   */
-  private verifyJWT(token: string, secret: string): JwtPayload {
-    try {
-      return jwt.verify(token, secret) as JwtPayload;
-    } catch (error) {
-      throw new UnauthorizedException('JWT token verification failed');
-    }
-  }
 }
+

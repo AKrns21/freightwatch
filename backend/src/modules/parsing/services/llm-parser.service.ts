@@ -4,10 +4,9 @@ import {
   LlmParseResult,
   LlmPromptContext,
   AnalysisOptions,
-  FileType,
   ColumnMapping,
   DataQualityIssue,
-} from '../types/llm-parser.types';
+} from '@/modules/parsing/types/llm-parser.types';
 
 /**
  * LlmParserService - AI-powered file analysis
@@ -78,11 +77,12 @@ export class LlmParserService {
 
       return result;
 
-    } catch (error) {
+    } catch (error: unknown) {
+      
       this.logger.error({
         event: 'llm_analysis_error',
         filename: context.filename,
-        error: error.message,
+        error: (error as Error).message,
       });
 
       throw error;
@@ -105,7 +105,8 @@ export class LlmParserService {
         const workbook = XLSX.read(buffer);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         return XLSX.utils.sheet_to_csv(sheet);
-      } catch (error) {
+      } catch (error: unknown) {
+        
         this.logger.warn('Failed to parse Excel file, falling back to raw buffer');
         return buffer.toString('utf-8', 0, 5000);
       }
@@ -117,7 +118,8 @@ export class LlmParserService {
         const pdfParse = require('pdf-parse');
         const data = await pdfParse(buffer);
         return data.text;
-      } catch (error) {
+      } catch (error: unknown) {
+        
         this.logger.warn('Failed to parse PDF file');
         throw new Error('PDF parsing not available');
       }
@@ -257,7 +259,7 @@ Analyze this file and provide a structured JSON response with:
    */
   private parseAnalysisResponse(
     response: Anthropic.Message,
-    originalContent: string
+    _originalContent: string
   ): LlmParseResult {
     // Extract text content from response
     const textContent = response.content.find(c => c.type === 'text');
@@ -290,10 +292,11 @@ Analyze this file and provide a structured JSON response with:
         raw_analysis: rawText,
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
+      
       this.logger.error({
         event: 'llm_response_parse_error',
-        error: error.message,
+        error: (error as Error).message,
         raw_response: rawText.substring(0, 500),
       });
 

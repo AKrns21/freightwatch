@@ -197,7 +197,7 @@ export class UploadService {
   /**
    * Get shipments for an upload
    */
-  async getShipments(uploadId: string, tenantId: string): Promise<any[]> {
+  async getShipments(_uploadId: string, _tenantId: string): Promise<any[]> {
     // TODO: Import Shipment entity and use proper repository
     // For now, return empty array as placeholder
     this.logger.warn('getShipments not yet implemented');

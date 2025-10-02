@@ -10,8 +10,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UploadService } from './upload.service';
-import { TemplateService } from '../parsing/template.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TemplateService } from '@/modules/parsing/template.service';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
 /**
  * UploadReviewController - Review and correction workflow

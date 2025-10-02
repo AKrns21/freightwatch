@@ -169,8 +169,7 @@ async function runMigration(migrationFile: string): Promise<void> {
 
     console.log('\n✅ Migration completed successfully!');
 
-  } catch (error) {
-    console.error('Migration failed:', error);
+  } catch (error: any) {    console.error('Migration failed:', error);
     throw error;
   } finally {
     await dataSource.destroy();

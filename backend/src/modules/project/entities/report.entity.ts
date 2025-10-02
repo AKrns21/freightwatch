@@ -4,9 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   DeleteDateColumn,
+  Unique,
   ManyToOne,
   JoinColumn,
-  Unique,
 } from 'typeorm';
 import { Project } from './project.entity';
 
@@ -77,7 +77,7 @@ export class Report {
   deleted_at: Date;
 
   // Relations
-  @ManyToOne(() => Project, project => project.reports)
+  @ManyToOne(() => Project, (project: Project) => project.reports)
   @JoinColumn({ name: 'project_id' })
   project: Project;
 

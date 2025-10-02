@@ -47,20 +47,20 @@ describe('ZoneCalculatorService', () => {
     });
 
     it('should calculate zone using 2-digit prefix matching', async () => {
-      const mockMapping = {
+      const mockMapping: Partial<TariffZoneMap> = {
         id: '1',
         tenant_id: mockTenantId,
         carrier_id: mockCarrierId,
         country: 'DE',
         plz_prefix: '42',
         prefix_len: 2,
-        pattern: null,
+        pattern: undefined,
         zone: 1,
         valid_from: new Date('2024-01-01'),
-        valid_until: null,
-      } as TariffZoneMap;
+        valid_until: undefined,
+      };
 
-      tariffZoneMapRepository.findOne.mockResolvedValue(mockMapping);
+      tariffZoneMapRepository.findOne.mockResolvedValue(mockMapping as TariffZoneMap);
 
       const result = await service.calculateZone(
         mockTenantId,

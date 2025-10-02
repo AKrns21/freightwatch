@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from 'bull';
 import { Upload } from './entities/upload.entity';
-import { LlmParserService } from '../parsing/services/llm-parser.service';
-import { TemplateMatcherService } from '../parsing/services/template-matcher.service';
+import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
+import { TemplateMatcherService } from '@/modules/parsing/services/template-matcher.service';
 import { UploadService } from './upload.service';
 
 /**
@@ -148,19 +148,20 @@ export class UploadProcessorV2 {
         issues_count: llmResult.issues.length,
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error as Error;
       this.logger.error({
         event: 'parse_file_error',
         upload_id: uploadId,
-        error: error.message,
-        stack: error.stack,
+        error: err.message,
+        stack: err.stack,
       });
 
       await this.uploadRepo.update(uploadId, {
         status: 'error',
         parse_errors: {
-          message: error.message,
-          stack: error.stack,
+          message: err.message,
+          stack: err.stack,
           timestamp: new Date().toISOString(),
         } as any,
       });
@@ -211,10 +212,10 @@ export class UploadProcessorV2 {
    * Parse shipment list CSV/Excel
    */
   private async parseShipmentList(
-    buffer: Buffer,
+    _buffer: Buffer,
     template: any,
     projectId: string,
-    tenantId: string
+    _tenantId: string // Will be used when CSV/Excel parsing is implemented
   ): Promise<void> {
     this.logger.log({
       event: 'parse_shipment_list',
@@ -233,7 +234,7 @@ export class UploadProcessorV2 {
    * Parse invoice PDF
    */
   private async parseInvoice(
-    buffer: Buffer,
+    _buffer: Buffer,
     template: any,
     projectId: string,
     tenantId: string
@@ -241,10 +242,11 @@ export class UploadProcessorV2 {
     this.logger.log({
       event: 'parse_invoice',
       project_id: projectId,
+      tenant_id: tenantId,
       template_name: template.name,
     });
 
-    // TODO: Implement invoice parsing
+    // TODO: Implement invoice parsing with tenant context
     this.logger.warn('Invoice parsing not yet implemented in V2 processor');
   }
 
@@ -252,7 +254,7 @@ export class UploadProcessorV2 {
    * Parse tariff table PDF
    */
   private async parseTariff(
-    buffer: Buffer,
+    _buffer: Buffer,
     template: any,
     tenantId: string
   ): Promise<void> {

@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule, getQueueToken } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 import { Repository } from 'typeorm';

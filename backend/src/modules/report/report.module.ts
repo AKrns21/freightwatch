@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Report } from '../project/entities/report.entity';
-import { Project } from '../project/entities/project.entity';
-import { Shipment } from '../parsing/entities/shipment.entity';
-import { ShipmentBenchmark } from '../tariff/entities/shipment-benchmark.entity';
+import { Report } from '@/modules/project/entities/report.entity';
+import { Project } from '@/modules/project/entities/project.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { ShipmentBenchmark } from '@/modules/tariff/entities/shipment-benchmark.entity';
 import { ReportService } from './report.service';
 import { ReportAggregationService } from './report-aggregation.service';
 import { ReportController } from './report.controller';

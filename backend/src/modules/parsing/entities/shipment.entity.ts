@@ -4,9 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
-  JoinColumn,
+  JoinColumn
 } from 'typeorm';
-import { Carrier } from '../../upload/entities/carrier.entity';
+import { Carrier } from '@/modules/upload/entities/carrier.entity';
 
 @Entity('shipment')
 export class Shipment {

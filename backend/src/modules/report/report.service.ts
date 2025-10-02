@@ -1,8 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Report } from '../project/entities/report.entity';
-import { Project } from '../project/entities/project.entity';
+import { Report } from '@/modules/project/entities/report.entity';
+import { Project } from '@/modules/project/entities/project.entity';
 import { ReportAggregationService, ProjectStatistics } from './report-aggregation.service';
 
 /**
@@ -127,8 +127,8 @@ export class ReportService {
       data_snapshot: dataSnapshot,
       data_completeness: dataCompleteness,
       shipment_count: statistics.total_shipments,
-      date_range_start: dateRangeResult.start_date,
-      date_range_end: dateRangeResult.end_date,
+      date_range_start: dateRangeResult.start_date || undefined,
+      date_range_end: dateRangeResult.end_date || undefined,
       generated_by: tenantId,
       notes: options.notes,
     });

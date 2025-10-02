@@ -13,7 +13,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { TenantId, UserId } from '../auth/tenant.decorator';
+import { TenantId, UserId } from '@/modules/auth/tenant.decorator';
 
 /**
  * ProjectController - HTTP endpoints for project management

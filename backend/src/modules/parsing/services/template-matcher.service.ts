@@ -1,8 +1,9 @@
+import { IsNull } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ParsingTemplate } from '../entities/parsing-template.entity';
-import { Upload } from '../../upload/entities/upload.entity';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 
 /**
  * Template match result
@@ -161,10 +162,10 @@ export class TemplateMatcherService {
       // Try to detect headers (assume first line is header if comma-separated)
       if (lines[0]?.includes(',') || lines[0]?.includes(';')) {
         const separator = lines[0].includes(';') ? ';' : ',';
-        characteristics['headers'] = lines[0].split(separator).map(h => h.trim());
+        (characteristics as any)['headers'] = lines[0].split(separator).map(h => h.trim());
       }
 
-      characteristics['firstLines'] = lines;
+      (characteristics as any)['firstLines'] = lines;
     }
 
     return characteristics;
@@ -207,7 +208,7 @@ export class TemplateMatcherService {
     // Header keywords check (50%)
     if (template.detection.header_keywords && characteristics.headers) {
       const matchedKeywords = template.detection.header_keywords.filter((keyword: string) =>
-        characteristics.headers.some((header: string) =>
+        characteristics.headers?.some((header: string) =>
           header.toLowerCase().includes(keyword.toLowerCase())
         )
       );
@@ -290,8 +291,8 @@ export class TemplateMatcherService {
   ): Promise<ParsingTemplate[]> {
     return this.templateRepo.find({
       where: [
-        { tenant_id: null, template_category: category, deleted_at: null },
-        { tenant_id: tenantId, template_category: category, deleted_at: null },
+        { tenant_id: IsNull(), template_category: category, deleted_at: IsNull() },
+        { tenant_id: tenantId, template_category: category, deleted_at: IsNull() },
       ],
       order: { usage_count: 'DESC' },
     });
@@ -303,8 +304,8 @@ export class TemplateMatcherService {
   async getAllTemplates(tenantId: string): Promise<ParsingTemplate[]> {
     return this.templateRepo.find({
       where: [
-        { tenant_id: null, deleted_at: null },
-        { tenant_id: tenantId, deleted_at: null },
+        { tenant_id: IsNull(), deleted_at: IsNull() },
+        { tenant_id: tenantId, deleted_at: IsNull() },
       ],
       order: { usage_count: 'DESC', created_at: 'DESC' },
     });

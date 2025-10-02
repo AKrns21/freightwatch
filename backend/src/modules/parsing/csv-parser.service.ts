@@ -5,8 +5,8 @@ import * as fs from 'fs/promises';
 import * as Papa from 'papaparse';
 import { Shipment } from './entities/shipment.entity';
 import { ServiceMapperService } from './service-mapper.service';
-import { round } from '../../utils/round';
-import { Upload } from '../upload/entities/upload.entity';
+import { round } from '@/utils/round';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 import { ParsingTemplate } from './entities/parsing-template.entity';
 
 @Injectable()

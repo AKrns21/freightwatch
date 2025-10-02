@@ -6,13 +6,13 @@ import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { DieselFloater } from './entities/diesel-floater.entity';
 import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
-import { Carrier } from '../upload/entities/carrier.entity';
+import { Carrier } from '@/modules/upload/entities/carrier.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { TariffEngineService } from './tariff-engine.service';
 import { TariffPdfParserService } from './tariff-pdf-parser.service';
-import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
-import { ParsingModule } from '../parsing/parsing.module';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { ParsingModule } from '@/modules/parsing/parsing.module';
 
 /**
  * TariffModule - Phase 2 Refactored

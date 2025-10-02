@@ -1,16 +1,16 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual, LessThan, In } from 'typeorm';
+import { Repository, LessThanOrEqual, Or, IsNull, MoreThanOrEqual } from 'typeorm';
 import { TariffTable } from './entities/tariff-table.entity';
 import { TariffRate } from './entities/tariff-rate.entity';
 import { DieselFloater } from './entities/diesel-floater.entity';
 import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
-import { Carrier } from '../upload/entities/carrier.entity';
+import { Carrier } from '@/modules/upload/entities/carrier.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
-import { Shipment } from '../parsing/entities/shipment.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 import { BenchmarkResult, CostBreakdownItem } from './interfaces/benchmark-result.interface';
-import { round } from '../../utils/round';
+import { round } from '@/utils/round';
 
 /**
  * TariffEngineService - Phase 2 Refactored
@@ -565,7 +565,7 @@ export class TariffEngineService {
   }
 
   private async calculateChargeableWeight(
-    tenantId: string,
+    _tenantId: string,
     carrierId: string | null,
     shipment: Shipment,
   ): Promise<{ value: number; basis: string; note: string }> {
@@ -685,8 +685,8 @@ export class TariffEngineService {
    * NEW: Wrapper with Partial Data Support
    */
   async calculateBenchmarkForProject(
-    projectId: string,
-    tenantId: string,
+    _projectId: string,
+    _tenantId: string,
   ): Promise<void> {
     // TODO: Implement shipmentRepo injection
     this.logger.warn('calculateProjectBenchmarks not fully implemented - shipmentRepo missing');
@@ -745,25 +745,27 @@ export class TariffEngineService {
 
   /**
    * Update shipment completeness tracking
+   * NOTE: Currently unused - reserved for future Phase 5 implementation
    */
-  private async updateCompleteness(
-    shipmentId: string,
-    score: number,
-    missingFields: string[],
+  /* private async _updateCompleteness(
+    _shipmentId: string,
+    _score: number,
+    _missingFields: string[],
   ): Promise<void> {
     // TODO: Implement shipmentRepo injection
     this.logger.warn('updateCompleteness not implemented - shipmentRepo missing');
     return;
-    /* await this.shipmentRepo.update(shipmentId, {
-      completeness_score: score,
-      missing_fields: missingFields,
-    }); */
+    // await this.shipmentRepo.update(shipmentId, {
+    //   completeness_score: score,
+    //   missing_fields: missingFields,
+    // });
   }
 
   /**
    * Identify which required fields are missing from a shipment
+   * NOTE: Currently unused - reserved for future Phase 5 implementation
    */
-  private identifyMissingFields(shipment: Shipment): string[] {
+  /* private identifyMissingFields(shipment: Shipment): string[] {
     const required = [
       'origin_zip',
       'dest_zip',
@@ -776,12 +778,12 @@ export class TariffEngineService {
     const missing: string[] = [];
 
     for (const field of required) {
-      const value = shipment[field];
+      const value = (shipment as any)[field];
       if (value === null || value === undefined || value === '') {
         missing.push(field);
       }
     }
 
     return missing;
-  }
+  } */
 }

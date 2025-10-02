@@ -21,7 +21,7 @@ export class ParsingTemplate {
 
   @Column({ type: 'uuid', nullable: true, comment: 'NULL = global template' })
   @Index()
-  tenant_id: string;
+  tenant_id: string | null;
 
   @Column({ length: 255 })
   name: string;
@@ -85,7 +85,7 @@ export class ParsingTemplate {
   created_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at: Date | null;
 
   /**
    * Convert to safe object for API responses
@@ -139,7 +139,7 @@ export class ParsingTemplate {
     // Header keywords check
     if (this.detection.header_keywords && fileCharacteristics.headers) {
       const matchedKeywords = this.detection.header_keywords.filter((keyword: string) =>
-        fileCharacteristics.headers.some((header: string) =>
+        fileCharacteristics.headers?.some((header: string) =>
           header.toLowerCase().includes(keyword.toLowerCase())
         )
       );

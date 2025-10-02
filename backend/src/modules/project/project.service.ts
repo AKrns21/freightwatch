@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Project } from './entities/project.entity';
 import { ConsultantNote } from './entities/consultant-note.entity';
 import { Report } from './entities/report.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { Upload } from '../upload/entities/upload.entity';
-import { Shipment } from '../parsing/entities/shipment.entity';
+import { Upload } from '@/modules/upload/entities/upload.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 /**
  * ProjectService - Manages freight analysis projects
@@ -59,7 +59,7 @@ export class ProjectService {
    */
   async findAll(tenantId: string): Promise<Project[]> {
     return this.projectRepo.find({
-      where: { tenant_id: tenantId, deleted_at: null },
+      where: { tenant_id: tenantId, deleted_at: IsNull() },
       order: { created_at: 'DESC' },
     });
   }
@@ -69,7 +69,7 @@ export class ProjectService {
    */
   async findOne(id: string, tenantId: string): Promise<Project> {
     const project = await this.projectRepo.findOne({
-      where: { id, tenant_id: tenantId, deleted_at: null },
+      where: { id, tenant_id: tenantId, deleted_at: IsNull() },
       relations: ['notes', 'reports'],
     });
 
@@ -106,7 +106,7 @@ export class ProjectService {
    * Soft delete a project
    */
   async remove(id: string, tenantId: string): Promise<void> {
-    const project = await this.findOne(id, tenantId);
+    await this.findOne(id, tenantId);
 
     this.logger.log({
       event: 'project_delete',
@@ -154,7 +154,7 @@ export class ProjectService {
     await this.findOne(projectId, tenantId);
 
     return this.noteRepo.find({
-      where: { project_id: projectId, deleted_at: null },
+      where: { project_id: projectId, deleted_at: IsNull() },
       order: { created_at: 'DESC' },
     });
   }
@@ -172,7 +172,7 @@ export class ProjectService {
     await this.findOne(projectId, tenantId);
 
     const note = await this.noteRepo.findOne({
-      where: { id: noteId, project_id: projectId, deleted_at: null },
+      where: { id: noteId, project_id: projectId, deleted_at: IsNull() },
     });
 
     if (!note) {
@@ -214,7 +214,7 @@ export class ProjectService {
     await this.findOne(projectId, tenantId);
 
     return this.reportRepo.find({
-      where: { project_id: projectId, deleted_at: null },
+      where: { project_id: projectId, deleted_at: IsNull() },
       order: { version: 'DESC' },
     });
   }

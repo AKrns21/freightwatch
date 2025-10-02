@@ -30,12 +30,12 @@ export class InvoiceLine {
   @Column('uuid')
   invoice_id: string;
 
-  @ManyToOne(() => InvoiceHeader, (header) => header.lines)
+  @ManyToOne(() => InvoiceHeader, (header: InvoiceHeader) => header.lines)
   @JoinColumn({ name: 'invoice_id' })
   invoice: InvoiceHeader;
 
   @Column('uuid', { nullable: true })
-  shipment_id: string;
+  shipment_id: string | null;
 
   @Column('int', { nullable: true })
   line_number: number;

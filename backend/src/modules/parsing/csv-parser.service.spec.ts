@@ -11,7 +11,7 @@ jest.mock('fs/promises');
 describe('CsvParserService', () => {
   let service: CsvParserService;
   let shipmentRepository: jest.Mocked<Repository<Shipment>>;
-  let serviceMapperService: jest.Mocked<ServiceMapperService>;
+  // let _serviceMapperService: jest.Mocked<ServiceMapperService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,7 +49,7 @@ describe('CsvParserService', () => {
 
     service = module.get<CsvParserService>(CsvParserService);
     shipmentRepository = module.get(getRepositoryToken(Shipment));
-    serviceMapperService = module.get(ServiceMapperService);
+    // _serviceMapperService = module.get(ServiceMapperService);
   });
 
   afterEach(() => {

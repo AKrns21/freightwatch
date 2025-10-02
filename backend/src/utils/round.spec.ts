@@ -1,4 +1,4 @@
-import { round, round2, RoundingMode } from '../../src/utils/round';
+import { round, round2, RoundingMode } from '@/utils/round';
 
 describe('Rounding Utilities', () => {
   describe('round2 function', () => {

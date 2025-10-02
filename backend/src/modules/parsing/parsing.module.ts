@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shipment } from './entities/shipment.entity';
 import { ParsingTemplate } from './entities/parsing-template.entity';
 import { ManualMapping } from './entities/manual-mapping.entity';
-import { Upload } from '../upload/entities/upload.entity';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 import { CsvParserService } from './csv-parser.service';
 import { ServiceMapperService } from './service-mapper.service';
 import { LlmParserService } from './services/llm-parser.service';

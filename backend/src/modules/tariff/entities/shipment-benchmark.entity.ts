@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Shipment } from '../../parsing/entities/shipment.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 @Entity('shipment_benchmark')
 export class ShipmentBenchmark {

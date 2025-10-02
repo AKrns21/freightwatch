@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { TariffTable } from './entities/tariff-table.entity';
-import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
-import { LlmParserService } from '../parsing/services/llm-parser.service';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
 
 /**
  * Parsed tariff entry from PDF
@@ -139,12 +139,12 @@ export class TariffPdfParserService {
         {
           tenant_id: tenantId,
           template_category: 'tariff',
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
         {
-          tenant_id: null,
+          tenant_id: IsNull(),
           template_category: 'tariff',
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
       ],
       order: { usage_count: 'DESC' },
@@ -221,7 +221,7 @@ export class TariffPdfParserService {
 
     return {
       carrier_id: context.carrier_id || metadata.carrier_id,
-      carrier_name: metadata.carrier_name,
+      carrier_name: metadata.carrier_name || 'Unknown',
       lane_type: metadata.lane_type || 'domestic_de',
       valid_from: metadata.valid_from || new Date(),
       valid_until: metadata.valid_until,
@@ -287,10 +287,11 @@ export class TariffPdfParserService {
 
   /**
    * Extract tariff entries using template rules
+   * NOTE: Currently returns empty array - reserved for future implementation
    */
   private extractEntriesWithTemplate(
-    pdfText: string,
-    mappings: Record<string, any>,
+    _pdfText: string,
+    _mappings: Record<string, any>,
   ): TariffEntry[] {
     const entries: TariffEntry[] = [];
 
@@ -339,10 +340,11 @@ export class TariffPdfParserService {
 
   /**
    * Extract metadata from PDF text
+   * NOTE: Currently returns empty object - reserved for future implementation
    */
   private extractMetadata(
-    pdfText: string,
-    template: ParsingTemplate,
+    _pdfText: string,
+    _template: ParsingTemplate,
   ): {
     carrier_id?: string;
     carrier_name?: string;

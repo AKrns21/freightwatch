@@ -5,9 +5,9 @@ import { InvoiceLine } from './entities/invoice-line.entity';
 import { InvoiceParserService } from './invoice-parser.service';
 import { InvoiceMatcherService } from './invoice-matcher.service';
 import { InvoiceController } from './invoice.controller';
-import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
-import { Shipment } from '../parsing/entities/shipment.entity';
-import { ParsingModule } from '../parsing/parsing.module';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { ParsingModule } from '@/modules/parsing/parsing.module';
 
 /**
  * InvoiceModule - Invoice Parsing & Matching

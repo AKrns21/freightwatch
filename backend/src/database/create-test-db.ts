@@ -40,8 +40,7 @@ async function createTestDatabase(): Promise<void> {
     await dataSource.query(`CREATE DATABASE freightwatch_test`);
     console.log('✅ Database created successfully');
 
-  } catch (error) {
-    console.error('Failed to create database:', error);
+  } catch (error: any) {    console.error('Failed to create database:', error);
     throw error;
   } finally {
     await dataSource.destroy();

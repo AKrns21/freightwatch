@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository, EntityTarget, ObjectLiteral, DataSourceOptions } from 'typeorm';
+import { DataSource, QueryRunner, Repository, EntityTarget, ObjectLiteral} from 'typeorm';
 
 /**
  * Database service providing tenant-aware database operations

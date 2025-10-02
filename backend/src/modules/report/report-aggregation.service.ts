@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Shipment } from '../parsing/entities/shipment.entity';
-import { ShipmentBenchmark } from '../tariff/entities/shipment-benchmark.entity';
-import { round } from '../../utils/round';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { ShipmentBenchmark } from '@/modules/tariff/entities/shipment-benchmark.entity';
+import { round } from '@/utils/round';
 
 /**
  * Aggregated data for a carrier
@@ -177,7 +177,7 @@ export class ReportAggregationService {
   private async aggregateByCarrier(
     shipments: Shipment[],
     benchmarkMap: Map<string, ShipmentBenchmark>,
-    tenantId: string,
+    _tenantId: string,
   ): Promise<CarrierAggregation[]> {
     // Group by carrier
     const carrierMap = new Map<string, {

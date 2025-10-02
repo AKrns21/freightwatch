@@ -1,17 +1,17 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository , IsNull} from 'typeorm';
 import { Job } from 'bull';
 import { Upload } from './entities/upload.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
-import { Shipment } from '../parsing/entities/shipment.entity';
-import { CsvParserService } from '../parsing/csv-parser.service';
-import { TariffEngineService } from '../tariff/tariff-engine.service';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { CsvParserService } from '@/modules/parsing/csv-parser.service';
+import { TariffEngineService } from '@/modules/tariff/tariff-engine.service';
 import { UploadService } from './upload.service';
-import { TemplateMatcherService } from '../parsing/services/template-matcher.service';
-import { LlmParserService } from '../parsing/services/llm-parser.service';
-import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
+import { TemplateMatcherService } from '@/modules/parsing/services/template-matcher.service';
+import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
 
 /**
  * UploadProcessor - Phase 3 Refactored
@@ -324,7 +324,7 @@ export class UploadProcessor {
       const alias = await this.carrierAliasRepository.findOne({
         where: [
           { tenant_id: tenantId, alias_text: carrierName },
-          { tenant_id: null, alias_text: carrierName }, // Global fallback
+          { tenant_id: IsNull(), alias_text: carrierName }, // Global fallback
         ],
       });
 

@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository , IsNull} from 'typeorm';
 import { InvoiceHeader } from './entities/invoice-header.entity';
 import { InvoiceLine } from './entities/invoice-line.entity';
-import { ParsingTemplate } from '../parsing/entities/parsing-template.entity';
-import { LlmParserService } from '../parsing/services/llm-parser.service';
+import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
 
 /**
  * Parsed invoice result
@@ -156,12 +156,12 @@ export class InvoiceParserService {
         {
           tenant_id: tenantId,
           template_category: 'invoice',
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
         {
-          tenant_id: null,
+          tenant_id: IsNull(),
           template_category: 'invoice',
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
       ],
       order: { usage_count: 'DESC' },
@@ -219,7 +219,7 @@ export class InvoiceParserService {
   private async parseWithTemplate(
     fileBuffer: Buffer,
     template: ParsingTemplate,
-    context: any,
+    _context: any,
   ): Promise<InvoiceParseResult> {
     // Extract text from PDF
     const pdfText = await this.extractTextFromPdf(fileBuffer);
@@ -253,10 +253,10 @@ export class InvoiceParserService {
    */
   private async parseWithLlm(
     fileBuffer: Buffer,
-    context: any,
+    _context: any,
   ): Promise<InvoiceParseResult> {
     const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
-      filename: context.filename,
+      filename: _context.filename,
       mime_type: 'application/pdf',
       content_preview: '',
       analysis_type: 'invoice_extraction',
@@ -291,8 +291,8 @@ export class InvoiceParserService {
    * Extract header using template rules
    */
   private extractHeaderWithTemplate(
-    pdfText: string,
-    headerMappings: Record<string, any>,
+    _pdfText: string,
+    _headerMappings: Record<string, any>,
   ): any {
     // TODO: Implement template-based header extraction
     // Parse invoice number, date, amounts using regex patterns
@@ -312,8 +312,8 @@ export class InvoiceParserService {
    * Extract lines using template rules
    */
   private extractLinesWithTemplate(
-    pdfText: string,
-    lineMappings: Record<string, any>,
+    _pdfText: string,
+    _lineMappings: Record<string, any>,
   ): any[] {
     // TODO: Implement template-based line extraction
     // Parse line items using table detection and regex
@@ -327,7 +327,7 @@ export class InvoiceParserService {
   /**
    * Extract header from LLM result
    */
-  private extractHeaderFromLlmResult(llmResult: any): any {
+  private extractHeaderFromLlmResult(_llmResult: any): any {
     // TODO: Map LLM analysis to header structure
     return {
       invoice_number: 'UNKNOWN',
@@ -340,7 +340,7 @@ export class InvoiceParserService {
   /**
    * Extract lines from LLM result
    */
-  private extractLinesFromLlmResult(llmResult: any): any[] {
+  private extractLinesFromLlmResult(_llmResult: any): any[] {
     // TODO: Map LLM analysis to line structure
     return [];
   }

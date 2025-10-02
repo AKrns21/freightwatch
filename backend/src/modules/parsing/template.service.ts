@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository , IsNull } from 'typeorm';
 import { ParsingTemplate } from './entities/parsing-template.entity';
-import { Upload } from '../upload/entities/upload.entity';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 
 /**
  * Template creation options
@@ -181,8 +181,8 @@ export class TemplateService {
   async findAll(tenantId: string): Promise<ParsingTemplate[]> {
     return this.templateRepo.find({
       where: [
-        { tenant_id: tenantId, deleted_at: null },
-        { tenant_id: null, deleted_at: null }, // Global templates
+        { tenant_id: tenantId, deleted_at: IsNull() },
+        { tenant_id: IsNull(), deleted_at: IsNull() }, // Global templates
       ],
       order: { usage_count: 'DESC', created_at: 'DESC' },
     });
@@ -200,12 +200,12 @@ export class TemplateService {
         {
           tenant_id: tenantId,
           template_category: category,
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
         {
-          tenant_id: null,
+          tenant_id: IsNull(),
           template_category: category,
-          deleted_at: null,
+          deleted_at: IsNull(),
         },
       ],
       order: { usage_count: 'DESC' },
@@ -263,7 +263,7 @@ export class TemplateService {
    * Detect template category from upload and mappings
    */
   private detectCategory(
-    upload: Upload,
+    _upload: Upload,
     mappings: Record<string, string>,
   ): string {
     // Check for common field patterns

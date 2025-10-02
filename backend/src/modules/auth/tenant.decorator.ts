@@ -24,7 +24,7 @@ import { TenantRequest } from './tenant.interceptor';
  * 4. Attached tenantId to the request object
  */
 export const TenantId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
+  (_data: unknown, ctx: ExecutionContext): string => {
     const request = ctx.switchToHttp().getRequest<TenantRequest>();
     
     if (!request.tenantId) {
@@ -55,7 +55,7 @@ export const TenantId = createParamDecorator(
  * ```
  */
 export const UserId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
+  (_data: unknown, ctx: ExecutionContext): string => {
     const request = ctx.switchToHttp().getRequest<TenantRequest>();
     
     if (!request.userId) {
@@ -87,7 +87,7 @@ export const UserId = createParamDecorator(
  * ```
  */
 export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (_data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<TenantRequest>();
     
     if (!request.user) {
@@ -114,7 +114,7 @@ export const CurrentUser = createParamDecorator(
  * ```
  */
 export const TenantContext = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): { tenantId: string; userId: string } => {
+  (_data: unknown, ctx: ExecutionContext): { tenantId: string; userId: string } => {
     const request = ctx.switchToHttp().getRequest<TenantRequest>();
     
     if (!request.tenantId || !request.userId) {

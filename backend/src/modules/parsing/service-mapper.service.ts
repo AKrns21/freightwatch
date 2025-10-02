@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 /**
  * ServiceMapperService - Simplified version (Phase 2 Refactoring)
@@ -10,7 +10,6 @@ import { Injectable, Logger } from '@nestjs/common';
  */
 @Injectable()
 export class ServiceMapperService {
-  private readonly logger = new Logger(ServiceMapperService.name);
 
   /**
    * Normalize service text to standard service code
