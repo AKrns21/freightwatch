@@ -6,7 +6,27 @@ This document defines code style, naming conventions, and best practices for Fre
 
 ### Strict Mode
 
-**`tsconfig.json` MUST have:**
+**Current Configuration (MVP Phase):**
+
+TypeScript strict mode is currently **disabled** for MVP development. This is a pragmatic decision to enable rapid development with the existing codebase.
+
+```json
+{
+  "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  }
+}
+```
+
+**Post-MVP Target:**
+
+Once MVP is complete and core functionality is stable, strict mode should be gradually re-enabled:
+
 ```json
 {
   "compilerOptions": {
@@ -19,6 +39,14 @@ This document defines code style, naming conventions, and best practices for Fre
   }
 }
 ```
+
+**Rationale:** Enabling strict mode revealed 100+ type errors in the existing codebase. Rather than block development to fix all errors at once, we're deferring this to a dedicated code quality phase after MVP delivery.
+
+**However:** New code should still follow strict mode principles:
+- Explicit return types on public methods
+- Avoid `any` types
+- Handle null/undefined explicitly
+- Use type guards and assertions appropriately
 
 ### Type Annotations
 

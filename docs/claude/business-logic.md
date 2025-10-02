@@ -766,107 +766,52 @@ SET settings = settings || '{"overpay_threshold_pct": 3}'::jsonb
 WHERE id = 'tenant-uuid';
 ```
 
-## 10. Service Level Normalization
+## 10. Carrier and Service Mapping
 
-Carriers use different service names for equivalent delivery speeds.
+Carriers and services are mapped using Phase 4.1 workflow with human review.
 
-### Normalization Logic
+### Carrier Mapping Workflow
 
-```typescript
-export class ServiceMapper {
-  async normalize(
-    tenantId: string,
-    carrierId: string | null,
-    serviceText: string | null
-  ): Promise<string | null> {
-    if (!serviceText) return null;
-    
-    const normalized = serviceText.toLowerCase().trim();
-    
-    // Try tenant-specific alias
-    if (tenantId) {
-      const alias = await this.aliasRepo.findOne({
-        tenant_id: tenantId,
-        carrier_id: carrierId,
-        alias_text: normalized
-      });
-      
-      if (alias) return alias.service_code;
-    }
-    
-    // Try carrier-specific alias
-    if (carrierId) {
-      const alias = await this.aliasRepo.findOne({
-        tenant_id: null,
-        carrier_id: carrierId,
-        alias_text: normalized
-      });
-      
-      if (alias) return alias.service_code;
-    }
-    
-    // Try global alias
-    const alias = await this.aliasRepo.findOne({
-      tenant_id: null,
-      carrier_id: null,
-      alias_text: normalized
-    });
-    
-    if (alias) return alias.service_code;
-    
-    // No match found - log and return original
-    this.logger.warn({
-      event: 'service_unmapped',
-      tenant_id: tenantId,
-      carrier_id: carrierId,
-      service_text: serviceText
-    });
-    
-    return serviceText;
-  }
-}
-```
+1. **LLM-Powered Auto-Detection**: `llm-parser.service.ts` analyzes file structure
+2. **Confidence Scoring**: Parsing results include confidence scores
+3. **Human Review**: Low-confidence mappings flagged for consultant review
+4. **Manual Mapping Storage**: Approved mappings stored in `manual_mapping` table
+5. **Template Learning**: Confirmed patterns saved in `parsing_template` table
 
-### Service Catalog
+### Manual Mapping Table
 
 ```sql
-INSERT INTO service_catalog (code, description, category) VALUES
-  ('STANDARD', 'Standard Delivery', 'standard'),
-  ('EXPRESS', 'Express/Next Day', 'premium'),
-  ('ECONOMY', 'Economy/Slow', 'economy'),
-  ('NEXT_DAY', 'Next Day Delivery', 'premium'),
-  ('SAME_DAY', 'Same Day Delivery', 'premium'),
-  ('PREMIUM', 'Premium Service', 'premium');
+CREATE TABLE manual_mapping (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  upload_id UUID NOT NULL,
+
+  -- Original parsed values
+  original_carrier_name TEXT,
+  original_service_name TEXT,
+
+  -- Corrected mappings
+  carrier_id UUID REFERENCES carrier(id),
+  service_level VARCHAR(50),
+
+  -- Review metadata
+  reviewed_by UUID REFERENCES "user"(id),
+  reviewed_at TIMESTAMPTZ DEFAULT NOW(),
+  confidence_score DECIMAL(3,2),
+
+  CONSTRAINT fk_manual_mapping_tenant FOREIGN KEY (tenant_id) REFERENCES tenant(id)
+);
 ```
 
-### Alias Examples
+### Carrier Alias Pattern
 
-```sql
--- Global aliases
-INSERT INTO service_alias (tenant_id, carrier_id, alias_text, service_code) VALUES
-  (NULL, NULL, '24h', 'EXPRESS'),
-  (NULL, NULL, 'next day', 'NEXT_DAY'),
-  (NULL, NULL, 'overnight', 'NEXT_DAY'),
-  (NULL, NULL, 'express', 'EXPRESS'),
-  (NULL, NULL, 'standard', 'STANDARD'),
-  (NULL, NULL, 'normal', 'STANDARD'),
-  (NULL, NULL, 'eco', 'ECONOMY');
-
--- DHL-specific
-INSERT INTO service_alias (tenant_id, carrier_id, alias_text, service_code) VALUES
-  (NULL, 'dhl-uuid', 'premium', 'PREMIUM'),
-  (NULL, 'dhl-uuid', 'paket', 'STANDARD');
-
--- Tenant-specific (overrides global)
-INSERT INTO service_alias (tenant_id, carrier_id, alias_text, service_code) VALUES
-  ('tenant-uuid', 'carrier-uuid', 'rush', 'SAME_DAY');
-```
+The `carrier` table supports global carriers (NULL tenant_id) and tenant-specific aliases via `carrier_alias` table for name variations.
 
 ## Business Rules Summary
 
 ### MUST Follow
 
-1. **Never hardcode business logic** - Load from `tariff_rule` table
+1. **Never hardcode business logic** - Load from carrier configuration or database
 2. **Always use `round()` from `utils/round.ts`** - Deterministic calculations
 3. **Log missing data warnings** - Don't fail silently
 4. **Preserve audit trail** - Store `cost_breakdown` JSONB

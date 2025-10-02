@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 @docs/claude/architecture.md
 @docs/claude/database-patterns.md
 @docs/claude/business-logic.md
+@docs/claude/project-workflow.md
 @docs/claude/coding-standards.md
 @docs/claude/testing-standards.md
-@docs/claude/common-pitfalls.md
 
 ## Project Context
 
@@ -70,11 +70,12 @@ return `${amount} ${shipment.currency}`; // ✅
 ### 4. No Magic Numbers
 **Business rules from database, NOT hardcoded:**
 ```typescript
-const rule = await repo.findOne({ rule_type: 'ldm_conversion' });
-const ldmToKg = rule?.param_json.ldm_to_kg; // ✅
-// NOT: const ldmToKg = 1850; // ❌
+// LDM conversion factors stored in carrier-specific configuration
+const ldmToKg = carrier.ldm_to_kg_factor || 1850; // ✅ with logged fallback
+// NOT: const ldmToKg = 1850; // ❌ hardcoded without context
 ```
-If fallback needed: **Log warning** with `logger.warn()`.
+**If fallback needed:** Document in code comments + log warning with `logger.warn()`.
+**MVP Exception:** Zone fallbacks (1 for DE, 3 for international) are temporarily allowed during MVP phase with extensive logging. See tariff-engine.service.ts for documentation.
 
 ### 5. TypeScript Strict
 **Explicit return types for all public methods:**
@@ -124,8 +125,8 @@ backend/
 **Tariff Calculation:**
 ```
 1. Determine lane type (domestic_de, de_to_ch, ...)
-2. Calculate zone (carrier-specific PLZ mapping)
-3. Calculate chargeable weight (from tariff_rule table)
+2. Calculate zone (carrier-specific PLZ mapping from tariff_zone_map)
+3. Calculate chargeable weight (MAX of actual weight vs LDM-based volumetric weight)
 4. Find tariff (zone + weight range + date + valid_from/until)
 5. FX conversion (if tariff.currency ≠ shipment.currency)
 6. Add diesel surcharge (from diesel_floater with basis)
@@ -138,12 +139,17 @@ backend/
 ## Critical Tables
 
 - **tenant**: Settings (currency, default_diesel_floater, data_retention_days)
-- **shipment**: Core entity (tenant_id, currency, amounts, zone, weight)
+- **project**: Project management (Phase 4.1) with workflow tracking
+- **upload**: File uploads linked to projects with parse metadata
+- **shipment**: Core entity (tenant_id, currency, amounts, zone, weight, project_id)
 - **tariff_table**: Tariffs (carrier, lane, zone, weight range, valid_from/until)
+- **tariff_zone_map**: PLZ to zone mappings (carrier-specific, temporal validity)
 - **diesel_floater**: Time-based diesel% (valid_from/until, basis='base'|'base_plus_toll')
-- **tariff_rule**: Business rules (ldm_conversion, min_pallet_weight) - **NO defaults!**
 - **fx_rate**: Historical exchange rates (rate_date, from_ccy, to_ccy)
 - **shipment_benchmark**: Expected costs + delta + classification
+- **parsing_template**: LLM-powered parsing templates per carrier
+- **manual_mapping**: Human-reviewed carrier/service mappings
+- **consultant_note**: Quality issues and observations per project
 
 **All tenant-scoped tables have RLS enabled.**
 
@@ -176,8 +182,8 @@ backend/
 ❌ **Hardcoded EUR:** `return '€' + amount;`  
 ✅ **Fix:** `return shipment.currency + ' ' + amount;`
 
-❌ **Magic numbers:** `const minWeight = pallets * 300;`  
-✅ **Fix:** Load from `tariff_rule` table
+❌ **Magic numbers:** `const minWeight = pallets * 300;`
+✅ **Fix:** Load from carrier configuration or use documented fallback with warning
 
 See @docs/claude/common-pitfalls.md for complete list.
 
@@ -193,5 +199,5 @@ See @docs/claude/coding-standards.md for details.
 
 ---
 
-**Last Updated:** 2025-01-07  
-**Version:** 1.0 (MVP)
+**Last Updated:** 2025-10-02
+**Version:** 1.1 (MVP + Security Fixes + Phase 4.1)

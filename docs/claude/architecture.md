@@ -60,7 +60,9 @@ Upload → Parse → Normalize → Calculate Benchmark → Generate Report
 - File upload handling (CSV, Excel, PDF)
 - Format detection & validation
 - Data extraction & normalization
-- Carrier/service mapping
+- **LLM-powered carrier/service detection** (Anthropic Claude)
+- Manual mapping workflow with human review
+- Parsing template learning system
 - Queue-based processing (BullMQ)
 
 **Tariff Engine**
@@ -180,6 +182,48 @@ GET /api/reports/:upload_id
 6. Return JSON or trigger PDF/Excel export
 ```
 
+### 4. LLM-Powered Carrier Detection (Phase 4.1)
+
+FreightWatch uses **Anthropic Claude** for intelligent carrier and service detection from uploaded files.
+
+```typescript
+POST /api/upload (with file)
+  ↓
+1. Parse file structure (CSV headers, PDF layout, Excel sheets)
+2. Extract sample data (first 5-10 rows)
+3. Send to LLM with prompt:
+   - "Identify carrier name from these columns/fields"
+   - "Identify service level from these columns/fields"
+4. LLM returns structured response:
+   {
+     carrier: { name: "DHL", confidence: 0.95 },
+     service: { level: "Express", confidence: 0.87 }
+   }
+5. If confidence < 0.80: Flag for human review
+6. If confidence >= 0.80: Auto-map to carrier_id
+7. Store mapping in manual_mapping table (with reviewer = 'llm_auto')
+8. Learn pattern: Save to parsing_template for future files
+```
+
+**Benefits:**
+- **Adaptive**: No hardcoded carrier name mappings
+- **Self-improving**: Template learning reduces LLM calls over time
+- **Multi-tenant**: Each tenant's mappings are isolated
+- **Transparent**: Confidence scores guide human review priority
+
+**Implementation:**
+- Service: `backend/src/modules/parsing/parsers/llm-parser.service.ts`
+- API: `@anthropic-ai/sdk` (package.json dependency)
+- Model: Claude 3.5 Sonnet
+- Prompt: Structured JSON output with confidence scoring
+- Fallback: Manual mapping workflow if LLM unavailable
+
+**Cost Control:**
+- Cache successful mappings in `parsing_template` table
+- Only invoke LLM for new/unrecognized file patterns
+- Batch similar uploads (same tenant + similar structure)
+- Typical usage: 1-2 LLM calls per new carrier format
+
 ## Module Structure
 
 ```
@@ -196,10 +240,11 @@ backend/src/modules/
 │   ├── parsers/
 │   │   ├── csv-parser.ts        # CSV/Excel parsing
 │   │   ├── pdf-parser.ts        # Regex-based PDF extraction
+│   │   ├── llm-parser.service.ts # LLM-powered carrier/service detection
 │   │   └── parser-factory.ts    # Format detection
-│   ├── mappers/
-│   │   ├── carrier-mapper.ts    # Name → carrier_id
-│   │   └── service-mapper.ts    # Alias → service_code
+│   ├── services/
+│   │   ├── manual-mapping.service.ts # Human review workflow
+│   │   └── template.service.ts  # Parsing template learning
 │   └── parsing.service.ts
 ├── tariff/
 │   ├── engines/
@@ -337,25 +382,38 @@ if (!ldmToKg) {
 
 This allows per-tenant and per-carrier customization without code changes.
 
-### 4. Why Normalize Service Levels?
+### 4. Why LLM-Powered Carrier Detection?
 
-Carriers use inconsistent naming:
-- DHL: "Premium", "Express", "Standard"
-- FedEx: "Priority", "Economy", "International Priority"
-- Gebrüder Weiss: "24h", "Next Day", "Normal"
+**Problem:** Carriers and service levels have inconsistent naming across files:
+- DHL invoices may say "DHL", "DHL Express", "DHL Freight", or "DHL Paket"
+- Service levels vary: "Premium", "Express", "24h", "Next Day", "Overnight"
+- Each customer may receive different file formats from the same carrier
 
-FreightWatch normalizes to:
-- `STANDARD`, `EXPRESS`, `ECONOMY`, `NEXT_DAY`, `SAME_DAY`, `PREMIUM`
+**Old Approach (Pre-Phase 4.1):** Hardcoded mapping tables (`service_alias`, `service_catalog`)
+- Required manual configuration for each carrier name variant
+- Didn't scale across tenants with different naming conventions
+- Broke when carriers changed invoice formats
 
-Mapping via `service_alias` table:
-- Global defaults (NULL tenant_id)
-- Carrier-specific overrides
-- Tenant-specific customization
+**New Approach (Phase 4.1):** LLM-powered detection with human review
+- **Adaptive**: AI identifies carrier from file structure and content
+- **Confidence-based**: Low-confidence mappings flagged for human review
+- **Learning system**: Approved mappings saved as templates for future files
+- **Multi-tenant**: Each tenant's mappings are isolated via RLS
 
-Benefits:
-- Consistent reporting across carriers
-- Easier tariff matching (service_level filter)
-- User-friendly report grouping
+**Workflow:**
+1. Parse file, extract structure and sample data
+2. LLM analyzes: "This looks like DHL based on column headers and data patterns"
+3. If confidence >= 80%: Auto-map to carrier_id
+4. If confidence < 80%: Consultant reviews and corrects
+5. Store approved mapping in `manual_mapping` table
+6. Save pattern in `parsing_template` for future recognition
+
+**Benefits:**
+- Zero configuration for new carriers
+- Handles carrier rebranding automatically
+- Scales across thousands of tenants
+- Transparency via confidence scores
+- Cost-effective: Template caching reduces LLM calls
 
 ## Scalability Considerations
 
