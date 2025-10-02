@@ -8,11 +8,11 @@ import {
 
 /**
  * User Entity for Authentication
- * 
+ *
  * Note: This is a simple entity for MVP. In production, consider:
  * - User roles and permissions system
  * - Account verification/activation
- * - Password reset functionality  
+ * - Password reset functionality
  * - Multi-factor authentication
  * - Account lockout after failed attempts
  */
@@ -82,7 +82,14 @@ export class User {
   /**
    * Convert to safe object for JWT payload (no password)
    */
-  toJwtPayload() {
+  toJwtPayload(): {
+    sub: string;
+    email: string;
+    tenantId: string;
+    roles: string[];
+    firstName: string | null;
+    lastName: string | null;
+  } {
     return {
       sub: this.id,
       email: this.email,
@@ -96,8 +103,8 @@ export class User {
   /**
    * Convert to safe object for API responses (no password)
    */
-  toSafeObject() {
-    const { password_hash, ...safe } = this;
-    return safe;
+  toSafeObject(): Omit<User, 'password_hash'> {
+    const { password_hash: _password_hash, ...safe } = this;
+    return safe as Omit<User, 'password_hash'>;
   }
 }

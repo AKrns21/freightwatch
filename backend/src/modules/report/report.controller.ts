@@ -12,6 +12,7 @@ import {
 import { ReportService, GenerateReportOptions } from './report.service';
 import { ReportAggregationService } from './report-aggregation.service';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { TenantRequest } from '@/modules/auth/tenant.interceptor';
 
 /**
  * ReportController - Report API Endpoints
@@ -30,7 +31,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 export class ReportController {
   constructor(
     private readonly reportService: ReportService,
-    private readonly aggregationService: ReportAggregationService,
+    private readonly aggregationService: ReportAggregationService
   ) {}
 
   /**
@@ -41,15 +42,11 @@ export class ReportController {
   async generate(
     @Query('projectId') projectId: string,
     @Body() options: GenerateReportOptions,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
-    const report = await this.reportService.generate(
-      projectId,
-      tenantId,
-      options,
-    );
+    const report = await this.reportService.generate(projectId, tenantId, options);
 
     return {
       success: true,
@@ -64,9 +61,9 @@ export class ReportController {
   @Get('latest')
   async getLatest(
     @Query('projectId') projectId: string,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
     const report = await this.reportService.getLatest(projectId, tenantId);
 
@@ -88,15 +85,11 @@ export class ReportController {
   async getByVersion(
     @Param('version') version: number,
     @Query('projectId') projectId: string,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
-    const report = await this.reportService.getByVersion(
-      projectId,
-      tenantId,
-      version,
-    );
+    const report = await this.reportService.getByVersion(projectId, tenantId, version);
 
     if (!report) {
       throw new NotFoundException(`Report version ${version} not found`);
@@ -115,9 +108,9 @@ export class ReportController {
   @Get('list')
   async listAll(
     @Query('projectId') projectId: string,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown[] }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
     const reports = await this.reportService.listAll(projectId, tenantId);
 
@@ -136,16 +129,11 @@ export class ReportController {
     @Query('projectId') projectId: string,
     @Query('v1') version1: number,
     @Query('v2') version2: number,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
-    const comparison = await this.reportService.compare(
-      projectId,
-      tenantId,
-      version1,
-      version2,
-    );
+    const comparison = await this.reportService.compare(projectId, tenantId, version1, version2);
 
     return {
       success: true,
@@ -160,13 +148,13 @@ export class ReportController {
   @Get('statistics')
   async getStatistics(
     @Query('projectId') projectId: string,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
     const statistics = await this.aggregationService.calculateProjectStatistics(
       projectId,
-      tenantId,
+      tenantId
     );
 
     return {
@@ -183,15 +171,11 @@ export class ReportController {
   async getTopOverpays(
     @Query('projectId') projectId: string,
     @Query('limit') limit: number = 10,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown[] }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
-    const overpays = await this.aggregationService.getTopOverpays(
-      projectId,
-      tenantId,
-      limit,
-    );
+    const overpays = await this.aggregationService.getTopOverpays(projectId, tenantId, limit);
 
     return {
       success: true,
@@ -207,14 +191,14 @@ export class ReportController {
   async pruneOldVersions(
     @Query('projectId') projectId: string,
     @Query('keepVersions') keepVersions: number = 5,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: { deleted_count: number } }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
     const deletedCount = await this.reportService.pruneOldVersions(
       projectId,
       tenantId,
-      keepVersions,
+      keepVersions
     );
 
     return {

@@ -3,10 +3,10 @@ import { TenantRequest } from './tenant.interceptor';
 
 /**
  * @TenantId() Parameter Decorator
- * 
+ *
  * Extracts the tenantId from the request object that was set by TenantInterceptor.
  * This provides a clean way to access the current tenant ID in controllers.
- * 
+ *
  * Usage:
  * ```typescript
  * @Get('shipments')
@@ -15,7 +15,7 @@ import { TenantRequest } from './tenant.interceptor';
  *   return this.shipmentsService.findByTenant(tenantId);
  * }
  * ```
- * 
+ *
  * Security Note:
  * This decorator assumes that TenantInterceptor has already:
  * 1. Validated the JWT token
@@ -23,25 +23,23 @@ import { TenantRequest } from './tenant.interceptor';
  * 3. Set the database tenant context
  * 4. Attached tenantId to the request object
  */
-export const TenantId = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest<TenantRequest>();
-    
-    if (!request.tenantId) {
-      throw new Error(
-        'TenantId not found in request. Ensure TenantInterceptor is properly configured.',
-      );
-    }
-    
-    return request.tenantId;
-  },
-);
+export const TenantId = createParamDecorator((_data: unknown, ctx: ExecutionContext): string => {
+  const request = ctx.switchToHttp().getRequest<TenantRequest>();
+
+  if (!request.tenantId) {
+    throw new Error(
+      'TenantId not found in request. Ensure TenantInterceptor is properly configured.'
+    );
+  }
+
+  return request.tenantId;
+});
 
 /**
  * @UserId() Parameter Decorator
- * 
+ *
  * Extracts the userId from the request object that was set by TenantInterceptor.
- * 
+ *
  * Usage:
  * ```typescript
  * @Post('shipments')
@@ -54,25 +52,23 @@ export const TenantId = createParamDecorator(
  * }
  * ```
  */
-export const UserId = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest<TenantRequest>();
-    
-    if (!request.userId) {
-      throw new Error(
-        'UserId not found in request. Ensure TenantInterceptor is properly configured.',
-      );
-    }
-    
-    return request.userId;
-  },
-);
+export const UserId = createParamDecorator((_data: unknown, ctx: ExecutionContext): string => {
+  const request = ctx.switchToHttp().getRequest<TenantRequest>();
+
+  if (!request.userId) {
+    throw new Error(
+      'UserId not found in request. Ensure TenantInterceptor is properly configured.'
+    );
+  }
+
+  return request.userId;
+});
 
 /**
  * @CurrentUser() Parameter Decorator
- * 
+ *
  * Extracts the full user object from JWT payload that was set by TenantInterceptor.
- * 
+ *
  * Usage:
  * ```typescript
  * @Get('profile')
@@ -86,25 +82,21 @@ export const UserId = createParamDecorator(
  * }
  * ```
  */
-export const CurrentUser = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<TenantRequest>();
-    
-    if (!request.user) {
-      throw new Error(
-        'User not found in request. Ensure TenantInterceptor is properly configured.',
-      );
-    }
-    
-    return request.user;
-  },
-);
+export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<TenantRequest>();
+
+  if (!request.user) {
+    throw new Error('User not found in request. Ensure TenantInterceptor is properly configured.');
+  }
+
+  return request.user;
+});
 
 /**
  * @TenantContext() Parameter Decorator
- * 
+ *
  * Extracts both tenantId and userId in a single object for convenience.
- * 
+ *
  * Usage:
  * ```typescript
  * @Get('dashboard')
@@ -116,16 +108,16 @@ export const CurrentUser = createParamDecorator(
 export const TenantContext = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): { tenantId: string; userId: string } => {
     const request = ctx.switchToHttp().getRequest<TenantRequest>();
-    
+
     if (!request.tenantId || !request.userId) {
       throw new Error(
-        'Tenant context not found in request. Ensure TenantInterceptor is properly configured.',
+        'Tenant context not found in request. Ensure TenantInterceptor is properly configured.'
       );
     }
-    
+
     return {
       tenantId: request.tenantId,
       userId: request.userId,
     };
-  },
+  }
 );

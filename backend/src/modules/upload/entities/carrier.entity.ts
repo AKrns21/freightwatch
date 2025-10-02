@@ -43,9 +43,9 @@ export class Carrier {
   @Column({
     type: 'jsonb',
     default: {},
-    comment: 'Carrier-specific calculation rules (replaces tariff_rule table)'
+    comment: 'Carrier-specific calculation rules (replaces tariff_rule table)',
   })
-  conversion_rules: Record<string, any>;
+  conversion_rules: Record<string, unknown>;
 
   @CreateDateColumn()
   created_at: Date;
@@ -56,14 +56,14 @@ export class Carrier {
   /**
    * Get a specific conversion rule
    */
-  getRule(ruleType: string): any | null {
+  getRule(ruleType: string): unknown | null {
     return this.conversion_rules?.[ruleType] ?? null;
   }
 
   /**
    * Set a conversion rule
    */
-  setRule(ruleType: string, ruleParams: any): void {
+  setRule(ruleType: string, ruleParams: unknown): void {
     if (!this.conversion_rules) {
       this.conversion_rules = {};
     }
@@ -73,7 +73,7 @@ export class Carrier {
   /**
    * Convert to safe object for API responses
    */
-  toSafeObject() {
+  toSafeObject(): Record<string, unknown> {
     return {
       id: this.id,
       tenant_id: this.tenant_id,

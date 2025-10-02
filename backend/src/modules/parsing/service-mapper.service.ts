@@ -10,7 +10,6 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class ServiceMapperService {
-
   /**
    * Normalize service text to standard service code
    * NO DATABASE LOOKUPS - pure fuzzy matching

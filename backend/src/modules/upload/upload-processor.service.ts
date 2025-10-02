@@ -1,7 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository , IsNull} from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Job } from 'bull';
 import { Upload } from './entities/upload.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
@@ -43,7 +43,7 @@ export class UploadProcessor {
     private readonly tariffEngineService: TariffEngineService,
     private readonly uploadService: UploadService,
     private readonly templateMatcher: TemplateMatcherService,
-    private readonly llmParser: LlmParserService,
+    private readonly llmParser: LlmParserService
   ) {}
 
   @Process('parse-file')
@@ -111,11 +111,13 @@ export class UploadProcessor {
         await this.uploadRepository.update(uploadId, {
           status: 'needs_manual_review',
           parse_method: 'manual',
-          parsing_issues: [{
-            type: 'no_template_match',
-            message: 'No matching template found and LLM not configured',
-            timestamp: new Date(),
-          }],
+          parsing_issues: [
+            {
+              type: 'no_template_match',
+              message: 'No matching template found and LLM not configured',
+              timestamp: new Date(),
+            },
+          ],
         });
 
         return;
@@ -127,14 +129,11 @@ export class UploadProcessor {
       });
 
       const fileBuffer = await this.uploadService.loadFile(upload.storage_url);
-      const llmResult = await this.llmParser.analyzeFile(
-        fileBuffer,
-        {
-          filename: upload.filename,
-          mime_type: upload.mime_type,
-          content_preview: '',
-        } as any
-      );
+      const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
+        filename: upload.filename,
+        mime_type: upload.mime_type,
+        content_preview: '',
+      } as any);
 
       await this.uploadRepository.update(uploadId, {
         status: llmResult.needs_review ? 'needs_review' : 'parsed',
@@ -156,7 +155,6 @@ export class UploadProcessor {
       if (!llmResult.needs_review && llmResult.confidence >= 0.7) {
         await this.parseWithLlmMappings(upload, llmResult.column_mappings, tenantId);
       }
-
     } catch (error) {
       this.logger.error({
         event: 'upload_processing_error',
@@ -184,7 +182,7 @@ export class UploadProcessor {
   private async parseWithTemplate(
     upload: Upload,
     template: ParsingTemplate,
-    tenantId: string,
+    tenantId: string
   ): Promise<void> {
     this.logger.log({
       event: 'parsing_with_template',
@@ -194,10 +192,7 @@ export class UploadProcessor {
 
     // For CSV/Excel files
     if (upload.mime_type?.includes('csv') || upload.mime_type?.includes('excel')) {
-      const shipments = await this.csvParserService.parseWithTemplate(
-        upload,
-        template,
-      );
+      const shipments = await this.csvParserService.parseWithTemplate(upload, template);
 
       await this.saveShipments(shipments, tenantId);
       await this.calculateBenchmarks(shipments);
@@ -211,7 +206,7 @@ export class UploadProcessor {
   private async parseWithLlmMappings(
     upload: Upload,
     mappings: any[],
-    tenantId: string,
+    tenantId: string
   ): Promise<void> {
     this.logger.log({
       event: 'parsing_with_llm_mappings',
@@ -233,7 +228,7 @@ export class UploadProcessor {
 
     const shipments = await this.csvParserService.parseWithTemplate(
       upload,
-      tempTemplate as ParsingTemplate,
+      tempTemplate as ParsingTemplate
     );
 
     await this.saveShipments(shipments, tenantId);
@@ -243,10 +238,7 @@ export class UploadProcessor {
   /**
    * Save shipments to database with carrier mapping
    */
-  private async saveShipments(
-    shipments: Shipment[],
-    tenantId: string,
-  ): Promise<void> {
+  private async saveShipments(shipments: Shipment[], tenantId: string): Promise<void> {
     const processedShipments: Shipment[] = [];
 
     for (const shipment of shipments) {
@@ -254,10 +246,7 @@ export class UploadProcessor {
         // Map carrier name to carrier_id
         const carrierName = (shipment as any).carrier_name;
         if (carrierName && !shipment.carrier_id) {
-          const carrierId = await this.mapCarrierNameToId(
-            carrierName,
-            tenantId,
-          );
+          const carrierId = await this.mapCarrierNameToId(carrierName, tenantId);
 
           if (carrierId) {
             shipment.carrier_id = carrierId;
@@ -316,10 +305,7 @@ export class UploadProcessor {
   /**
    * Map carrier name to carrier ID using carrier_alias table
    */
-  private async mapCarrierNameToId(
-    carrierName: string,
-    tenantId: string,
-  ): Promise<string | null> {
+  private async mapCarrierNameToId(carrierName: string, tenantId: string): Promise<string | null> {
     try {
       const alias = await this.carrierAliasRepository.findOne({
         where: [

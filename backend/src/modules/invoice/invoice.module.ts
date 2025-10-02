@@ -20,12 +20,7 @@ import { ParsingModule } from '@/modules/parsing/parsing.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      InvoiceHeader,
-      InvoiceLine,
-      ParsingTemplate,
-      Shipment,
-    ]),
+    TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, ParsingTemplate, Shipment]),
     ParsingModule,
   ],
   providers: [InvoiceParserService, InvoiceMatcherService],

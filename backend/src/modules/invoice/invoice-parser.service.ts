@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository , IsNull} from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { InvoiceHeader } from './entities/invoice-header.entity';
 import { InvoiceLine } from './entities/invoice-line.entity';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
@@ -70,7 +70,7 @@ export class InvoiceParserService {
     private readonly lineRepo: Repository<InvoiceLine>,
     @InjectRepository(ParsingTemplate)
     private readonly templateRepo: Repository<ParsingTemplate>,
-    private readonly llmParser: LlmParserService,
+    private readonly llmParser: LlmParserService
   ) {}
 
   /**
@@ -84,7 +84,7 @@ export class InvoiceParserService {
       tenant_id: string;
       upload_id?: string;
       project_id?: string;
-    },
+    }
   ): Promise<InvoiceParseResult> {
     this.logger.log({
       event: 'parse_invoice_pdf_start',
@@ -96,16 +96,12 @@ export class InvoiceParserService {
     const template = await this.findMatchingTemplate(
       context.filename,
       context.carrier_id,
-      context.tenant_id,
+      context.tenant_id
     );
 
     if (template) {
       try {
-        const result = await this.parseWithTemplate(
-          fileBuffer,
-          template,
-          context,
-        );
+        const result = await this.parseWithTemplate(fileBuffer, template, context);
 
         this.logger.log({
           event: 'parse_invoice_template_success',
@@ -149,7 +145,7 @@ export class InvoiceParserService {
   private async findMatchingTemplate(
     filename: string,
     carrierId: string | undefined,
-    tenantId: string,
+    tenantId: string
   ): Promise<ParsingTemplate | null> {
     const templates = await this.templateRepo.find({
       where: [
@@ -175,19 +171,13 @@ export class InvoiceParserService {
       let score = 0;
 
       // Carrier match (50%)
-      if (
-        carrierId &&
-        template.detection?.carrier_id === carrierId
-      ) {
+      if (carrierId && template.detection?.carrier_id === carrierId) {
         score += 0.5;
       }
 
       // Filename pattern match (30%)
       if (template.detection?.filename_pattern) {
-        const regex = new RegExp(
-          template.detection.filename_pattern,
-          'i',
-        );
+        const regex = new RegExp(template.detection.filename_pattern, 'i');
         if (regex.test(filename)) {
           score += 0.3;
         }
@@ -219,22 +209,22 @@ export class InvoiceParserService {
   private async parseWithTemplate(
     fileBuffer: Buffer,
     template: ParsingTemplate,
-    _context: any,
+    _context: {
+      filename: string;
+      carrier_id?: string;
+      tenant_id: string;
+      upload_id?: string;
+      project_id?: string;
+    }
   ): Promise<InvoiceParseResult> {
     // Extract text from PDF
     const pdfText = await this.extractTextFromPdf(fileBuffer);
 
     // Extract header
-    const header = this.extractHeaderWithTemplate(
-      pdfText,
-      template.mappings?.header || {},
-    );
+    const header = this.extractHeaderWithTemplate(pdfText, template.mappings?.header || {});
 
     // Extract lines
-    const lines = this.extractLinesWithTemplate(
-      pdfText,
-      template.mappings?.lines || {},
-    );
+    const lines = this.extractLinesWithTemplate(pdfText, template.mappings?.lines || {});
 
     // Validate
     this.validateInvoiceData(header, lines);
@@ -253,14 +243,19 @@ export class InvoiceParserService {
    */
   private async parseWithLlm(
     fileBuffer: Buffer,
-    _context: any,
+    _context: {
+      filename: string;
+      carrier_id?: string;
+      tenant_id: string;
+      upload_id?: string;
+      project_id?: string;
+    }
   ): Promise<InvoiceParseResult> {
     const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
       filename: _context.filename,
       mime_type: 'application/pdf',
       content_preview: '',
-      analysis_type: 'invoice_extraction',
-    } as any);
+    });
 
     // Extract invoice structure from LLM analysis
     const header = this.extractHeaderFromLlmResult(llmResult);
@@ -273,7 +268,9 @@ export class InvoiceParserService {
       lines,
       parsing_method: 'llm',
       confidence: llmResult.confidence,
-      issues: llmResult.issues.map((i: any) => i.message || i.description || String(i)),
+      issues: llmResult.issues.map(
+        (i: { message?: string; description?: string }) => i.message || i.description || String(i)
+      ),
     };
   }
 
@@ -292,13 +289,11 @@ export class InvoiceParserService {
    */
   private extractHeaderWithTemplate(
     _pdfText: string,
-    _headerMappings: Record<string, any>,
-  ): any {
+    _headerMappings: Record<string, unknown>
+  ): InvoiceParseResult['header'] {
     // TODO: Implement template-based header extraction
     // Parse invoice number, date, amounts using regex patterns
-    this.logger.warn(
-      'Template-based header extraction not yet implemented',
-    );
+    this.logger.warn('Template-based header extraction not yet implemented');
 
     return {
       invoice_number: 'UNKNOWN',
@@ -313,13 +308,11 @@ export class InvoiceParserService {
    */
   private extractLinesWithTemplate(
     _pdfText: string,
-    _lineMappings: Record<string, any>,
-  ): any[] {
+    _lineMappings: Record<string, unknown>
+  ): InvoiceParseResult['lines'] {
     // TODO: Implement template-based line extraction
     // Parse line items using table detection and regex
-    this.logger.warn(
-      'Template-based line extraction not yet implemented',
-    );
+    this.logger.warn('Template-based line extraction not yet implemented');
 
     return [];
   }
@@ -327,7 +320,7 @@ export class InvoiceParserService {
   /**
    * Extract header from LLM result
    */
-  private extractHeaderFromLlmResult(_llmResult: any): any {
+  private extractHeaderFromLlmResult(_llmResult: unknown): InvoiceParseResult['header'] {
     // TODO: Map LLM analysis to header structure
     return {
       invoice_number: 'UNKNOWN',
@@ -340,7 +333,7 @@ export class InvoiceParserService {
   /**
    * Extract lines from LLM result
    */
-  private extractLinesFromLlmResult(_llmResult: any): any[] {
+  private extractLinesFromLlmResult(_llmResult: unknown): InvoiceParseResult['lines'] {
     // TODO: Map LLM analysis to line structure
     return [];
   }
@@ -348,7 +341,10 @@ export class InvoiceParserService {
   /**
    * Validate invoice data consistency
    */
-  private validateInvoiceData(header: any, lines: any[]): void {
+  private validateInvoiceData(
+    header: InvoiceParseResult['header'],
+    lines: InvoiceParseResult['lines']
+  ): void {
     if (!header.invoice_number) {
       throw new Error('Missing invoice number');
     }
@@ -363,10 +359,7 @@ export class InvoiceParserService {
 
     // Validate totals if available
     if (header.total_amount && lines.length > 0) {
-      const calculatedTotal = lines.reduce(
-        (sum, line) => sum + (line.line_total || 0),
-        0,
-      );
+      const calculatedTotal = lines.reduce((sum, line) => sum + (line.line_total || 0), 0);
 
       const diff = Math.abs(header.total_amount - calculatedTotal);
       const tolerance = 0.01; // €0.01 tolerance for rounding
@@ -389,7 +382,7 @@ export class InvoiceParserService {
     parseResult: InvoiceParseResult,
     tenantId: string,
     uploadId?: string,
-    projectId?: string,
+    projectId?: string
   ): Promise<InvoiceHeader> {
     this.logger.log({
       event: 'import_invoice_start',

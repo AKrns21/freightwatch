@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TariffTable } from './tariff-table.entity';
 
 @Entity('tariff_rate')
@@ -30,7 +24,7 @@ export class TariffRate {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   rate_per_kg: number | null;
 
-  @ManyToOne(() => TariffTable, table => table.rates)
+  @ManyToOne(() => TariffTable, (table) => table.rates)
   @JoinColumn({ name: 'tariff_table_id' })
   tariff_table: TariffTable;
 }

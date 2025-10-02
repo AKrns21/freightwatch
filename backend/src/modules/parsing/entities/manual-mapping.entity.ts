@@ -24,7 +24,7 @@ export class ManualMapping {
 
   @Column({
     length: 100,
-    comment: 'Database field name (e.g., origin_zip, carrier_name)'
+    comment: 'Database field name (e.g., origin_zip, carrier_name)',
   })
   @Index()
   field_name: string;
@@ -35,7 +35,7 @@ export class ManualMapping {
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'Transformation rule applied to source data'
+    comment: 'Transformation rule applied to source data',
   })
   mapping_rule: Record<string, any>;
 
@@ -44,7 +44,7 @@ export class ManualMapping {
     precision: 3,
     scale: 2,
     nullable: true,
-    comment: 'Confidence in this mapping (0.00 - 1.00)'
+    comment: 'Confidence in this mapping (0.00 - 1.00)',
   })
   confidence: number;
 

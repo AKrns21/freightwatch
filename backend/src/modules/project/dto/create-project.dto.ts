@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsUUID, IsNotEmpty, MaxLength, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsNotEmpty,
+  MaxLength,
+  IsObject,
+} from 'class-validator';
 
 /**
  * DTO for creating a new project

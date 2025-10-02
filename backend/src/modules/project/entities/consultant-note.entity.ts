@@ -25,7 +25,7 @@ export class ConsultantNote {
 
   @Column({
     length: 50,
-    comment: 'data_quality, missing_info, action_item, clarification, observation'
+    comment: 'data_quality, missing_info, action_item, clarification, observation',
   })
   note_type: string;
 
@@ -41,7 +41,7 @@ export class ConsultantNote {
   @Column({
     length: 20,
     nullable: true,
-    comment: 'low, medium, high, critical'
+    comment: 'low, medium, high, critical',
   })
   priority: string;
 
@@ -61,7 +61,7 @@ export class ConsultantNote {
   deleted_at: Date;
 
   // Relations
-  @ManyToOne(() => Project, project => project.notes)
+  @ManyToOne(() => Project, (project) => project.notes)
   @JoinColumn({ name: 'project_id' })
   project: Project;
 

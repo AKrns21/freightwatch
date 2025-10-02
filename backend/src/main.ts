@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
 
   // CRITICAL: Enforce JWT_SECRET in non-development environments
@@ -15,7 +15,9 @@ async function bootstrap() {
 
   // Warn if using default/weak JWT secret in production
   if (!isDevelopment && process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
-    logger.warn('WARNING: JWT_SECRET is too short (<32 characters) - use a strong secret in production!');
+    logger.warn(
+      'WARNING: JWT_SECRET is too short (<32 characters) - use a strong secret in production!'
+    );
   }
 
   // Create NestJS application
@@ -30,7 +32,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    }),
+    })
   );
 
   // Global API prefix

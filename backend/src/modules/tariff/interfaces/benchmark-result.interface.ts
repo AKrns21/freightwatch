@@ -3,14 +3,14 @@ export interface BenchmarkResult {
   expected_diesel_amount?: number;
   expected_toll_amount?: number;
   expected_total_amount: number;
-  
+
   actual_total_amount?: number;
   delta_amount?: number;
   delta_pct?: number;
   classification?: string;
-  
+
   cost_breakdown: CostBreakdownItem[];
-  
+
   report_amounts?: {
     expected_base_amount: number;
     expected_diesel_amount?: number;
@@ -20,7 +20,7 @@ export interface BenchmarkResult {
     delta_amount?: number;
     currency: string;
   };
-  
+
   calculation_metadata: {
     tariff_table_id: string;
     lane_type: string;

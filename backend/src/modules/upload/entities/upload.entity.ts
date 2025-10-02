@@ -36,7 +36,7 @@ export class Upload {
   status: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  parse_errors: any;
+  parse_errors: unknown;
 
   @Column({ length: 64, nullable: true, comment: 'For unmatched carrier templates' })
   raw_text_hash: string;
@@ -48,7 +48,7 @@ export class Upload {
   @Column({
     length: 50,
     nullable: true,
-    comment: 'template, llm, manual, hybrid'
+    comment: 'template, llm, manual, hybrid',
   })
   parse_method: string;
 
@@ -57,23 +57,23 @@ export class Upload {
     precision: 3,
     scale: 2,
     nullable: true,
-    comment: 'Parsing confidence (0.00 - 1.00)'
+    comment: 'Parsing confidence (0.00 - 1.00)',
   })
   confidence: number;
 
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'LLM-suggested column mappings'
+    comment: 'LLM-suggested column mappings',
   })
-  suggested_mappings: any;
+  suggested_mappings: unknown;
 
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'Complete LLM analysis result'
+    comment: 'Complete LLM analysis result',
   })
-  llm_analysis: any;
+  llm_analysis: unknown;
 
   @Column({ type: 'uuid', nullable: true })
   reviewed_by: string;
@@ -84,17 +84,17 @@ export class Upload {
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'Array of parsing issues found'
+    comment: 'Array of parsing issues found',
   })
-  parsing_issues: any;
+  parsing_issues: unknown;
 
   @Column({
     type: 'jsonb',
     nullable: true,
     default: '{}',
-    comment: 'Additional metadata (review info, reprocess info, etc.)'
+    comment: 'Additional metadata (review info, reprocess info, etc.)',
   })
-  meta: any;
+  meta: unknown;
 
   @CreateDateColumn()
   created_at: Date;
@@ -102,7 +102,7 @@ export class Upload {
   @UpdateDateColumn()
   updated_at: Date;
 
-  toSafeObject() {
+  toSafeObject(): Record<string, unknown> {
     return {
       id: this.id,
       tenant_id: this.tenant_id,

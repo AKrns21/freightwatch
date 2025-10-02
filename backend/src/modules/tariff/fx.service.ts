@@ -9,7 +9,7 @@ export class FxService {
 
   constructor(
     @InjectRepository(FxRate)
-    private readonly fxRateRepository: Repository<FxRate>,
+    private readonly fxRateRepository: Repository<FxRate>
   ) {}
 
   async getRate(fromCcy: string, toCcy: string, date: Date): Promise<number> {
@@ -21,14 +21,14 @@ export class FxService {
     }
 
     this.logger.debug(
-      `Getting FX rate: ${normalizedFromCcy} -> ${normalizedToCcy} on ${date.toISOString()}`,
+      `Getting FX rate: ${normalizedFromCcy} -> ${normalizedToCcy} on ${date.toISOString()}`
     );
 
     try {
       const directRate = await this.findDirectRate(normalizedFromCcy, normalizedToCcy, date);
       if (directRate !== null) {
         this.logger.debug(
-          `Found direct rate: ${normalizedFromCcy}/${normalizedToCcy} = ${directRate}`,
+          `Found direct rate: ${normalizedFromCcy}/${normalizedToCcy} = ${directRate}`
         );
         return directRate;
       }
@@ -36,13 +36,13 @@ export class FxService {
       const inverseRate = await this.findInverseRate(normalizedFromCcy, normalizedToCcy, date);
       if (inverseRate !== null) {
         this.logger.debug(
-          `Found inverse rate: ${normalizedToCcy}/${normalizedFromCcy} = ${inverseRate}, returning ${1.0 / inverseRate}`,
+          `Found inverse rate: ${normalizedToCcy}/${normalizedFromCcy} = ${inverseRate}, returning ${1.0 / inverseRate}`
         );
         return 1.0 / inverseRate;
       }
 
       throw new NotFoundException(
-        `No FX rate found for ${normalizedFromCcy}/${normalizedToCcy} on or before ${date.toISOString().split('T')[0]}`,
+        `No FX rate found for ${normalizedFromCcy}/${normalizedToCcy} on or before ${date.toISOString().split('T')[0]}`
       );
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -51,7 +51,7 @@ export class FxService {
 
       this.logger.error(
         `Error getting FX rate ${normalizedFromCcy}/${normalizedToCcy}: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw new Error(`FX rate lookup failed: ${(error as Error).message}`);
     }
@@ -73,13 +73,17 @@ export class FxService {
       return fxRate ? Number(fxRate.rate) : null;
     } catch (error) {
       this.logger.warn(
-        `Error in direct rate lookup ${fromCcy}/${toCcy}: ${(error as Error).message}`,
+        `Error in direct rate lookup ${fromCcy}/${toCcy}: ${(error as Error).message}`
       );
       return null;
     }
   }
 
-  private async findInverseRate(fromCcy: string, toCcy: string, date: Date): Promise<number | null> {
+  private async findInverseRate(
+    fromCcy: string,
+    toCcy: string,
+    date: Date
+  ): Promise<number | null> {
     try {
       const fxRate = await this.fxRateRepository.findOne({
         where: {
@@ -95,7 +99,7 @@ export class FxService {
       return fxRate ? Number(fxRate.rate) : null;
     } catch (error) {
       this.logger.warn(
-        `Error in inverse rate lookup ${toCcy}/${fromCcy}: ${(error as Error).message}`,
+        `Error in inverse rate lookup ${toCcy}/${fromCcy}: ${(error as Error).message}`
       );
       return null;
     }
@@ -106,14 +110,14 @@ export class FxService {
       fromCcy: string;
       toCcy: string;
       date: Date;
-    }>,
+    }>
   ): Promise<Map<string, number>> {
     const results = new Map<string, number>();
     const cache = new Map<string, number>();
 
     for (const request of requests) {
       const cacheKey = `${request.fromCcy}-${request.toCcy}-${request.date.toDateString()}`;
-      
+
       if (cache.has(cacheKey)) {
         results.set(cacheKey, cache.get(cacheKey)!);
         continue;
@@ -124,9 +128,7 @@ export class FxService {
         results.set(cacheKey, rate);
         cache.set(cacheKey, rate);
       } catch (error) {
-        this.logger.warn(
-          `Failed to get FX rate for ${cacheKey}: ${(error as Error).message}`,
-        );
+        this.logger.warn(`Failed to get FX rate for ${cacheKey}: ${(error as Error).message}`);
         // Continue processing other requests even if one fails
       }
     }
@@ -137,10 +139,10 @@ export class FxService {
   async seedCommonRates(source: string): Promise<void> {
     const seedDate = new Date('2023-01-01');
     const rates = [
-      { fromCcy: 'EUR', toCcy: 'CHF', rate: 0.9850 },
-      { fromCcy: 'EUR', toCcy: 'USD', rate: 1.0650 },
-      { fromCcy: 'EUR', toCcy: 'GBP', rate: 0.8850 },
-      { fromCcy: 'EUR', toCcy: 'PLN', rate: 4.6800 },
+      { fromCcy: 'EUR', toCcy: 'CHF', rate: 0.985 },
+      { fromCcy: 'EUR', toCcy: 'USD', rate: 1.065 },
+      { fromCcy: 'EUR', toCcy: 'GBP', rate: 0.885 },
+      { fromCcy: 'EUR', toCcy: 'PLN', rate: 4.68 },
     ];
 
     this.logger.log(`Seeding common FX rates with source: ${source}`);
@@ -165,13 +167,13 @@ export class FxService {
           });
 
           await this.fxRateRepository.save(fxRate);
-          
+
           this.logger.debug(
-            `Seeded rate: ${rateData.fromCcy}/${rateData.toCcy} = ${rateData.rate}`,
+            `Seeded rate: ${rateData.fromCcy}/${rateData.toCcy} = ${rateData.rate}`
           );
         } else {
           this.logger.debug(
-            `Rate already exists: ${rateData.fromCcy}/${rateData.toCcy} on ${seedDate.toISOString().split('T')[0]}`,
+            `Rate already exists: ${rateData.fromCcy}/${rateData.toCcy} on ${seedDate.toISOString().split('T')[0]}`
           );
         }
       }
@@ -180,7 +182,7 @@ export class FxService {
     } catch (error) {
       this.logger.error(
         `Error seeding common FX rates: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
@@ -191,7 +193,7 @@ export class FxService {
     toCcy: string,
     rate: number,
     date: Date,
-    source: string,
+    source: string
   ): Promise<void> {
     const normalizedFromCcy = fromCcy.trim().toUpperCase();
     const normalizedToCcy = toCcy.trim().toUpperCase();
@@ -214,14 +216,14 @@ export class FxService {
       });
 
       await this.fxRateRepository.save(fxRate);
-      
+
       this.logger.log(
-        `Added FX rate: ${normalizedFromCcy}/${normalizedToCcy} = ${rate} on ${date.toISOString().split('T')[0]} (${source})`,
+        `Added FX rate: ${normalizedFromCcy}/${normalizedToCcy} = ${rate} on ${date.toISOString().split('T')[0]} (${source})`
       );
     } catch (error) {
       this.logger.error(
         `Error adding FX rate: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
@@ -229,24 +231,21 @@ export class FxService {
 
   async getAvailableCurrencies(date?: Date): Promise<string[]> {
     try {
-      let query = this.fxRateRepository
-        .createQueryBuilder('fx');
+      let query = this.fxRateRepository.createQueryBuilder('fx');
 
       if (date) {
         query = query.where('fx.rate_date <= :date', { date });
       }
 
-      const fromCurrencies = await query
-        .select('DISTINCT fx.from_ccy', 'currency')
-        .getRawMany();
+      const fromCurrencies = await query.select('DISTINCT fx.from_ccy', 'currency').getRawMany();
 
-      const toCurrencies = await query
-        .select('DISTINCT fx.to_ccy', 'currency')
-        .getRawMany();
+      const toCurrencies = await query.select('DISTINCT fx.to_ccy', 'currency').getRawMany();
 
       const allCurrencies = [...fromCurrencies, ...toCurrencies];
-      const currencies = [...new Set(allCurrencies.map((row: any) => row.currency))].filter(Boolean);
-      
+      const currencies = [...new Set(allCurrencies.map((row: any) => row.currency))].filter(
+        Boolean
+      );
+
       // Add EUR as base currency if not present
       if (!currencies.includes('EUR')) {
         currencies.unshift('EUR');
@@ -256,7 +255,7 @@ export class FxService {
     } catch (error) {
       this.logger.error(
         `Error getting available currencies: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       return ['EUR']; // Fallback to EUR only
     }

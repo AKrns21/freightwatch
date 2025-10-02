@@ -16,13 +16,13 @@ export class CsvParserService {
   constructor(
     @InjectRepository(Shipment)
     private readonly shipmentRepository: Repository<Shipment>,
-    private readonly serviceMapperService: ServiceMapperService,
+    private readonly serviceMapperService: ServiceMapperService
   ) {}
 
   async parse(filePath: string, tenantId: string, uploadId: string): Promise<Shipment[]> {
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
-      
+
       const parseResult = Papa.parse(fileContent, {
         header: true,
         dynamicTyping: false, // Keep as strings to preserve leading zeros in ZIP codes
@@ -31,14 +31,11 @@ export class CsvParserService {
       });
 
       if (parseResult.errors.length > 0) {
-        this.logger.warn(
-          `CSV parsing warnings for ${filePath}:`,
-          parseResult.errors,
-        );
+        this.logger.warn(`CSV parsing warnings for ${filePath}:`, parseResult.errors);
       }
 
       const shipments: Shipment[] = [];
-      
+
       for (const [index, row] of parseResult.data.entries()) {
         try {
           const shipment = await this.mapRowToShipment(row as any, tenantId, uploadId);
@@ -48,7 +45,7 @@ export class CsvParserService {
         } catch (error) {
           this.logger.error(
             `Error mapping row ${index + 1} in ${filePath}: ${(error as Error).message}`,
-            (error as Error).stack,
+            (error as Error).stack
           );
         }
       }
@@ -58,13 +55,17 @@ export class CsvParserService {
     } catch (error) {
       this.logger.error(
         `Failed to parse CSV file ${filePath}: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
   }
 
-  private async mapRowToShipment(row: any, tenantId: string, uploadId: string): Promise<Shipment | null> {
+  private async mapRowToShipment(
+    row: any,
+    tenantId: string,
+    uploadId: string
+  ): Promise<Shipment | null> {
     if (!row || typeof row !== 'object') {
       return null;
     }
@@ -78,7 +79,11 @@ export class CsvParserService {
     });
 
     const dateValue = this.extractField(row, [
-      'datum', 'date', 'versanddatum', 'shipment_date', 'versand_datum'
+      'datum',
+      'date',
+      'versanddatum',
+      'shipment_date',
+      'versand_datum',
     ]);
     const parsedDate = this.parseDate(dateValue);
 
@@ -90,22 +95,37 @@ export class CsvParserService {
     shipment.date = parsedDate;
 
     const carrierValue = this.extractField(row, [
-      'carrier', 'spediteur', 'frachtführer', 'carrier_name'
+      'carrier',
+      'spediteur',
+      'frachtführer',
+      'carrier_name',
     ]);
     if (carrierValue) {
       shipment.source_data.carrier_name = carrierValue;
     }
 
     shipment.origin_zip = this.extractField(row, [
-      'vonplz', 'from_zip', 'origin_zip', 'von_plz', 'absender_plz'
+      'vonplz',
+      'from_zip',
+      'origin_zip',
+      'von_plz',
+      'absender_plz',
     ]);
 
     shipment.dest_zip = this.extractField(row, [
-      'nachplz', 'to_zip', 'dest_zip', 'nach_plz', 'empfänger_plz'
+      'nachplz',
+      'to_zip',
+      'dest_zip',
+      'nach_plz',
+      'empfänger_plz',
     ]);
 
     const weightValue = this.extractField(row, [
-      'gewicht', 'weight', 'kg', 'weight_kg', 'gewicht_kg'
+      'gewicht',
+      'weight',
+      'kg',
+      'weight_kg',
+      'gewicht_kg',
     ]);
     const normalized = this.normalizeWeight(weightValue);
     if (normalized !== null) {
@@ -113,52 +133,63 @@ export class CsvParserService {
     }
 
     const costValue = this.extractField(row, [
-      'kosten', 'cost', 'betrag', 'total', 'total_amount', 'gesamtbetrag'
+      'kosten',
+      'cost',
+      'betrag',
+      'total',
+      'total_amount',
+      'gesamtbetrag',
     ]);
     if (costValue !== null) {
       shipment.actual_total_amount = round(this.parseNumber(costValue));
     }
 
-    const currencyValue = this.extractField(row, [
-      'währung', 'currency', 'ccy', 'waehrung'
-    ]);
+    const currencyValue = this.extractField(row, ['währung', 'currency', 'ccy', 'waehrung']);
     if (currencyValue) {
       shipment.currency = currencyValue.toString().toUpperCase().substring(0, 3);
     }
 
     const referenceValue = this.extractField(row, [
-      'referenz', 'reference', 'reference_number', 'sendungsnummer'
+      'referenz',
+      'reference',
+      'reference_number',
+      'sendungsnummer',
     ]);
     if (referenceValue) {
       shipment.reference_number = referenceValue.toString().substring(0, 100);
     }
 
     const serviceValue = this.extractField(row, [
-      'service', 'service_level', 'produkt', 'service_type'
+      'service',
+      'service_level',
+      'produkt',
+      'service_type',
     ]);
     if (serviceValue) {
-      shipment.service_level = await this.serviceMapperService.normalize(
-        serviceValue.toString(),
-      );
+      shipment.service_level = await this.serviceMapperService.normalize(serviceValue.toString());
     }
 
     const baseAmountValue = this.extractField(row, [
-      'grundpreis', 'base_amount', 'base_cost', 'grundkosten'
+      'grundpreis',
+      'base_amount',
+      'base_cost',
+      'grundkosten',
     ]);
     if (baseAmountValue !== null) {
       shipment.actual_base_amount = round(this.parseNumber(baseAmountValue));
     }
 
     const dieselAmountValue = this.extractField(row, [
-      'dieselzuschlag', 'diesel_amount', 'diesel_surcharge', 'kraftstoffzuschlag'
+      'dieselzuschlag',
+      'diesel_amount',
+      'diesel_surcharge',
+      'kraftstoffzuschlag',
     ]);
     if (dieselAmountValue !== null) {
       shipment.diesel_amount = round(this.parseNumber(dieselAmountValue));
     }
 
-    const tollAmountValue = this.extractField(row, [
-      'maut', 'toll_amount', 'toll', 'mautgebühren'
-    ]);
+    const tollAmountValue = this.extractField(row, ['maut', 'toll_amount', 'toll', 'mautgebühren']);
     if (tollAmountValue !== null) {
       shipment.toll_amount = round(this.parseNumber(tollAmountValue));
     }
@@ -178,14 +209,14 @@ export class CsvParserService {
 
   private normalizeWeight(value: any): number | null {
     if (value == null) return null;
-    
-    let strValue = value.toString().replace(',', '.');
+
+    const strValue = value.toString().replace(',', '.');
     const numValue = parseFloat(strValue);
-    
+
     if (isNaN(numValue) || numValue < 0) {
       return null;
     }
-    
+
     return round(numValue);
   }
 
@@ -241,25 +272,25 @@ export class CsvParserService {
 
   private parseDate(value: any): Date | null {
     if (!value) return null;
-    
+
     if (value instanceof Date) {
       return value;
     }
-    
+
     const strValue = value.toString().trim();
     if (!strValue) return null;
 
     const patterns = [
       /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, // dd.mm.yyyy
       /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // dd/mm/yyyy
-      /^(\d{4})-(\d{1,2})-(\d{1,2})$/,  // yyyy-mm-dd
+      /^(\d{4})-(\d{1,2})-(\d{1,2})$/, // yyyy-mm-dd
     ];
 
     for (const pattern of patterns) {
       const match = strValue.match(pattern);
       if (match) {
         let year: number, month: number, day: number;
-        
+
         if (pattern.source.startsWith('^(\\d{4})')) {
           // yyyy-mm-dd format
           year = parseInt(match[1], 10);
@@ -279,7 +310,11 @@ export class CsvParserService {
 
         // Create date and verify it matches (catches invalid dates like Feb 31)
         const date = new Date(year, month - 1, day);
-        if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+        if (
+          date.getFullYear() === year &&
+          date.getMonth() === month - 1 &&
+          date.getDate() === day
+        ) {
           return date;
         }
       }
@@ -303,10 +338,7 @@ export class CsvParserService {
   /**
    * Parse file using a parsing template (Phase 3 Refactoring)
    */
-  async parseWithTemplate(
-    upload: Upload,
-    template: ParsingTemplate,
-  ): Promise<Shipment[]> {
+  async parseWithTemplate(upload: Upload, template: ParsingTemplate): Promise<Shipment[]> {
     this.logger.log({
       event: 'parsing_with_template_start',
       upload_id: upload.id,
@@ -343,7 +375,7 @@ export class CsvParserService {
             row as Record<string, any>,
             mappings,
             upload.tenant_id,
-            upload.id,
+            upload.id
           );
 
           if (shipment) {
@@ -386,7 +418,7 @@ export class CsvParserService {
     row: Record<string, any>,
     mappings: Record<string, any>,
     tenantId: string,
-    uploadId: string,
+    uploadId: string
   ): Promise<Shipment | null> {
     if (!row || typeof row !== 'object') {
       return null;
@@ -484,9 +516,7 @@ export class CsvParserService {
     // Extract service level
     const serviceValue = this.extractFieldFromTemplate(row, mappings.service_level);
     if (serviceValue) {
-      shipment.service_level = await this.serviceMapperService.normalize(
-        serviceValue.toString(),
-      );
+      shipment.service_level = await this.serviceMapperService.normalize(serviceValue.toString());
     }
 
     // Calculate completeness
@@ -500,10 +530,7 @@ export class CsvParserService {
   /**
    * Extract field value from row using template mapping configuration
    */
-  private extractFieldFromTemplate(
-    row: Record<string, any>,
-    mapping: any,
-  ): any {
+  private extractFieldFromTemplate(row: Record<string, any>, mapping: any): any {
     if (!mapping) return null;
 
     // Direct column name
@@ -531,9 +558,7 @@ export class CsvParserService {
   /**
    * Calculate completeness score for a shipment (Phase 3 Refactoring)
    */
-  private calculateCompleteness(
-    shipment: Shipment,
-  ): { score: number; missingFields: string[] } {
+  private calculateCompleteness(shipment: Shipment): { score: number; missingFields: string[] } {
     const requiredFields = [
       'date',
       'carrier_name',
@@ -585,5 +610,4 @@ export class CsvParserService {
 
     return { score, missingFields };
   }
-
 }

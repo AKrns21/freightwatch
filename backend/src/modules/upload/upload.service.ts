@@ -22,26 +22,26 @@ export class UploadService {
     @InjectRepository(Upload)
     private readonly uploadRepository: Repository<Upload>,
     @InjectQueue('upload')
-    private readonly uploadQueue: Queue,
+    private readonly uploadQueue: Queue
   ) {}
 
   async uploadFile(
     file: Express.Multer.File,
     tenantId: string,
-    sourceType: string,
+    sourceType: string
   ): Promise<UploadResult> {
     const fileHash = this.calculateFileHash(file.buffer);
-    
+
     const existingUpload = await this.uploadRepository.findOne({
-      where: { 
-        tenant_id: tenantId, 
-        file_hash: fileHash 
+      where: {
+        tenant_id: tenantId,
+        file_hash: fileHash,
       },
     });
 
     if (existingUpload) {
       this.logger.log(
-        `File already exists for tenant ${tenantId}: ${existingUpload.filename} (hash: ${fileHash})`,
+        `File already exists for tenant ${tenantId}: ${existingUpload.filename} (hash: ${fileHash})`
       );
       return {
         upload: existingUpload,
@@ -71,7 +71,7 @@ export class UploadService {
       const savedUpload = await this.uploadRepository.save(upload);
 
       this.logger.log(
-        `File uploaded successfully for tenant ${tenantId}: ${file.originalname} -> ${storagePath}`,
+        `File uploaded successfully for tenant ${tenantId}: ${file.originalname} -> ${storagePath}`
       );
 
       // Enqueue CSV parsing job for new uploads
@@ -81,9 +81,7 @@ export class UploadService {
           tenantId: savedUpload.tenant_id,
         });
 
-        this.logger.log(
-          `Enqueued CSV parsing job for upload ${savedUpload.id}`,
-        );
+        this.logger.log(`Enqueued CSV parsing job for upload ${savedUpload.id}`);
       }
 
       return {
@@ -93,7 +91,7 @@ export class UploadService {
     } catch (error) {
       this.logger.error(
         `Failed to upload file for tenant ${tenantId}: ${file.originalname}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
 
       try {
@@ -101,14 +99,12 @@ export class UploadService {
       } catch (cleanupError) {
         this.logger.warn(
           `Failed to cleanup file after upload error: ${storagePath}`,
-          (cleanupError as Error).stack,
+          (cleanupError as Error).stack
         );
       }
 
       if ((error as any).code === '23505') {
-        throw new ConflictException(
-          'File with the same hash already exists for this tenant',
-        );
+        throw new ConflictException('File with the same hash already exists for this tenant');
       }
 
       throw error;
@@ -140,9 +136,9 @@ export class UploadService {
 
   async findById(id: string, tenantId: string): Promise<Upload | null> {
     return this.uploadRepository.findOne({
-      where: { 
-        id, 
-        tenant_id: tenantId 
+      where: {
+        id,
+        tenant_id: tenantId,
       },
     });
   }
@@ -151,7 +147,7 @@ export class UploadService {
     id: string,
     tenantId: string,
     status: string,
-    parseErrors?: any,
+    parseErrors?: any
   ): Promise<Upload | null> {
     const upload = await this.findById(id, tenantId);
     if (!upload) {
@@ -172,7 +168,7 @@ export class UploadService {
   async getPreview(
     uploadId: string,
     tenantId: string,
-    lines: number = 50,
+    lines: number = 50
   ): Promise<{ lines: string[]; total_lines: number }> {
     const upload = await this.findById(uploadId, tenantId);
     if (!upload) {
@@ -210,7 +206,7 @@ export class UploadService {
   async applyMappings(
     uploadId: string,
     tenantId: string,
-    mappings: Record<string, string>,
+    mappings: Record<string, string>
   ): Promise<void> {
     const upload = await this.findById(uploadId, tenantId);
     if (!upload) {
@@ -244,7 +240,7 @@ export class UploadService {
     uploadId: string,
     tenantId: string,
     userId: string,
-    notes?: string,
+    notes?: string
   ): Promise<void> {
     const upload = await this.findById(uploadId, tenantId);
     if (!upload) {
@@ -254,7 +250,7 @@ export class UploadService {
     await this.uploadRepository.update(uploadId, {
       status: 'reviewed',
       meta: {
-        ...upload.meta,
+        ...(upload.meta as Record<string, unknown>),
         reviewed_by: userId,
         reviewed_at: new Date().toISOString(),
         review_notes: notes,
@@ -274,7 +270,7 @@ export class UploadService {
   async reprocess(
     uploadId: string,
     tenantId: string,
-    options: { reason?: string; force_llm?: boolean },
+    options: { reason?: string; force_llm?: boolean }
   ): Promise<void> {
     const upload = await this.findById(uploadId, tenantId);
     if (!upload) {
@@ -285,7 +281,7 @@ export class UploadService {
     await this.uploadRepository.update(uploadId, {
       status: 'pending',
       meta: {
-        ...upload.meta,
+        ...(upload.meta as Record<string, unknown>),
         reprocess_reason: options.reason,
         reprocess_requested_at: new Date().toISOString(),
       },
@@ -311,7 +307,7 @@ export class UploadService {
    */
   async getQualityMetrics(
     uploadId: string,
-    tenantId: string,
+    tenantId: string
   ): Promise<{
     completeness: number;
     missing_fields: string[];
@@ -331,7 +327,7 @@ export class UploadService {
     return {
       completeness: upload.confidence || 0,
       missing_fields: [],
-      data_issues: upload.parsing_issues || [],
+      data_issues: (upload.parsing_issues as unknown[]) || [],
       total_rows: 0,
       valid_rows: 0,
     };

@@ -13,7 +13,7 @@ export function generateTestId(prefix = 'test'): string {
  * Sleep for a given amount of time (useful for queue processing waits)
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -25,7 +25,7 @@ export function createMockFile(
   mimetype = 'text/csv'
 ): Express.Multer.File {
   const buffer = typeof content === 'string' ? Buffer.from(content) : content;
-  
+
   return {
     fieldname: 'file',
     originalname: filename,
@@ -49,13 +49,13 @@ export async function waitForCondition(
   intervalMs = 100
 ): Promise<void> {
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < timeoutMs) {
     if (await conditionFn()) {
       return;
     }
     await sleep(intervalMs);
   }
-  
+
   throw new Error(`Condition not met within ${timeoutMs}ms timeout`);
 }

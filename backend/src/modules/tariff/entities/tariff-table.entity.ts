@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { TariffRate } from './tariff-rate.entity';
 
 @Entity('tariff_table')
@@ -36,6 +30,6 @@ export class TariffTable {
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToMany(() => TariffRate, rate => rate.tariff_table)
+  @OneToMany(() => TariffRate, (rate) => rate.tariff_table)
   rates: TariffRate[];
 }

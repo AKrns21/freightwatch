@@ -20,10 +20,12 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
     // Global rate limiting module
     // Protects against brute-force attacks and API abuse
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // Time window in milliseconds (60 seconds)
-      limit: 100, // Max requests per TTL window per IP
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // Time window in milliseconds (60 seconds)
+        limit: 100, // Max requests per TTL window per IP
+      },
+    ]),
 
     // Database module with TypeORM and RLS support
     DatabaseModule,

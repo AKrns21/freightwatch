@@ -12,6 +12,7 @@ import {
 import { UploadService } from './upload.service';
 import { TemplateService } from '@/modules/parsing/template.service';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { TenantRequest } from '@/modules/auth/tenant.interceptor';
 
 /**
  * UploadReviewController - Review and correction workflow
@@ -28,7 +29,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 export class UploadReviewController {
   constructor(
     private readonly uploadService: UploadService,
-    private readonly templateService: TemplateService,
+    private readonly templateService: TemplateService
   ) {}
 
   /**
@@ -39,32 +40,22 @@ export class UploadReviewController {
   async getReviewData(
     @Param('uploadId') uploadId: string,
     @Query('previewLines') previewLines: number = 50,
-    @Req() req: any,
-  ) {
-    const tenantId = req.user.tenant_id;
+    @Req() req: TenantRequest
+  ): Promise<{ success: boolean; data: unknown }> {
+    const tenantId = req.user?.tenantId || req.tenantId;
 
     // Load upload
-    const upload = await this.uploadService.findById(
-      uploadId,
-      tenantId,
-    );
+    const upload = await this.uploadService.findById(uploadId, tenantId);
 
     if (!upload) {
       throw new NotFoundException(`Upload ${uploadId} not found`);
     }
 
     // Get file preview
-    const preview = await this.uploadService.getPreview(
-      uploadId,
-      tenantId,
-      previewLines,
-    );
+    const preview = await this.uploadService.getPreview(uploadId, tenantId, previewLines);
 
     // Get shipments for this upload
-    const shipments = await this.uploadService.getShipments(
-      uploadId,
-      tenantId,
-    );
+    const shipments = await this.uploadService.getShipments(uploadId, tenantId);
 
     return {
       success: true,
@@ -87,10 +78,8 @@ export class UploadReviewController {
           parsed: shipments.filter((s) => !s.deleted_at).length,
           completeness_avg:
             shipments.length > 0
-              ? shipments.reduce(
-                  (sum, s) => sum + (s.completeness_score || 0),
-                  0,
-                ) / shipments.length
+              ? shipments.reduce((sum, s) => sum + (s.completeness_score || 0), 0) /
+                shipments.length
               : 0,
         },
       },
@@ -105,15 +94,11 @@ export class UploadReviewController {
   async getPreview(
     @Param('uploadId') uploadId: string,
     @Query('lines') lines: number = 50,
-    @Req() req: any,
+    @Req() req: any
   ) {
     const tenantId = req.user.tenant_id;
 
-    const preview = await this.uploadService.getPreview(
-      uploadId,
-      tenantId,
-      lines,
-    );
+    const preview = await this.uploadService.getPreview(uploadId, tenantId, lines);
 
     return {
       success: true,
@@ -134,27 +119,19 @@ export class UploadReviewController {
       save_as_template?: boolean;
       template_name?: string;
     },
-    @Req() req: any,
+    @Req() req: any
   ) {
     const tenantId = req.user.tenant_id;
 
     // Apply mappings and re-parse
-    await this.uploadService.applyMappings(
-      uploadId,
-      tenantId,
-      body.mappings,
-    );
+    await this.uploadService.applyMappings(uploadId, tenantId, body.mappings);
 
     // Optionally save as template
     if (body.save_as_template) {
-      await this.templateService.createFromUpload(
-        uploadId,
-        tenantId,
-        {
-          name: body.template_name || `Template for ${uploadId}`,
-          mappings: body.mappings,
-        },
-      );
+      await this.templateService.createFromUpload(uploadId, tenantId, {
+        name: body.template_name || `Template for ${uploadId}`,
+        mappings: body.mappings,
+      });
     }
 
     return {
@@ -177,30 +154,20 @@ export class UploadReviewController {
       save_as_template?: boolean;
       template_name?: string;
     },
-    @Req() req: any,
+    @Req() req: any
   ) {
     const tenantId = req.user.tenant_id;
 
     // Apply corrected mappings
-    await this.uploadService.applyMappings(
-      uploadId,
-      tenantId,
-      body.corrected_mappings,
-    );
+    await this.uploadService.applyMappings(uploadId, tenantId, body.corrected_mappings);
 
     // Save as template with consultant's corrections
     if (body.save_as_template) {
-      await this.templateService.createFromUpload(
-        uploadId,
-        tenantId,
-        {
-          name:
-            body.template_name ||
-            `Corrected template for ${uploadId}`,
-          mappings: body.corrected_mappings,
-          notes: body.notes,
-        },
-      );
+      await this.templateService.createFromUpload(uploadId, tenantId, {
+        name: body.template_name || `Corrected template for ${uploadId}`,
+        mappings: body.corrected_mappings,
+        notes: body.notes,
+      });
     }
 
     return {
@@ -217,17 +184,12 @@ export class UploadReviewController {
   async approve(
     @Param('uploadId') uploadId: string,
     @Body() body: { notes?: string },
-    @Req() req: any,
+    @Req() req: any
   ) {
     const tenantId = req.user.tenant_id;
     const userId = req.user.id;
 
-    await this.uploadService.markAsReviewed(
-      uploadId,
-      tenantId,
-      userId,
-      body.notes,
-    );
+    await this.uploadService.markAsReviewed(uploadId, tenantId, userId, body.notes);
 
     return {
       success: true,
@@ -247,7 +209,7 @@ export class UploadReviewController {
       reason?: string;
       force_llm?: boolean;
     },
-    @Req() req: any,
+    @Req() req: any
   ) {
     const tenantId = req.user.tenant_id;
 
@@ -267,16 +229,10 @@ export class UploadReviewController {
    * GET /uploads/:uploadId/review/issues
    */
   @Get('issues')
-  async getIssues(
-    @Param('uploadId') uploadId: string,
-    @Req() req: any,
-  ) {
+  async getIssues(@Param('uploadId') uploadId: string, @Req() req: any) {
     const tenantId = req.user.tenant_id;
 
-    const upload = await this.uploadService.findById(
-      uploadId,
-      tenantId,
-    );
+    const upload = await this.uploadService.findById(uploadId, tenantId);
 
     if (!upload) {
       throw new NotFoundException(`Upload ${uploadId} not found`);
@@ -297,16 +253,10 @@ export class UploadReviewController {
    * GET /uploads/:uploadId/review/quality
    */
   @Get('quality')
-  async getQuality(
-    @Param('uploadId') uploadId: string,
-    @Req() req: any,
-  ) {
+  async getQuality(@Param('uploadId') uploadId: string, @Req() req: any) {
     const tenantId = req.user.tenant_id;
 
-    const quality = await this.uploadService.getQualityMetrics(
-      uploadId,
-      tenantId,
-    );
+    const quality = await this.uploadService.getQualityMetrics(uploadId, tenantId);
 
     return {
       success: true,

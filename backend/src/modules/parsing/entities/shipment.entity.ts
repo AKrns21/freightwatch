@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { Carrier } from '@/modules/upload/entities/carrier.entity';
 
@@ -125,7 +125,7 @@ export class Shipment {
     precision: 3,
     scale: 2,
     nullable: true,
-    comment: 'Data completeness score (0.00 - 1.00)'
+    comment: 'Data completeness score (0.00 - 1.00)',
   })
   completeness_score: number;
 
@@ -133,28 +133,28 @@ export class Shipment {
     type: 'text',
     array: true,
     nullable: true,
-    comment: 'Array of missing required field names'
+    comment: 'Array of missing required field names',
   })
   missing_fields: string[];
 
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'Structured data quality issues'
+    comment: 'Structured data quality issues',
   })
   data_quality_issues: any;
 
   @Column({
     type: 'text',
     nullable: true,
-    comment: 'Consultant notes and annotations'
+    comment: 'Consultant notes and annotations',
   })
   consultant_notes: string;
 
   @Column({
     type: 'boolean',
     default: false,
-    comment: 'True if manually corrected by consultant'
+    comment: 'True if manually corrected by consultant',
   })
   manual_override: boolean;
 

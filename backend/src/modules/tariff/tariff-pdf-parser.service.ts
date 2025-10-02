@@ -55,7 +55,7 @@ export class TariffPdfParserService {
     private readonly tariffRepo: Repository<TariffTable>,
     @InjectRepository(ParsingTemplate)
     private readonly templateRepo: Repository<ParsingTemplate>,
-    private readonly llmParser: LlmParserService,
+    private readonly llmParser: LlmParserService
   ) {}
 
   /**
@@ -67,7 +67,7 @@ export class TariffPdfParserService {
       filename: string;
       carrier_id?: string;
       tenant_id: string;
-    },
+    }
   ): Promise<TariffParseResult> {
     this.logger.log({
       event: 'parse_tariff_pdf_start',
@@ -79,16 +79,12 @@ export class TariffPdfParserService {
     const template = await this.findMatchingTemplate(
       context.filename,
       context.carrier_id,
-      context.tenant_id,
+      context.tenant_id
     );
 
     if (template) {
       try {
-        const result = await this.parseWithTemplate(
-          fileBuffer,
-          template,
-          context,
-        );
+        const result = await this.parseWithTemplate(fileBuffer, template, context);
 
         this.logger.log({
           event: 'parse_tariff_template_success',
@@ -132,7 +128,7 @@ export class TariffPdfParserService {
   private async findMatchingTemplate(
     filename: string,
     carrierId: string | undefined,
-    tenantId: string,
+    tenantId: string
   ): Promise<ParsingTemplate | null> {
     const templates = await this.templateRepo.find({
       where: [
@@ -158,19 +154,13 @@ export class TariffPdfParserService {
       let score = 0;
 
       // Carrier match (40%)
-      if (
-        carrierId &&
-        template.detection?.carrier_id === carrierId
-      ) {
+      if (carrierId && template.detection?.carrier_id === carrierId) {
         score += 0.4;
       }
 
       // Filename pattern match (30%)
       if (template.detection?.filename_pattern) {
-        const regex = new RegExp(
-          template.detection.filename_pattern,
-          'i',
-        );
+        const regex = new RegExp(template.detection.filename_pattern, 'i');
         if (regex.test(filename)) {
           score += 0.3;
         }
@@ -202,16 +192,13 @@ export class TariffPdfParserService {
   private async parseWithTemplate(
     fileBuffer: Buffer,
     template: ParsingTemplate,
-    context: any,
+    context: any
   ): Promise<TariffParseResult> {
     // Extract text from PDF
     const pdfText = await this.extractTextFromPdf(fileBuffer);
 
     // Apply template extraction rules
-    const entries = this.extractEntriesWithTemplate(
-      pdfText,
-      template.mappings,
-    );
+    const entries = this.extractEntriesWithTemplate(pdfText, template.mappings);
 
     // Validate entries
     this.validateEntries(entries);
@@ -235,10 +222,7 @@ export class TariffPdfParserService {
   /**
    * Parse tariff using LLM
    */
-  private async parseWithLlm(
-    fileBuffer: Buffer,
-    context: any,
-  ): Promise<TariffParseResult> {
+  private async parseWithLlm(fileBuffer: Buffer, context: any): Promise<TariffParseResult> {
     const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
       filename: context.filename,
       mime_type: 'application/pdf',
@@ -251,9 +235,7 @@ export class TariffPdfParserService {
       throw new Error('LLM did not extract tariff structure');
     }
 
-    const entries = this.convertLlmStructureToEntries(
-      llmResult.tariff_structure,
-    );
+    const entries = this.convertLlmStructureToEntries(llmResult.tariff_structure);
 
     this.validateEntries(entries);
 
@@ -262,8 +244,15 @@ export class TariffPdfParserService {
       carrier_id: context.carrier_id || 'unknown',
       carrier_name: structure.carrier_name || structure.carrier || 'Unknown',
       lane_type: structure.lane_type || 'domestic_de',
-      valid_from: typeof structure.valid_from === 'string' ? new Date(structure.valid_from) : (structure.valid_from || new Date()),
-      valid_until: structure.valid_until ? (typeof structure.valid_until === 'string' ? new Date(structure.valid_until) : structure.valid_until) : undefined,
+      valid_from:
+        typeof structure.valid_from === 'string'
+          ? new Date(structure.valid_from)
+          : structure.valid_from || new Date(),
+      valid_until: structure.valid_until
+        ? typeof structure.valid_until === 'string'
+          ? new Date(structure.valid_until)
+          : structure.valid_until
+        : undefined,
       entries,
       parsing_method: 'llm',
       confidence: llmResult.confidence,
@@ -291,7 +280,7 @@ export class TariffPdfParserService {
    */
   private extractEntriesWithTemplate(
     _pdfText: string,
-    _mappings: Record<string, any>,
+    _mappings: Record<string, any>
   ): TariffEntry[] {
     const entries: TariffEntry[] = [];
 
@@ -299,9 +288,7 @@ export class TariffPdfParserService {
     // Parse table structure based on template rules
     // Extract zone, weight ranges, prices
 
-    this.logger.warn(
-      'Template-based tariff extraction not yet implemented',
-    );
+    this.logger.warn('Template-based tariff extraction not yet implemented');
 
     return entries;
   }
@@ -309,9 +296,7 @@ export class TariffPdfParserService {
   /**
    * Convert LLM tariff structure to entries
    */
-  private convertLlmStructureToEntries(
-    structure: any,
-  ): TariffEntry[] {
+  private convertLlmStructureToEntries(structure: any): TariffEntry[] {
     const entries: TariffEntry[] = [];
 
     if (!structure.zones || !Array.isArray(structure.zones)) {
@@ -344,7 +329,7 @@ export class TariffPdfParserService {
    */
   private extractMetadata(
     _pdfText: string,
-    _template: ParsingTemplate,
+    _template: ParsingTemplate
   ): {
     carrier_id?: string;
     carrier_name?: string;
@@ -374,9 +359,7 @@ export class TariffPdfParserService {
       }
 
       if (entry.weight_min < 0 || entry.weight_max < entry.weight_min) {
-        throw new Error(
-          `Invalid weight range: ${entry.weight_min}-${entry.weight_max}`,
-        );
+        throw new Error(`Invalid weight range: ${entry.weight_min}-${entry.weight_max}`);
       }
 
       if (entry.base_amount <= 0) {
@@ -390,7 +373,7 @@ export class TariffPdfParserService {
    */
   async importTariff(
     parseResult: TariffParseResult,
-    tenantId: string,
+    tenantId: string
   ): Promise<{ imported: number; skipped: number }> {
     this.logger.log({
       event: 'import_tariff_start',

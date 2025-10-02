@@ -36,18 +36,18 @@ export class TariffEngineService {
     @InjectRepository(Carrier)
     private readonly carrierRepository: Repository<Carrier>,
     private readonly zoneCalculatorService: ZoneCalculatorService,
-    private readonly fxService: FxService,
+    private readonly fxService: FxService
   ) {}
 
   async calculateExpectedCost(shipment: Shipment): Promise<BenchmarkResult> {
     this.logger.debug(
-      `Calculating expected cost for shipment ${shipment.id} (${shipment.weight_kg}kg, ${shipment.origin_country}-${shipment.dest_country})`,
+      `Calculating expected cost for shipment ${shipment.id} (${shipment.weight_kg}kg, ${shipment.origin_country}-${shipment.dest_country})`
     );
 
     try {
       const laneType = this.determineLaneType(
         shipment.origin_country || 'DE',
-        shipment.dest_country || 'DE',
+        shipment.dest_country || 'DE'
       );
 
       const zone = await this.calculateZone(shipment, laneType);
@@ -56,19 +56,19 @@ export class TariffEngineService {
         shipment.tenant_id,
         shipment.carrier_id,
         laneType,
-        shipment.date,
+        shipment.date
       );
 
       const chargeableWeightResult = await this.calculateChargeableWeight(
         shipment.tenant_id,
         shipment.carrier_id,
-        shipment,
+        shipment
       );
 
       const tariffRate = await this.findTariffRate(
         applicableTariff.id,
         zone,
-        chargeableWeightResult.value,
+        chargeableWeightResult.value
       );
 
       const baseAmount = this.calculateBaseAmount(tariffRate, chargeableWeightResult.value);
@@ -77,13 +77,13 @@ export class TariffEngineService {
         baseAmount,
         applicableTariff.currency,
         shipment.currency,
-        shipment.date,
+        shipment.date
       );
 
       // Calculate toll amount
       let tollAmount: number;
       let tollNote: string;
-      
+
       if (shipment.toll_amount && shipment.toll_amount > 0) {
         // Use actual toll amount from invoice
         tollAmount = shipment.toll_amount;
@@ -92,29 +92,31 @@ export class TariffEngineService {
       } else {
         // Estimate toll using heuristic
         const estimatedToll = this.estimateToll(
-          zone, 
-          chargeableWeightResult.value, 
+          zone,
+          chargeableWeightResult.value,
           shipment.dest_country || 'DE'
         );
-        
+
         // Convert estimated toll to shipment currency if needed
         const convertedToll = await this.convertCurrency(
           estimatedToll,
           applicableTariff.currency,
           shipment.currency,
-          shipment.date,
+          shipment.date
         );
-        
+
         tollAmount = convertedToll.amount;
         tollNote = 'estimated_heuristic';
-        this.logger.debug(`Estimated toll amount: ${tollAmount} ${shipment.currency} (zone: ${zone}, weight: ${chargeableWeightResult.value}kg)`);
+        this.logger.debug(
+          `Estimated toll amount: ${tollAmount} ${shipment.currency} (zone: ${zone}, weight: ${chargeableWeightResult.value}kg)`
+        );
       }
 
       // Get diesel floater and calculate diesel surcharge
       const dieselFloater = await this.getDieselFloater(
         shipment.tenant_id,
         shipment.carrier_id,
-        shipment.date,
+        shipment.date
       );
 
       let dieselBase: number;
@@ -146,7 +148,9 @@ export class TariffEngineService {
           rate: tariffRate.rate_per_shipment || tariffRate.rate_per_kg || 0,
           amount: convertedAmount.amount,
           currency: shipment.currency,
-          note: chargeableWeightResult.note + (convertedAmount.fx_note ? `. ${convertedAmount.fx_note}` : ''),
+          note:
+            chargeableWeightResult.note +
+            (convertedAmount.fx_note ? `. ${convertedAmount.fx_note}` : ''),
         },
         {
           item: 'toll',
@@ -172,7 +176,7 @@ export class TariffEngineService {
       const actualTotal = shipment.actual_total_amount || 0;
       const deltaAmount = round(actualTotal - expectedTotal);
       const deltaPct = expectedTotal > 0 ? round((deltaAmount / expectedTotal) * 100) : 0;
-      
+
       let classification: string;
       if (deltaPct < -5) {
         classification = 'unter';
@@ -190,8 +194,12 @@ export class TariffEngineService {
       // Reporting currency conversion if needed
       if (shipment.currency !== tenantCurrency) {
         try {
-          reportFxRate = await this.fxService.getRate(shipment.currency, tenantCurrency, shipment.date);
-          
+          reportFxRate = await this.fxService.getRate(
+            shipment.currency,
+            tenantCurrency,
+            shipment.date
+          );
+
           reportAmounts = {
             expected_base_amount: round(convertedAmount.amount * reportFxRate),
             expected_toll_amount: round(tollAmount * reportFxRate),
@@ -203,11 +211,11 @@ export class TariffEngineService {
           };
 
           this.logger.debug(
-            `Converted amounts to tenant currency ${tenantCurrency} using rate ${reportFxRate}`,
+            `Converted amounts to tenant currency ${tenantCurrency} using rate ${reportFxRate}`
           );
         } catch (error) {
           this.logger.warn(
-            `Failed to convert to tenant currency ${tenantCurrency}: ${(error as Error).message}`,
+            `Failed to convert to tenant currency ${tenantCurrency}: ${(error as Error).message}`
           );
         }
       }
@@ -241,14 +249,14 @@ export class TariffEngineService {
       }
 
       this.logger.debug(
-        `Calculated expected cost: ${result.expected_total_amount} ${shipment.currency} for shipment ${shipment.id} (delta: ${deltaAmount}, ${deltaPct}%, ${classification})`,
+        `Calculated expected cost: ${result.expected_total_amount} ${shipment.currency} for shipment ${shipment.id} (delta: ${deltaAmount}, ${deltaPct}%, ${classification})`
       );
 
       return result;
     } catch (error) {
       this.logger.error(
         `Error calculating expected cost for shipment ${shipment.id}: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
@@ -257,7 +265,7 @@ export class TariffEngineService {
   private async getDieselFloater(
     tenantId: string,
     carrierId: string,
-    date: Date,
+    date: Date
   ): Promise<{ pct: number; basis: string }> {
     try {
       const dieselFloater = await this.dieselFloaterRepository.findOne({
@@ -274,7 +282,7 @@ export class TariffEngineService {
 
       if (dieselFloater) {
         this.logger.debug(
-          `Found diesel floater: ${dieselFloater.floater_pct}% (basis: ${dieselFloater.basis})`,
+          `Found diesel floater: ${dieselFloater.floater_pct}% (basis: ${dieselFloater.basis})`
         );
         return {
           pct: Number(dieselFloater.floater_pct),
@@ -298,9 +306,9 @@ export class TariffEngineService {
     } catch (error) {
       this.logger.error(
         `Error finding diesel floater: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
-      
+
       // Return fallback on error
       return {
         pct: 18.5,
@@ -313,7 +321,7 @@ export class TariffEngineService {
     shipment: Shipment,
     result: BenchmarkResult,
     reportFxRate: number | null,
-    tenantCurrency: string,
+    tenantCurrency: string
   ): Promise<void> {
     try {
       const benchmark = new ShipmentBenchmark();
@@ -339,13 +347,11 @@ export class TariffEngineService {
 
       await this.shipmentBenchmarkRepository.save(benchmark);
 
-      this.logger.debug(
-        `Created shipment benchmark record for shipment ${shipment.id}`,
-      );
+      this.logger.debug(`Created shipment benchmark record for shipment ${shipment.id}`);
     } catch (error) {
       this.logger.error(
         `Error creating shipment benchmark record: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       // Don't throw error - benchmark creation is not critical for the main flow
     }
@@ -357,10 +363,10 @@ export class TariffEngineService {
     if (weightKg < 3500) return 0;
 
     const tollByCountry: { [key: string]: { [zone: number]: number } } = {
-      'DE': { 1: 5, 2: 8, 3: 12, 4: 15, 5: 18, 6: 15 },
-      'AT': { 1: 6, 2: 10, 3: 14, 4: 18, 5: 22, 6: 18 },
-      'CH': { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 20 },
-      'FR': { 1: 7, 2: 11, 3: 15, 4: 19, 5: 23, 6: 19 },
+      DE: { 1: 5, 2: 8, 3: 12, 4: 15, 5: 18, 6: 15 },
+      AT: { 1: 6, 2: 10, 3: 14, 4: 18, 5: 22, 6: 18 },
+      CH: { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 20 },
+      FR: { 1: 7, 2: 11, 3: 15, 4: 19, 5: 23, 6: 19 },
     };
 
     return tollByCountry[country]?.[zone] || 0;
@@ -382,8 +388,10 @@ export class TariffEngineService {
       return 'CH';
     }
 
-    if (['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'].includes(origin) &&
-        ['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'].includes(dest)) {
+    if (
+      ['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'].includes(origin) &&
+      ['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'].includes(dest)
+    ) {
       return 'EU';
     }
 
@@ -397,17 +405,17 @@ export class TariffEngineService {
         shipment.carrier_id || '',
         shipment.dest_country || 'DE',
         shipment.dest_zip || '',
-        shipment.date,
+        shipment.date
       );
 
       this.logger.debug(
-        `Calculated zone ${zone} for ${shipment.dest_country}-${shipment.dest_zip}`,
+        `Calculated zone ${zone} for ${shipment.dest_country}-${shipment.dest_zip}`
       );
 
       return zone;
     } catch (error) {
       this.logger.warn(
-        `Zone calculation failed for ${shipment.dest_country}-${shipment.dest_zip}: ${(error as Error).message}`,
+        `Zone calculation failed for ${shipment.dest_country}-${shipment.dest_zip}: ${(error as Error).message}`
       );
 
       // FALLBACK STRATEGY (MVP-only):
@@ -443,7 +451,7 @@ export class TariffEngineService {
     tenantId: string,
     carrierId: string | null,
     laneType: string,
-    date: Date,
+    date: Date
   ): Promise<TariffTable> {
     try {
       const tariff = await this.tariffTableRepository.findOne({
@@ -461,7 +469,7 @@ export class TariffEngineService {
 
       if (!tariff) {
         throw new NotFoundException(
-          `No applicable tariff found for tenant ${tenantId}, carrier ${carrierId}, lane ${laneType} on ${date.toISOString().split('T')[0]}`,
+          `No applicable tariff found for tenant ${tenantId}, carrier ${carrierId}, lane ${laneType} on ${date.toISOString().split('T')[0]}`
         );
       }
 
@@ -470,7 +478,7 @@ export class TariffEngineService {
     } catch (error) {
       this.logger.error(
         `Error finding applicable tariff: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
@@ -479,7 +487,7 @@ export class TariffEngineService {
   private async findTariffRate(
     tariffTableId: string,
     zone: number,
-    weight: number,
+    weight: number
   ): Promise<TariffRate> {
     try {
       const rate = await this.tariffRateRepository.findOne({
@@ -496,19 +504,19 @@ export class TariffEngineService {
 
       if (!rate) {
         throw new NotFoundException(
-          `No tariff rate found for zone ${zone}, weight ${weight}kg in tariff table ${tariffTableId}`,
+          `No tariff rate found for zone ${zone}, weight ${weight}kg in tariff table ${tariffTableId}`
         );
       }
 
       this.logger.debug(
-        `Found tariff rate: Zone ${rate.zone}, Weight ${rate.weight_from_kg}-${rate.weight_to_kg}kg, Rate: ${rate.rate_per_shipment || rate.rate_per_kg}`,
+        `Found tariff rate: Zone ${rate.zone}, Weight ${rate.weight_from_kg}-${rate.weight_to_kg}kg, Rate: ${rate.rate_per_shipment || rate.rate_per_kg}`
       );
 
       return rate;
     } catch (error) {
       this.logger.error(
         `Error finding tariff rate: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
@@ -523,16 +531,14 @@ export class TariffEngineService {
       return Number(tariffRate.rate_per_kg) * weight;
     }
 
-    throw new Error(
-      `Tariff rate ${tariffRate.id} has neither rate_per_shipment nor rate_per_kg`,
-    );
+    throw new Error(`Tariff rate ${tariffRate.id} has neither rate_per_shipment nor rate_per_kg`);
   }
 
   private async convertCurrency(
     amount: number,
     fromCurrency: string,
     toCurrency: string,
-    date: Date,
+    date: Date
   ): Promise<{
     amount: number;
     fx_rate?: number;
@@ -553,7 +559,7 @@ export class TariffEngineService {
       };
     } catch (error) {
       this.logger.warn(
-        `Currency conversion failed ${fromCurrency}->${toCurrency}: ${(error as Error).message}`,
+        `Currency conversion failed ${fromCurrency}->${toCurrency}: ${(error as Error).message}`
       );
 
       // Return original amount if conversion fails
@@ -567,7 +573,7 @@ export class TariffEngineService {
   private async calculateChargeableWeight(
     _tenantId: string,
     carrierId: string | null,
-    shipment: Shipment,
+    shipment: Shipment
   ): Promise<{ value: number; basis: string; note: string }> {
     let maxWeight = shipment.weight_kg || 0;
     let basis = 'kg';
@@ -595,12 +601,10 @@ export class TariffEngineService {
           conversionRules = carrier.conversion_rules;
           this.logger.debug(
             `Loaded conversion rules for carrier ${carrierId}:`,
-            JSON.stringify(conversionRules),
+            JSON.stringify(conversionRules)
           );
         } else {
-          this.logger.debug(
-            `No conversion rules found for carrier ${carrierId}, using defaults`,
-          );
+          this.logger.debug(`No conversion rules found for carrier ${carrierId}, using defaults`);
         }
       }
 
@@ -612,7 +616,7 @@ export class TariffEngineService {
           const minWeightFromLM = shipment.length_m * ldmToKg;
 
           this.logger.debug(
-            `LDM conversion: ${shipment.length_m}m × ${ldmToKg} = ${minWeightFromLM}kg`,
+            `LDM conversion: ${shipment.length_m}m × ${ldmToKg} = ${minWeightFromLM}kg`
           );
 
           if (minWeightFromLM > maxWeight) {
@@ -635,24 +639,29 @@ export class TariffEngineService {
           const minWeightFromPallets = shipment.pallets * minWeightPerPallet;
 
           this.logger.debug(
-            `Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg = ${minWeightFromPallets}kg`,
+            `Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg = ${minWeightFromPallets}kg`
           );
 
           if (minWeightFromPallets > maxWeight) {
             maxWeight = minWeightFromPallets;
             basis = 'pallet';
-            notes.push(`Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg/pallet = ${minWeightFromPallets}kg`);
+            notes.push(
+              `Pallet weight: ${shipment.pallets} × ${minWeightPerPallet}kg/pallet = ${minWeightFromPallets}kg`
+            );
           } else {
-            notes.push(`Pallet weight ${minWeightFromPallets}kg < chargeable weight, using current`);
+            notes.push(
+              `Pallet weight ${minWeightFromPallets}kg < chargeable weight, using current`
+            );
           }
         } else {
-          this.logger.warn(`Pallet weight rule found but min_kg_per_pallet parameter invalid: ${minWeightPerPallet}`);
+          this.logger.warn(
+            `Pallet weight rule found but min_kg_per_pallet parameter invalid: ${minWeightPerPallet}`
+          );
         }
       }
 
-      const finalNote = notes.length > 0
-        ? notes.join('; ')
-        : `Using actual weight: ${shipment.weight_kg}kg`;
+      const finalNote =
+        notes.length > 0 ? notes.join('; ') : `Using actual weight: ${shipment.weight_kg}kg`;
 
       const result = {
         value: round(maxWeight),
@@ -660,15 +669,13 @@ export class TariffEngineService {
         note: finalNote,
       };
 
-      this.logger.debug(
-        `Chargeable weight calculated: ${result.value}kg (basis: ${result.basis})`,
-      );
+      this.logger.debug(`Chargeable weight calculated: ${result.value}kg (basis: ${result.basis})`);
 
       return result;
     } catch (error) {
       this.logger.error(
         `Error calculating chargeable weight: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
 
       // Fallback to actual weight on error
@@ -684,10 +691,7 @@ export class TariffEngineService {
    * Calculate benchmarks for all shipments in a project
    * NEW: Wrapper with Partial Data Support
    */
-  async calculateBenchmarkForProject(
-    _projectId: string,
-    _tenantId: string,
-  ): Promise<void> {
+  async calculateBenchmarkForProject(_projectId: string, _tenantId: string): Promise<void> {
     // TODO: Implement shipmentRepo injection
     this.logger.warn('calculateProjectBenchmarks not fully implemented - shipmentRepo missing');
     return;

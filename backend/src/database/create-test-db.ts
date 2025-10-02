@@ -1,4 +1,5 @@
 #!/usr/bin/env ts-node
+/* eslint-disable no-console */
 /**
  * Create test database
  */
@@ -39,8 +40,8 @@ async function createTestDatabase(): Promise<void> {
     console.log('Creating freightwatch_test database...');
     await dataSource.query(`CREATE DATABASE freightwatch_test`);
     console.log('✅ Database created successfully');
-
-  } catch (error: any) {    console.error('Failed to create database:', error);
+  } catch (error: unknown) {
+    console.error('Failed to create database:', error);
     throw error;
   } finally {
     await dataSource.destroy();

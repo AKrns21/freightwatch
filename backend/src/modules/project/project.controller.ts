@@ -33,8 +33,8 @@ export class ProjectController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProjectDto: CreateProjectDto,
-    @TenantId() tenantId: string,
-  ) {
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const project = await this.projectService.create(tenantId, createProjectDto);
     return {
       success: true,
@@ -47,11 +47,11 @@ export class ProjectController {
    * GET /api/projects
    */
   @Get()
-  async findAll(@TenantId() tenantId: string) {
+  async findAll(@TenantId() tenantId: string): Promise<{ success: boolean; data: unknown[] }> {
     const projects = await this.projectService.findAll(tenantId);
     return {
       success: true,
-      data: projects.map(p => p.toSafeObject()),
+      data: projects.map((p) => p.toSafeObject()),
     };
   }
 
@@ -60,7 +60,10 @@ export class ProjectController {
    * GET /api/projects/:id
    */
   @Get(':id')
-  async findOne(@Param('id') id: string, @TenantId() tenantId: string) {
+  async findOne(
+    @Param('id') id: string,
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const project = await this.projectService.findOne(id, tenantId);
     return {
       success: true,
@@ -76,8 +79,8 @@ export class ProjectController {
   async update(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
-    @TenantId() tenantId: string,
-  ) {
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const project = await this.projectService.update(id, tenantId, updateProjectDto);
     return {
       success: true,
@@ -91,7 +94,7 @@ export class ProjectController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string, @TenantId() tenantId: string) {
+  async remove(@Param('id') id: string, @TenantId() tenantId: string): Promise<void> {
     await this.projectService.remove(id, tenantId);
   }
 
@@ -100,7 +103,10 @@ export class ProjectController {
    * GET /api/projects/:id/statistics
    */
   @Get(':id/statistics')
-  async getStatistics(@Param('id') id: string, @TenantId() tenantId: string) {
+  async getStatistics(
+    @Param('id') id: string,
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const stats = await this.projectService.getStatistics(id, tenantId);
     return {
       success: true,
@@ -114,7 +120,10 @@ export class ProjectController {
    * Enhanced statistics with upload and shipment counts
    */
   @Get(':id/stats')
-  async getStats(@Param('id') id: string, @TenantId() tenantId: string) {
+  async getStats(
+    @Param('id') id: string,
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const stats = await this.projectService.getProjectStats(id, tenantId);
     return {
       success: true,
@@ -132,14 +141,9 @@ export class ProjectController {
     @Param('id') projectId: string,
     @Body() createNoteDto: CreateNoteDto,
     @TenantId() tenantId: string,
-    @UserId() userId: string,
-  ) {
-    const note = await this.projectService.addNote(
-      projectId,
-      tenantId,
-      createNoteDto,
-      userId
-    );
+    @UserId() userId: string
+  ): Promise<{ success: boolean; data: unknown }> {
+    const note = await this.projectService.addNote(projectId, tenantId, createNoteDto, userId);
     return {
       success: true,
       data: note.toSafeObject(),
@@ -151,11 +155,14 @@ export class ProjectController {
    * GET /api/projects/:id/notes
    */
   @Get(':id/notes')
-  async getNotes(@Param('id') projectId: string, @TenantId() tenantId: string) {
+  async getNotes(
+    @Param('id') projectId: string,
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown[] }> {
     const notes = await this.projectService.getNotes(projectId, tenantId);
     return {
       success: true,
-      data: notes.map(n => n.toSafeObject()),
+      data: notes.map((n) => n.toSafeObject()),
     };
   }
 
@@ -168,14 +175,9 @@ export class ProjectController {
     @Param('id') projectId: string,
     @Param('noteId') noteId: string,
     @Body() updates: Partial<CreateNoteDto>,
-    @TenantId() tenantId: string,
-  ) {
-    const note = await this.projectService.updateNote(
-      noteId,
-      projectId,
-      tenantId,
-      updates
-    );
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
+    const note = await this.projectService.updateNote(noteId, projectId, tenantId, updates);
     return {
       success: true,
       data: note.toSafeObject(),
@@ -190,8 +192,8 @@ export class ProjectController {
   async resolveNote(
     @Param('id') projectId: string,
     @Param('noteId') noteId: string,
-    @TenantId() tenantId: string,
-  ) {
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown }> {
     const note = await this.projectService.resolveNote(noteId, projectId, tenantId);
     return {
       success: true,
@@ -204,11 +206,14 @@ export class ProjectController {
    * GET /api/projects/:id/reports
    */
   @Get(':id/reports')
-  async getReports(@Param('id') projectId: string, @TenantId() tenantId: string) {
+  async getReports(
+    @Param('id') projectId: string,
+    @TenantId() tenantId: string
+  ): Promise<{ success: boolean; data: unknown[] }> {
     const reports = await this.projectService.getReports(projectId, tenantId);
     return {
       success: true,
-      data: reports.map(r => r.toSafeObject()),
+      data: reports.map((r) => r.toSafeObject()),
     };
   }
 }

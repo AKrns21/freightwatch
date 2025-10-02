@@ -35,17 +35,7 @@ import { ParsingModule } from '@/modules/parsing/parsing.module';
     ]),
     ParsingModule,
   ],
-  providers: [
-    ZoneCalculatorService,
-    FxService,
-    TariffEngineService,
-    TariffPdfParserService,
-  ],
-  exports: [
-    ZoneCalculatorService,
-    FxService,
-    TariffEngineService,
-    TariffPdfParserService,
-  ],
+  providers: [ZoneCalculatorService, FxService, TariffEngineService, TariffPdfParserService],
+  exports: [ZoneCalculatorService, FxService, TariffEngineService, TariffPdfParserService],
 })
 export class TariffModule {}

@@ -57,10 +57,12 @@ export class LlmParserService {
         model: 'claude-sonnet-4-20250514',
         max_tokens: options?.max_tokens || 4000,
         temperature: options?.temperature || 0,
-        messages: [{
-          role: 'user',
-          content: prompt,
-        }],
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
       });
 
       // Parse response
@@ -76,9 +78,7 @@ export class LlmParserService {
       });
 
       return result;
-
     } catch (error: unknown) {
-      
       this.logger.error({
         event: 'llm_analysis_error',
         filename: context.filename,
@@ -106,7 +106,6 @@ export class LlmParserService {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         return XLSX.utils.sheet_to_csv(sheet);
       } catch (error: unknown) {
-        
         this.logger.warn('Failed to parse Excel file, falling back to raw buffer');
         return buffer.toString('utf-8', 0, 5000);
       }
@@ -119,7 +118,6 @@ export class LlmParserService {
         const data = await pdfParse(buffer);
         return data.text;
       } catch (error: unknown) {
-        
         this.logger.warn('Failed to parse PDF file');
         throw new Error('PDF parsing not available');
       }
@@ -262,7 +260,7 @@ Analyze this file and provide a structured JSON response with:
     _originalContent: string
   ): LlmParseResult {
     // Extract text content from response
-    const textContent = response.content.find(c => c.type === 'text');
+    const textContent = response.content.find((c) => c.type === 'text');
 
     if (!textContent || textContent.type !== 'text') {
       throw new Error('No text response from LLM');
@@ -271,8 +269,8 @@ Analyze this file and provide a structured JSON response with:
     const rawText = textContent.text;
 
     // Try to extract JSON from markdown code blocks
-    const jsonMatch = rawText.match(/```json\n([\s\S]*?)\n```/) ||
-                      rawText.match(/```\n([\s\S]*?)\n```/);
+    const jsonMatch =
+      rawText.match(/```json\n([\s\S]*?)\n```/) || rawText.match(/```\n([\s\S]*?)\n```/);
 
     const jsonText = jsonMatch ? jsonMatch[1] : rawText;
 
@@ -291,9 +289,7 @@ Analyze this file and provide a structured JSON response with:
         needs_review: analysis.confidence < 0.85 || (analysis.issues || []).length > 0,
         raw_analysis: rawText,
       };
-
     } catch (error: unknown) {
-      
       this.logger.error({
         event: 'llm_response_parse_error',
         error: (error as Error).message,
@@ -306,11 +302,13 @@ Analyze this file and provide a structured JSON response with:
         confidence: 0.0,
         description: 'Failed to parse LLM response',
         column_mappings: [],
-        issues: [{
-          type: 'ambiguous',
-          severity: 'critical',
-          description: 'LLM analysis failed - manual review required',
-        }],
+        issues: [
+          {
+            type: 'ambiguous',
+            severity: 'critical',
+            description: 'LLM analysis failed - manual review required',
+          },
+        ],
         suggested_actions: ['Manually review and map columns'],
         needs_review: true,
         raw_analysis: rawText,
@@ -323,8 +321,8 @@ Analyze this file and provide a structured JSON response with:
    */
   private normalizeColumnMappings(mappings: any[]): ColumnMapping[] {
     return mappings
-      .filter(m => m.confidence >= 0.7) // Only keep confident mappings
-      .map(m => ({
+      .filter((m) => m.confidence >= 0.7) // Only keep confident mappings
+      .map((m) => ({
         column: m.column || '',
         field: m.field || '',
         confidence: parseFloat(m.confidence) || 0.0,
@@ -338,7 +336,7 @@ Analyze this file and provide a structured JSON response with:
    * Normalize data quality issues from LLM response
    */
   private normalizeIssues(issues: any[]): DataQualityIssue[] {
-    return issues.map(i => ({
+    return issues.map((i) => ({
       type: i.type || 'ambiguous',
       severity: i.severity || 'medium',
       description: i.description || '',

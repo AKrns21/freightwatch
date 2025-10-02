@@ -67,14 +67,14 @@ export class InvoiceHeader {
     nullable: true,
     comment: 'Raw invoice data as parsed',
   })
-  source_data: Record<string, any>;
+  source_data: Record<string, unknown>;
 
   @Column({
     type: 'jsonb',
     default: {},
     comment: 'Additional metadata (parsing method, confidence, etc.)',
   })
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 
   @OneToMany(() => InvoiceLine, (line) => line.invoice)
   lines: InvoiceLine[];
@@ -91,8 +91,8 @@ export class InvoiceHeader {
   /**
    * Get safe object for API responses (exclude sensitive data)
    */
-  toSafeObject(): Partial<InvoiceHeader> {
-    const { source_data, ...safe } = this;
-    return safe;
+  toSafeObject(): Omit<InvoiceHeader, 'source_data'> {
+    const { source_data: _source_data, ...safe } = this;
+    return safe as Omit<InvoiceHeader, 'source_data'>;
   }
 }

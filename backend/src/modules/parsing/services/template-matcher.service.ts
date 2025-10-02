@@ -26,7 +26,7 @@ export class TemplateMatcherService {
 
   constructor(
     @InjectRepository(ParsingTemplate)
-    private readonly templateRepo: Repository<ParsingTemplate>,
+    private readonly templateRepo: Repository<ParsingTemplate>
   ) {}
 
   /**
@@ -59,7 +59,7 @@ export class TemplateMatcherService {
     const characteristics = await this.extractCharacteristics(upload, fileContent);
 
     // Score each template
-    const scored = templates.map(template => {
+    const scored = templates.map((template) => {
       const score = this.scoreTemplate(template, characteristics);
       return { template, score };
     });
@@ -109,15 +109,12 @@ export class TemplateMatcherService {
     const templates = await this.templateRepo
       .createQueryBuilder('template')
       .where('template.deleted_at IS NULL')
-      .andWhere(
-        '(template.tenant_id IS NULL OR template.tenant_id = :tenantId)',
-        { tenantId }
-      )
+      .andWhere('(template.tenant_id IS NULL OR template.tenant_id = :tenantId)', { tenantId })
       .orderBy('template.usage_count', 'DESC')
       .getMany();
 
     // Filter by mime type compatibility
-    return templates.filter(t => this.isMimeTypeCompatible(t, mimeType));
+    return templates.filter((t) => this.isMimeTypeCompatible(t, mimeType));
   }
 
   /**
@@ -162,7 +159,7 @@ export class TemplateMatcherService {
       // Try to detect headers (assume first line is header if comma-separated)
       if (lines[0]?.includes(',') || lines[0]?.includes(';')) {
         const separator = lines[0].includes(';') ? ';' : ',';
-        (characteristics as any)['headers'] = lines[0].split(separator).map(h => h.trim());
+        (characteristics as any)['headers'] = lines[0].split(separator).map((h) => h.trim());
       }
 
       (characteristics as any)['firstLines'] = lines;
@@ -201,7 +198,9 @@ export class TemplateMatcherService {
           reasons.push('Filename pattern match');
         }
       } catch (error) {
-        this.logger.warn(`Invalid regex in template ${template.id}: ${template.detection.filename_pattern}`);
+        this.logger.warn(
+          `Invalid regex in template ${template.id}: ${template.detection.filename_pattern}`
+        );
       }
     }
 
@@ -214,11 +213,14 @@ export class TemplateMatcherService {
       );
 
       if (template.detection.header_keywords.length > 0) {
-        const headerScore = (matchedKeywords.length / template.detection.header_keywords.length) * 0.5;
+        const headerScore =
+          (matchedKeywords.length / template.detection.header_keywords.length) * 0.5;
         score += headerScore;
 
         if (matchedKeywords.length > 0) {
-          reasons.push(`${matchedKeywords.length}/${template.detection.header_keywords.length} header keywords matched`);
+          reasons.push(
+            `${matchedKeywords.length}/${template.detection.header_keywords.length} header keywords matched`
+          );
         }
       }
     }
@@ -271,11 +273,7 @@ export class TemplateMatcherService {
    * Update template usage statistics
    */
   private async updateTemplateUsage(templateId: string): Promise<void> {
-    await this.templateRepo.increment(
-      { id: templateId },
-      'usage_count',
-      1
-    );
+    await this.templateRepo.increment({ id: templateId }, 'usage_count', 1);
 
     await this.templateRepo.update(templateId, {
       last_used_at: new Date(),
@@ -285,10 +283,7 @@ export class TemplateMatcherService {
   /**
    * Get templates by category
    */
-  async getTemplatesByCategory(
-    tenantId: string,
-    category: string
-  ): Promise<ParsingTemplate[]> {
+  async getTemplatesByCategory(tenantId: string, category: string): Promise<ParsingTemplate[]> {
     return this.templateRepo.find({
       where: [
         { tenant_id: IsNull(), template_category: category, deleted_at: IsNull() },

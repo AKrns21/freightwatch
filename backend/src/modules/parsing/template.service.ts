@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository , IsNull } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { ParsingTemplate } from './entities/parsing-template.entity';
 import { Upload } from '@/modules/upload/entities/upload.entity';
 
@@ -35,7 +35,7 @@ export class TemplateService {
     @InjectRepository(ParsingTemplate)
     private readonly templateRepo: Repository<ParsingTemplate>,
     @InjectRepository(Upload)
-    private readonly uploadRepo: Repository<Upload>,
+    private readonly uploadRepo: Repository<Upload>
   ) {}
 
   /**
@@ -46,7 +46,7 @@ export class TemplateService {
     tenantId: string,
     uploadId: string,
     mappings: any[],
-    templateName: string,
+    templateName: string
   ): Promise<ParsingTemplate> {
     // Convert array mappings to Record format
     const mappingsRecord: Record<string, string> = {};
@@ -68,7 +68,7 @@ export class TemplateService {
   async createFromUpload(
     uploadId: string,
     tenantId: string,
-    options: CreateTemplateOptions,
+    options: CreateTemplateOptions
   ): Promise<ParsingTemplate> {
     this.logger.log({
       event: 'create_template_from_upload',
@@ -88,9 +88,7 @@ export class TemplateService {
     // Extract detection rules from upload
     const detection = options.detection_rules || {
       filename_pattern: this.extractFilenamePattern(upload.filename),
-      header_keywords: this.extractHeaderKeywords(
-        options.mappings,
-      ),
+      header_keywords: this.extractHeaderKeywords(options.mappings),
       mime_types: [upload.mime_type],
     };
 
@@ -127,7 +125,7 @@ export class TemplateService {
   async update(
     templateId: string,
     tenantId: string,
-    updates: Partial<CreateTemplateOptions>,
+    updates: Partial<CreateTemplateOptions>
   ): Promise<ParsingTemplate> {
     const template = await this.templateRepo.findOne({
       where: { id: templateId, tenant_id: tenantId },
@@ -191,10 +189,7 @@ export class TemplateService {
   /**
    * Get templates by category
    */
-  async findByCategory(
-    tenantId: string,
-    category: string,
-  ): Promise<ParsingTemplate[]> {
+  async findByCategory(tenantId: string, category: string): Promise<ParsingTemplate[]> {
     return this.templateRepo.find({
       where: [
         {
@@ -216,11 +211,7 @@ export class TemplateService {
    * Increment template usage counter
    */
   async incrementUsage(templateId: string): Promise<void> {
-    await this.templateRepo.increment(
-      { id: templateId },
-      'usage_count',
-      1,
-    );
+    await this.templateRepo.increment({ id: templateId }, 'usage_count', 1);
 
     await this.templateRepo.update(templateId, {
       last_used_at: new Date(),
@@ -248,13 +239,9 @@ export class TemplateService {
   /**
    * Extract header keywords from mappings
    */
-  private extractHeaderKeywords(
-    mappings: Record<string, string>,
-  ): string[] {
+  private extractHeaderKeywords(mappings: Record<string, string>): string[] {
     // Use the source column names as keywords
-    const keywords = Object.keys(mappings).map((key) =>
-      key.toLowerCase().trim(),
-    );
+    const keywords = Object.keys(mappings).map((key) => key.toLowerCase().trim());
 
     return [...new Set(keywords)]; // Deduplicate
   }
@@ -262,18 +249,12 @@ export class TemplateService {
   /**
    * Detect template category from upload and mappings
    */
-  private detectCategory(
-    _upload: Upload,
-    mappings: Record<string, string>,
-  ): string {
+  private detectCategory(_upload: Upload, mappings: Record<string, string>): string {
     // Check for common field patterns
     const fields = Object.values(mappings).map((f) => f.toLowerCase());
 
     // Invoice detection
-    if (
-      fields.some((f) => f.includes('invoice')) ||
-      fields.some((f) => f.includes('line'))
-    ) {
+    if (fields.some((f) => f.includes('invoice')) || fields.some((f) => f.includes('line'))) {
       return 'invoice';
     }
 
@@ -302,11 +283,7 @@ export class TemplateService {
   /**
    * Clone template with modifications
    */
-  async clone(
-    templateId: string,
-    tenantId: string,
-    newName: string,
-  ): Promise<ParsingTemplate> {
+  async clone(templateId: string, tenantId: string, newName: string): Promise<ParsingTemplate> {
     const original = await this.templateRepo.findOne({
       where: { id: templateId },
     });
@@ -332,9 +309,7 @@ export class TemplateService {
   /**
    * Get template statistics
    */
-  async getStatistics(
-    tenantId: string,
-  ): Promise<{
+  async getStatistics(tenantId: string): Promise<{
     total: number;
     by_category: Record<string, number>;
     most_used: ParsingTemplate[];

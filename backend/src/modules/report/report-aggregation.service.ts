@@ -57,7 +57,7 @@ export class ReportAggregationService {
     @InjectRepository(Shipment)
     private readonly shipmentRepo: Repository<Shipment>,
     @InjectRepository(ShipmentBenchmark)
-    private readonly benchmarkRepo: Repository<ShipmentBenchmark>,
+    private readonly benchmarkRepo: Repository<ShipmentBenchmark>
   ) {}
 
   /**
@@ -65,7 +65,7 @@ export class ReportAggregationService {
    */
   async calculateProjectStatistics(
     projectId: string,
-    tenantId: string,
+    tenantId: string
   ): Promise<ProjectStatistics> {
     this.logger.log({
       event: 'calculate_project_statistics_start',
@@ -87,7 +87,7 @@ export class ReportAggregationService {
     });
 
     // Filter by project_id if needed
-    const filtered = benchmarks.filter(b => b.shipment?.project_id === projectId);
+    const filtered = benchmarks.filter((b) => b.shipment?.project_id === projectId);
 
     // Create benchmark map for quick lookup
     const benchmarkMap = new Map<string, ShipmentBenchmark>();
@@ -131,20 +131,12 @@ export class ReportAggregationService {
       }
     }
 
-    const avgCompleteness = shipments.length > 0
-      ? round(completenessSum / shipments.length)
-      : 0;
+    const avgCompleteness = shipments.length > 0 ? round(completenessSum / shipments.length) : 0;
 
-    const overpayRate = shipments.length > 0
-      ? round((overpayCount / shipments.length) * 100)
-      : 0;
+    const overpayRate = shipments.length > 0 ? round((overpayCount / shipments.length) * 100) : 0;
 
     // Calculate carrier-level aggregations
-    const carriers = await this.aggregateByCarrier(
-      shipments,
-      benchmarkMap,
-      tenantId,
-    );
+    const carriers = await this.aggregateByCarrier(shipments, benchmarkMap, tenantId);
 
     const statistics: ProjectStatistics = {
       total_shipments: shipments.length,
@@ -177,13 +169,16 @@ export class ReportAggregationService {
   private async aggregateByCarrier(
     shipments: Shipment[],
     benchmarkMap: Map<string, ShipmentBenchmark>,
-    _tenantId: string,
+    _tenantId: string
   ): Promise<CarrierAggregation[]> {
     // Group by carrier
-    const carrierMap = new Map<string, {
-      name: string;
-      shipments: Shipment[];
-    }>();
+    const carrierMap = new Map<
+      string,
+      {
+        name: string;
+        shipments: Shipment[];
+      }
+    >();
 
     for (const shipment of shipments) {
       if (!shipment.carrier_id) continue;
@@ -238,13 +233,10 @@ export class ReportAggregationService {
         completenessSum += shipment.completeness_score ?? 0;
       }
 
-      const avgDeltaPct = benchmarkedCount > 0
-        ? round(deltaPctSum / benchmarkedCount)
-        : 0;
+      const avgDeltaPct = benchmarkedCount > 0 ? round(deltaPctSum / benchmarkedCount) : 0;
 
-      const avgCompleteness = data.shipments.length > 0
-        ? round(completenessSum / data.shipments.length)
-        : 0;
+      const avgCompleteness =
+        data.shipments.length > 0 ? round(completenessSum / data.shipments.length) : 0;
 
       results.push({
         carrier_id: carrierId,
@@ -270,10 +262,7 @@ export class ReportAggregationService {
   /**
    * Calculate data completeness for project
    */
-  async calculateDataCompleteness(
-    projectId: string,
-    tenantId: string,
-  ): Promise<number> {
+  async calculateDataCompleteness(projectId: string, tenantId: string): Promise<number> {
     const shipments = await this.shipmentRepo.find({
       where: { project_id: projectId, tenant_id: tenantId },
       select: ['completeness_score'],
@@ -281,10 +270,7 @@ export class ReportAggregationService {
 
     if (shipments.length === 0) return 0;
 
-    const sum = shipments.reduce(
-      (acc, s) => acc + (s.completeness_score ?? 0),
-      0,
-    );
+    const sum = shipments.reduce((acc, s) => acc + (s.completeness_score ?? 0), 0);
 
     return round(sum / shipments.length);
   }
@@ -295,7 +281,7 @@ export class ReportAggregationService {
   async getTopOverpays(
     projectId: string,
     tenantId: string,
-    limit: number = 10,
+    limit: number = 10
   ): Promise<ShipmentBenchmark[]> {
     const benchmarks = await this.benchmarkRepo
       .createQueryBuilder('benchmark')
@@ -316,7 +302,7 @@ export class ReportAggregationService {
    */
   async getDateRange(
     projectId: string,
-    tenantId: string,
+    tenantId: string
   ): Promise<{ start_date: Date | null; end_date: Date | null }> {
     const result = await this.shipmentRepo
       .createQueryBuilder('s')

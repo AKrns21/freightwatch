@@ -57,7 +57,7 @@ describe('FxService', () => {
         rate_date: new Date('2024-02-15'),
         from_ccy: 'EUR',
         to_ccy: 'USD',
-        rate: 1.0850,
+        rate: 1.085,
         source: 'ecb',
       } as FxRate;
 
@@ -65,7 +65,7 @@ describe('FxService', () => {
 
       const result = await service.getRate('EUR', 'USD', testDate);
 
-      expect(result).toBe(1.0850);
+      expect(result).toBe(1.085);
       expect(fxRateRepository.findOne).toHaveBeenCalledWith({
         where: {
           from_ccy: 'EUR',
@@ -81,11 +81,12 @@ describe('FxService', () => {
     it('should try inverse rate when direct rate not found', async () => {
       fxRateRepository.findOne
         .mockResolvedValueOnce(null) // Direct rate not found
-        .mockResolvedValueOnce({     // Inverse rate found
+        .mockResolvedValueOnce({
+          // Inverse rate found
           rate_date: new Date('2024-02-15'),
           from_ccy: 'USD',
           to_ccy: 'EUR',
-          rate: 0.9220,
+          rate: 0.922,
           source: 'ecb',
         } as FxRate);
 
@@ -93,12 +94,12 @@ describe('FxService', () => {
 
       expect(result).toBeCloseTo(1.0846, 4); // 1 / 0.9220
       expect(fxRateRepository.findOne).toHaveBeenCalledTimes(2);
-      
+
       // Check inverse lookup was called
       expect(fxRateRepository.findOne).toHaveBeenNthCalledWith(2, {
         where: {
           from_ccy: 'USD', // Swapped
-          to_ccy: 'EUR',   // Swapped
+          to_ccy: 'EUR', // Swapped
           rate_date: expect.any(Object),
         },
         order: {
@@ -110,9 +111,7 @@ describe('FxService', () => {
     it('should throw NotFoundException when no rate found', async () => {
       fxRateRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.getRate('EUR', 'XYZ', testDate)
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getRate('EUR', 'XYZ', testDate)).rejects.toThrow(NotFoundException);
 
       expect(fxRateRepository.findOne).toHaveBeenCalledTimes(2); // Direct + inverse
     });
@@ -145,17 +144,15 @@ describe('FxService', () => {
     it('should handle database errors gracefully', async () => {
       fxRateRepository.findOne.mockRejectedValue(new Error('Database connection failed'));
 
-      await expect(
-        service.getRate('EUR', 'USD', testDate)
-      ).rejects.toThrow('FX rate lookup failed: Database connection failed');
+      await expect(service.getRate('EUR', 'USD', testDate)).rejects.toThrow(
+        'FX rate lookup failed: Database connection failed'
+      );
     });
 
     it('should preserve NotFoundException without wrapping', async () => {
       fxRateRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.getRate('EUR', 'XYZ', testDate)
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getRate('EUR', 'XYZ', testDate)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -168,15 +165,15 @@ describe('FxService', () => {
       ];
 
       fxRateRepository.findOne
-        .mockResolvedValueOnce({ rate: 1.0850 } as FxRate) // EUR/USD
+        .mockResolvedValueOnce({ rate: 1.085 } as FxRate) // EUR/USD
         .mockResolvedValueOnce({ rate: 0.9875 } as FxRate); // EUR/CHF
 
       const results = await service.bulkGetRates(requests);
 
       expect(results.size).toBe(2); // Should deduplicate
-      expect(results.get('EUR-USD-Fri Mar 01 2024')).toBe(1.0850);
+      expect(results.get('EUR-USD-Fri Mar 01 2024')).toBe(1.085);
       expect(results.get('EUR-CHF-Fri Mar 01 2024')).toBe(0.9875);
-      
+
       // Should only call repository twice due to caching
       expect(fxRateRepository.findOne).toHaveBeenCalledTimes(2);
     });
@@ -189,7 +186,7 @@ describe('FxService', () => {
       ];
 
       fxRateRepository.findOne
-        .mockResolvedValueOnce({ rate: 1.0850 } as FxRate)
+        .mockResolvedValueOnce({ rate: 1.085 } as FxRate)
         .mockResolvedValueOnce(null) // EUR/XYZ direct fails
         .mockResolvedValueOnce(null) // EUR/XYZ inverse fails
         .mockResolvedValueOnce({ rate: 0.9875 } as FxRate);
@@ -197,7 +194,7 @@ describe('FxService', () => {
       const results = await service.bulkGetRates(requests);
 
       expect(results.size).toBe(2); // Should have 2 successful results
-      expect(results.get('EUR-USD-Fri Mar 01 2024')).toBe(1.0850);
+      expect(results.get('EUR-USD-Fri Mar 01 2024')).toBe(1.085);
       expect(results.get('EUR-CHF-Fri Mar 01 2024')).toBe(0.9875);
     });
   });
@@ -218,7 +215,7 @@ describe('FxService', () => {
         rate_date: new Date('2023-01-01'),
         from_ccy: 'EUR',
         to_ccy: 'CHF',
-        rate: 0.9850,
+        rate: 0.985,
         source: 'manual',
       });
 
@@ -226,7 +223,7 @@ describe('FxService', () => {
         rate_date: new Date('2023-01-01'),
         from_ccy: 'EUR',
         to_ccy: 'USD',
-        rate: 1.0650,
+        rate: 1.065,
         source: 'manual',
       });
     });
@@ -236,15 +233,15 @@ describe('FxService', () => {
         rate_date: new Date('2023-01-01'),
         from_ccy: 'EUR',
         to_ccy: 'USD',
-        rate: 1.0650,
+        rate: 1.065,
         source: 'existing',
       } as FxRate;
 
       fxRateRepository.findOne
         .mockResolvedValueOnce(existingRate) // EUR/CHF exists
-        .mockResolvedValueOnce(null)         // EUR/USD doesn't exist
-        .mockResolvedValueOnce(null)         // EUR/GBP doesn't exist
-        .mockResolvedValueOnce(null);        // EUR/PLN doesn't exist
+        .mockResolvedValueOnce(null) // EUR/USD doesn't exist
+        .mockResolvedValueOnce(null) // EUR/GBP doesn't exist
+        .mockResolvedValueOnce(null); // EUR/PLN doesn't exist
 
       fxRateRepository.create.mockImplementation((data) => data as FxRate);
       fxRateRepository.save.mockResolvedValue({} as FxRate);
@@ -293,31 +290,31 @@ describe('FxService', () => {
       fxRateRepository.create.mockReturnValue({} as FxRate);
       fxRateRepository.save.mockResolvedValue({} as FxRate);
 
-      await service.addRate('eur', 'usd', 1.0850, testDate, 'api');
+      await service.addRate('eur', 'usd', 1.085, testDate, 'api');
 
       expect(fxRateRepository.create).toHaveBeenCalledWith({
         rate_date: testDate,
         from_ccy: 'EUR',
         to_ccy: 'USD',
-        rate: 1.0850,
+        rate: 1.085,
         source: 'api',
       });
     });
 
     it('should reject same currency pairs', async () => {
-      await expect(
-        service.addRate('EUR', 'EUR', 1.0, testDate, 'manual')
-      ).rejects.toThrow('Cannot add FX rate for same currency pair');
+      await expect(service.addRate('EUR', 'EUR', 1.0, testDate, 'manual')).rejects.toThrow(
+        'Cannot add FX rate for same currency pair'
+      );
     });
 
     it('should reject negative or zero rates', async () => {
-      await expect(
-        service.addRate('EUR', 'USD', 0, testDate, 'manual')
-      ).rejects.toThrow('FX rate must be positive');
+      await expect(service.addRate('EUR', 'USD', 0, testDate, 'manual')).rejects.toThrow(
+        'FX rate must be positive'
+      );
 
-      await expect(
-        service.addRate('EUR', 'USD', -1.5, testDate, 'manual')
-      ).rejects.toThrow('FX rate must be positive');
+      await expect(service.addRate('EUR', 'USD', -1.5, testDate, 'manual')).rejects.toThrow(
+        'FX rate must be positive'
+      );
     });
   });
 
@@ -328,12 +325,14 @@ describe('FxService', () => {
         union: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([
-          { currency: 'USD' },
-          { currency: 'CHF' },
-          { currency: 'GBP' },
-          { currency: 'EUR' },
-        ]),
+        getRawMany: jest
+          .fn()
+          .mockResolvedValue([
+            { currency: 'USD' },
+            { currency: 'CHF' },
+            { currency: 'GBP' },
+            { currency: 'EUR' },
+          ]),
       };
 
       fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
@@ -349,10 +348,7 @@ describe('FxService', () => {
         union: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([
-          { currency: 'USD' },
-          { currency: 'CHF' },
-        ]),
+        getRawMany: jest.fn().mockResolvedValue([{ currency: 'USD' }, { currency: 'CHF' }]),
       };
 
       fxRateRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);

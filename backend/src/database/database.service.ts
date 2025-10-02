@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository, EntityTarget, ObjectLiteral} from 'typeorm';
+import { DataSource, QueryRunner, Repository, EntityTarget, ObjectLiteral } from 'typeorm';
 
 /**
  * Database service providing tenant-aware database operations
- * 
+ *
  * This service is CRITICAL for Row Level Security (RLS) to work properly.
  * It manages the PostgreSQL session variable 'app.current_tenant' that
  * is used by RLS policies to filter data by tenant.
@@ -15,15 +15,15 @@ export class DatabaseService {
 
   constructor(
     @InjectDataSource()
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   /**
    * Set the tenant context for Row Level Security
-   * 
+   *
    * CRITICAL: This must be called before any tenant-scoped queries
    * to ensure RLS policies work correctly.
-   * 
+   *
    * @param tenantId - The UUID of the tenant to set context for
    * @throws Error if tenantId is invalid or setting context fails
    */
@@ -41,10 +41,7 @@ export class DatabaseService {
     try {
       // Use parameterized query to prevent SQL injection
       // Note: PostgreSQL SET requires special handling - we use format() function
-      await this.dataSource.query(
-        `SELECT set_config('app.current_tenant', $1, true)`,
-        [tenantId]
-      );
+      await this.dataSource.query(`SELECT set_config('app.current_tenant', $1, true)`, [tenantId]);
 
       this.logger.debug(`Tenant context set to: ${tenantId}`);
     } catch (error) {
@@ -56,7 +53,7 @@ export class DatabaseService {
 
   /**
    * Reset the tenant context (clear RLS context)
-   * 
+   *
    * This should be called when switching tenants or at the end
    * of request processing to clean up the session state.
    */
@@ -73,16 +70,15 @@ export class DatabaseService {
 
   /**
    * Get the current tenant context
-   * 
+   *
    * @returns The current tenant ID or null if not set
    */
   async getCurrentTenantContext(): Promise<string | null> {
     try {
-      const result = await this.dataSource.query(
-        'SELECT current_setting($1, true) as tenant_id',
-        ['app.current_tenant']
-      );
-      
+      const result = await this.dataSource.query('SELECT current_setting($1, true) as tenant_id', [
+        'app.current_tenant',
+      ]);
+
       const tenantId = result[0]?.tenant_id;
       return tenantId && tenantId !== '' ? tenantId : null;
     } catch (error) {
@@ -94,7 +90,7 @@ export class DatabaseService {
 
   /**
    * Execute a query with automatic tenant context management
-   * 
+   *
    * @param tenantId - Tenant ID to set context for
    * @param queryFn - Function that executes the database operations
    * @returns Result from the query function
@@ -104,19 +100,16 @@ export class DatabaseService {
     queryFn: (queryRunner: QueryRunner) => Promise<T>
   ): Promise<T> {
     const queryRunner = this.dataSource.createQueryRunner();
-    
+
     try {
       await queryRunner.startTransaction();
 
       // Set tenant context within the transaction using parameterized query
-      await queryRunner.query(
-        `SELECT set_config('app.current_tenant', $1, true)`,
-        [tenantId]
-      );
+      await queryRunner.query(`SELECT set_config('app.current_tenant', $1, true)`, [tenantId]);
 
       // Execute the query function
       const result = await queryFn(queryRunner);
-      
+
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
@@ -131,7 +124,7 @@ export class DatabaseService {
 
   /**
    * Get a repository for the given entity
-   * 
+   *
    * Note: The repository will use the current tenant context
    * set by setTenantContext()
    */
@@ -141,12 +134,12 @@ export class DatabaseService {
 
   /**
    * Execute a raw SQL query
-   * 
+   *
    * @param query - SQL query string
    * @param parameters - Query parameters
    * @returns Query result
    */
-  async query(query: string, parameters?: any[]): Promise<any> {
+  async query<T = unknown>(query: string, parameters?: unknown[]): Promise<T> {
     try {
       return await this.dataSource.query(query, parameters);
     } catch (error) {
@@ -158,19 +151,19 @@ export class DatabaseService {
 
   /**
    * Execute a query and return a single result
-   * 
+   *
    * @param query - SQL query string
    * @param parameters - Query parameters
    * @returns Single row or null
    */
-  async queryOne(query: string, parameters?: any[]): Promise<any> {
-    const results = await this.query(query, parameters);
+  async queryOne<T = unknown>(query: string, parameters?: unknown[]): Promise<T | null> {
+    const results = (await this.query(query, parameters)) as T[];
     return results.length > 0 ? results[0] : null;
   }
 
   /**
    * Create a query runner for transaction management
-   * 
+   *
    * @returns QueryRunner instance
    */
   createQueryRunner(): QueryRunner {
@@ -179,7 +172,7 @@ export class DatabaseService {
 
   /**
    * Get the underlying DataSource
-   * 
+   *
    * @returns DataSource instance
    */
   getDataSource(): DataSource {
@@ -188,7 +181,7 @@ export class DatabaseService {
 
   /**
    * Check if database connection is healthy
-   * 
+   *
    * @returns Promise<boolean> indicating health status
    */
   async isHealthy(): Promise<boolean> {
@@ -204,7 +197,7 @@ export class DatabaseService {
 
   /**
    * Get database connection info for monitoring
-   * 
+   *
    * @returns Connection info object
    */
   async getConnectionInfo(): Promise<{
@@ -216,8 +209,8 @@ export class DatabaseService {
   }> {
     try {
       const currentTenant = await this.getCurrentTenantContext();
-      
-      const pgOptions = this.dataSource.options as any;
+
+      const pgOptions = this.dataSource.options as { database: string; host: string; port: number };
       return {
         isConnected: this.dataSource.isInitialized,
         database: pgOptions.database as string,
@@ -239,7 +232,7 @@ export class DatabaseService {
 
   /**
    * Run database migrations programmatically
-   * 
+   *
    * @returns Promise<void>
    */
   async runMigrations(): Promise<void> {
@@ -256,7 +249,7 @@ export class DatabaseService {
 
   /**
    * Revert the last migration
-   * 
+   *
    * @returns Promise<void>
    */
   async revertLastMigration(): Promise<void> {

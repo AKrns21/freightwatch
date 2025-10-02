@@ -16,8 +16,8 @@ import { DatabaseService } from '@/database/database.service';
  * JWT Payload interface for tenant-aware authentication
  */
 interface JwtPayload {
-  sub: string;        // user ID
-  tenantId: string;   // tenant ID (CRITICAL for RLS)
+  sub: string; // user ID
+  tenantId: string; // tenant ID (CRITICAL for RLS)
   email?: string;
   roles?: string[];
   iat?: number;
@@ -35,11 +35,11 @@ export interface TenantRequest extends Request {
 
 /**
  * CRITICAL: Tenant Isolation Interceptor
- * 
+ *
  * This interceptor is ESSENTIAL for Row Level Security (RLS) to work properly.
  * It extracts the tenantId from the JWT token and sets the PostgreSQL session
  * variable 'app.current_tenant' which is used by RLS policies to filter data.
- * 
+ *
  * Security Flow:
  * 1. Extract JWT from Authorization header
  * 2. Decode and validate JWT payload
@@ -47,7 +47,7 @@ export interface TenantRequest extends Request {
  * 4. Set PostgreSQL session: SET LOCAL app.current_tenant = tenantId
  * 5. Process request (all DB queries now tenant-scoped)
  * 6. Reset context: RESET app.current_tenant
- * 
+ *
  * WITHOUT THIS INTERCEPTOR, TENANT DATA ISOLATION WILL NOT WORK!
  */
 @Injectable()
@@ -56,10 +56,7 @@ export class TenantInterceptor implements NestInterceptor {
 
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<any>> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest<TenantRequest>();
     const startTime = Date.now();
 
@@ -79,9 +76,7 @@ export class TenantInterceptor implements NestInterceptor {
         userId = '00000000-0000-0000-0000-000000000002';
         user = undefined;
 
-        this.logger.debug(
-          '[DEV MODE] No Authorization header - using test tenant',
-        );
+        this.logger.debug('[DEV MODE] No Authorization header - using test tenant');
       } else {
         // Extract and validate JWT token
         const jwtData = await this.extractTenantFromJWT(request);
@@ -99,13 +94,13 @@ export class TenantInterceptor implements NestInterceptor {
       request.user = user;
 
       this.logger.debug(
-        `Tenant context set: ${tenantId} for user: ${userId} (${Date.now() - startTime}ms)`,
+        `Tenant context set: ${tenantId} for user: ${userId} (${Date.now() - startTime}ms)`
       );
 
       return next.handle().pipe(
         tap(() => {
           this.logger.debug(
-            `Request completed for tenant: ${tenantId} (${Date.now() - startTime}ms)`,
+            `Request completed for tenant: ${tenantId} (${Date.now() - startTime}ms)`
           );
         }),
         finalize(async () => {
@@ -113,44 +108,40 @@ export class TenantInterceptor implements NestInterceptor {
             // CRITICAL: Always reset tenant context after request
             await this.databaseService.resetTenantContext();
             this.logger.debug(
-              `Tenant context reset for: ${tenantId} (${Date.now() - startTime}ms)`,
+              `Tenant context reset for: ${tenantId} (${Date.now() - startTime}ms)`
             );
           } catch (error) {
             this.logger.error(
               `Failed to reset tenant context for: ${tenantId}`,
-              (error as Error).stack,
+              (error as Error).stack
             );
           }
-        }),
+        })
       );
     } catch (error) {
       // Reset context on error to prevent context leakage
       try {
         await this.databaseService.resetTenantContext();
       } catch (resetError) {
-        this.logger.error(
-          'Failed to reset tenant context on error',
-          (resetError as Error).stack,
-        );
+        this.logger.error('Failed to reset tenant context on error', (resetError as Error).stack);
       }
 
       this.logger.error(
         `Tenant interceptor error: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw error;
     }
-
   }
   /**
    * Extract tenant ID from JWT token
-   * 
+   *
    * @param request - Express request object
    * @returns Tenant and user information from JWT
    * @throws UnauthorizedException if token is invalid or tenantId missing
    */
   private async extractTenantFromJWT(
-    request: Request,
+    request: Request
   ): Promise<{ tenantId: string; userId: string; user: JwtPayload }> {
     // Extract Authorization header
     const authHeader = request.headers.authorization;
@@ -184,17 +175,13 @@ export class TenantInterceptor implements NestInterceptor {
       }
 
       if (!decoded.tenantId) {
-        throw new UnauthorizedException(
-          'JWT token missing tenantId - tenant isolation required',
-        );
+        throw new UnauthorizedException('JWT token missing tenantId - tenant isolation required');
       }
 
       // Validate tenantId format (UUID)
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(decoded.tenantId)) {
-        throw new UnauthorizedException(
-          `Invalid tenantId format in JWT: ${decoded.tenantId}`,
-        );
+        throw new UnauthorizedException(`Invalid tenantId format in JWT: ${decoded.tenantId}`);
       }
 
       // Check token expiration (if present)
@@ -218,4 +205,3 @@ export class TenantInterceptor implements NestInterceptor {
     }
   }
 }
-

@@ -30,7 +30,7 @@ export class ProjectService {
     @InjectRepository(Upload)
     private readonly uploadRepo: Repository<Upload>,
     @InjectRepository(Shipment)
-    private readonly shipmentRepo: Repository<Shipment>,
+    private readonly shipmentRepo: Repository<Shipment>
   ) {}
 
   /**
@@ -40,7 +40,7 @@ export class ProjectService {
     this.logger.log({
       event: 'project_create',
       tenant_id: tenantId,
-      name: data.name
+      name: data.name,
     });
 
     const project = this.projectRepo.create({
@@ -83,11 +83,7 @@ export class ProjectService {
   /**
    * Update a project
    */
-  async update(
-    id: string,
-    tenantId: string,
-    data: UpdateProjectDto
-  ): Promise<Project> {
+  async update(id: string, tenantId: string, data: UpdateProjectDto): Promise<Project> {
     const project = await this.findOne(id, tenantId);
 
     Object.assign(project, data);
@@ -96,7 +92,7 @@ export class ProjectService {
       event: 'project_update',
       project_id: id,
       tenant_id: tenantId,
-      changes: Object.keys(data)
+      changes: Object.keys(data),
     });
 
     return this.projectRepo.save(project);
@@ -111,7 +107,7 @@ export class ProjectService {
     this.logger.log({
       event: 'project_delete',
       project_id: id,
-      tenant_id: tenantId
+      tenant_id: tenantId,
     });
 
     await this.projectRepo.softDelete(id);
@@ -133,7 +129,7 @@ export class ProjectService {
       event: 'note_create',
       project_id: projectId,
       note_type: note.note_type,
-      created_by: userId
+      created_by: userId,
     });
 
     const consultantNote = this.noteRepo.create({
@@ -184,7 +180,7 @@ export class ProjectService {
     this.logger.log({
       event: 'note_update',
       note_id: noteId,
-      project_id: projectId
+      project_id: projectId,
     });
 
     return this.noteRepo.save(note);
@@ -193,11 +189,7 @@ export class ProjectService {
   /**
    * Resolve a consultant note
    */
-  async resolveNote(
-    noteId: string,
-    projectId: string,
-    tenantId: string
-  ): Promise<ConsultantNote> {
+  async resolveNote(noteId: string, projectId: string, tenantId: string): Promise<ConsultantNote> {
     const note = await this.updateNote(noteId, projectId, tenantId, {
       status: 'resolved' as any,
     });
@@ -227,8 +219,8 @@ export class ProjectService {
     const notes = await this.getNotes(projectId, tenantId);
     const reports = await this.getReports(projectId, tenantId);
 
-    const openNotes = notes.filter(n => n.status === 'open');
-    const criticalNotes = notes.filter(n => n.priority === 'critical');
+    const openNotes = notes.filter((n) => n.status === 'open');
+    const criticalNotes = notes.filter((n) => n.priority === 'critical');
     const latestReport = reports[0];
 
     return {

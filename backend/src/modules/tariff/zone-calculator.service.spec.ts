@@ -92,7 +92,8 @@ describe('ZoneCalculatorService', () => {
         .mockResolvedValueOnce(null) // 5-digit fails
         .mockResolvedValueOnce(null) // 4-digit fails
         .mockResolvedValueOnce(null) // 3-digit fails
-        .mockResolvedValueOnce({    // 2-digit succeeds
+        .mockResolvedValueOnce({
+          // 2-digit succeeds
           zone: 4,
           plz_prefix: '78',
           prefix_len: 2,
@@ -237,7 +238,7 @@ describe('ZoneCalculatorService', () => {
 
     it('should respect date range filters', async () => {
       const futureDate = new Date('2025-01-01');
-      
+
       tariffZoneMapRepository.findOne.mockResolvedValue(null);
       tariffZoneMapRepository.find.mockResolvedValue([]);
 
@@ -269,16 +270,12 @@ describe('ZoneCalculatorService', () => {
         .mockResolvedValueOnce({ zone: 1 } as TariffZoneMap) // First call for 42349
         .mockResolvedValueOnce({ zone: 1 } as TariffZoneMap); // Second call for 42350
 
-      const results = await service.bulkCalculateZones(
-        mockTenantId,
-        mockCarrierId,
-        requests
-      );
+      const results = await service.bulkCalculateZones(mockTenantId, mockCarrierId, requests);
 
       expect(results.size).toBe(2); // Should deduplicate the duplicate request
       expect(results.get('DE-42349-Fri Mar 01 2024')).toBe(1);
       expect(results.get('DE-42350-Fri Mar 01 2024')).toBe(1);
-      
+
       // Should only call repository twice due to caching
       expect(tariffZoneMapRepository.findOne).toHaveBeenCalledTimes(2);
     });
@@ -297,11 +294,7 @@ describe('ZoneCalculatorService', () => {
 
       tariffZoneMapRepository.find.mockResolvedValue([]); // No pattern matches
 
-      const results = await service.bulkCalculateZones(
-        mockTenantId,
-        mockCarrierId,
-        requests
-      );
+      const results = await service.bulkCalculateZones(mockTenantId, mockCarrierId, requests);
 
       expect(results.size).toBe(2); // Should have 2 successful results
       expect(results.get('DE-42349-Fri Mar 01 2024')).toBe(1);
@@ -321,12 +314,7 @@ describe('ZoneCalculatorService', () => {
 
       tariffZoneMapRepository.find.mockResolvedValue(mockMappings);
 
-      const result = await service.getAvailableZones(
-        mockTenantId,
-        mockCarrierId,
-        'DE',
-        testDate
-      );
+      const result = await service.getAvailableZones(mockTenantId, mockCarrierId, 'DE', testDate);
 
       expect(result).toEqual([1, 2, 3, 4]); // Should be sorted and deduplicated
       expect(tariffZoneMapRepository.find).toHaveBeenCalledWith({
@@ -344,12 +332,7 @@ describe('ZoneCalculatorService', () => {
     it('should handle database errors gracefully', async () => {
       tariffZoneMapRepository.find.mockRejectedValue(new Error('Database error'));
 
-      const result = await service.getAvailableZones(
-        mockTenantId,
-        mockCarrierId,
-        'DE',
-        testDate
-      );
+      const result = await service.getAvailableZones(mockTenantId, mockCarrierId, 'DE', testDate);
 
       expect(result).toEqual([]); // Should return empty array on error
     });

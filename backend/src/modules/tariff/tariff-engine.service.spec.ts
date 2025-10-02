@@ -126,7 +126,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -148,11 +148,11 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
-      const expectedTollAmount = 0; // Under 3.5t threshold  
-      const expectedDieselAmount = Math.round(294.30 * (18.5 / 100) * 100) / 100; // 54.45
-      const expectedTotal = 294.30 + expectedTollAmount + expectedDieselAmount; // 348.75
+      const expectedTollAmount = 0; // Under 3.5t threshold
+      const expectedDieselAmount = Math.round(294.3 * (18.5 / 100) * 100) / 100; // 54.45
+      const expectedTotal = 294.3 + expectedTollAmount + expectedDieselAmount; // 348.75
 
-      expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_base_amount).toBe(294.3);
       expect(result.expected_toll_amount).toBe(expectedTollAmount);
       expect(result.expected_diesel_amount).toBe(expectedDieselAmount);
       expect(result.expected_total_amount).toBe(expectedTotal);
@@ -162,8 +162,8 @@ describe('TariffEngineService', () => {
         description: 'Zone 3 base rate (kg)',
         zone: 3,
         weight: 450,
-        rate: 294.30,
-        amount: 294.30,
+        rate: 294.3,
+        amount: 294.3,
         currency: 'EUR',
         note: 'Using actual weight: 450kg',
       });
@@ -178,7 +178,7 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
-        base: 294.30,
+        base: 294.3,
         pct: 18.5,
         value: expectedDieselAmount,
         amount: expectedDieselAmount,
@@ -221,7 +221,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -312,9 +312,9 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
-      expect(result.expected_base_amount).toBe(292.50);
+      expect(result.expected_base_amount).toBe(292.5);
       expect(result.cost_breakdown[0].rate).toBe(0.65);
-      expect(result.cost_breakdown[0].amount).toBe(292.50);
+      expect(result.cost_breakdown[0].amount).toBe(292.5);
     });
 
     it('should handle currency conversion', async () => {
@@ -342,7 +342,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -361,15 +361,17 @@ describe('TariffEngineService', () => {
         valid_until: null,
       } as DieselFloater);
       shipmentBenchmarkRepository.save.mockResolvedValue({} as ShipmentBenchmark);
-      fxService.getRate.mockResolvedValue(0.9850); // EUR to CHF
+      fxService.getRate.mockResolvedValue(0.985); // EUR to CHF
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
 
       expect(fxService.getRate).toHaveBeenCalledWith('EUR', 'CHF', testDate);
       expect(result.expected_base_amount).toBe(289.89); // 294.30 * 0.9850
       expect(result.cost_breakdown[0].currency).toBe('CHF');
-      expect(result.cost_breakdown[0].note).toBe('Using actual weight: 450kg. Converted from EUR using rate 0.985');
-      expect(result.calculation_metadata.fx_rate_used).toBe(0.9850);
+      expect(result.cost_breakdown[0].note).toBe(
+        'Using actual weight: 450kg. Converted from EUR using rate 0.985'
+      );
+      expect(result.calculation_metadata.fx_rate_used).toBe(0.985);
     });
 
     it('should use fallback zone when zone calculation fails', async () => {
@@ -392,7 +394,7 @@ describe('TariffEngineService', () => {
         zone: 1, // Fallback zone for DE
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 250.00,
+        rate_per_shipment: 250.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -415,7 +417,7 @@ describe('TariffEngineService', () => {
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
       expect(result.calculation_metadata.zone_calculated).toBe(1); // Fallback zone
-      expect(result.expected_base_amount).toBe(250.00);
+      expect(result.expected_base_amount).toBe(250.0);
     });
 
     it('should throw error when no applicable tariff found', async () => {
@@ -433,9 +435,9 @@ describe('TariffEngineService', () => {
       } as DieselFloater);
       shipmentBenchmarkRepository.save.mockResolvedValue({} as ShipmentBenchmark);
 
-      await expect(
-        service.calculateExpectedCost(mockShipment as Shipment)
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.calculateExpectedCost(mockShipment as Shipment)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should throw error when no tariff rate found', async () => {
@@ -467,9 +469,9 @@ describe('TariffEngineService', () => {
       } as DieselFloater);
       shipmentBenchmarkRepository.save.mockResolvedValue({} as ShipmentBenchmark);
 
-      await expect(
-        service.calculateExpectedCost(mockShipment as Shipment)
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.calculateExpectedCost(mockShipment as Shipment)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should handle FX conversion failure gracefully', async () => {
@@ -497,7 +499,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -520,8 +522,10 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(chfShipment as Shipment);
 
-      expect(result.expected_base_amount).toBe(294.30); // Original amount
-      expect(result.cost_breakdown[0].note).toBe('Using actual weight: 450kg. Conversion failed, using original EUR amount');
+      expect(result.expected_base_amount).toBe(294.3); // Original amount
+      expect(result.cost_breakdown[0].note).toBe(
+        'Using actual weight: 450kg. Conversion failed, using original EUR amount'
+      );
       expect(result.calculation_metadata.fx_rate_used).toBeUndefined();
     });
 
@@ -551,7 +555,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 4000,
         weight_to_kg: 5000,
-        rate_per_shipment: 2500.00,
+        rate_per_shipment: 2500.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -573,7 +577,7 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(ldmShipment as Shipment);
 
-      expect(result.expected_base_amount).toBe(2500.00);
+      expect(result.expected_base_amount).toBe(2500.0);
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (lm)');
       expect(result.cost_breakdown[0].weight).toBe(4625); // 2.5 × 1850
       expect(result.cost_breakdown[0].note).toBe('LDM weight: 2.5m × 1850kg/m = 4625kg');
@@ -606,7 +610,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 650,
         weight_to_kg: 750,
-        rate_per_shipment: 400.00,
+        rate_per_shipment: 400.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -628,7 +632,7 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(palletShipment as Shipment);
 
-      expect(result.expected_base_amount).toBe(400.00);
+      expect(result.expected_base_amount).toBe(400.0);
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (pallet)');
       expect(result.cost_breakdown[0].weight).toBe(750); // 3 × 250
       expect(result.cost_breakdown[0].note).toBe('Pallet weight: 3 × 250kg/pallet = 750kg');
@@ -639,7 +643,7 @@ describe('TariffEngineService', () => {
         ...mockShipment,
         weight_kg: 800,
         length_m: 0.3, // LDM weight would be 555kg (0.3 × 1850)
-        pallets: 2,     // Pallet weight would be 500kg (2 × 250)
+        pallets: 2, // Pallet weight would be 500kg (2 × 250)
       };
 
       const mockTariffTable: TariffTable = {
@@ -661,7 +665,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 750,
         weight_to_kg: 850,
-        rate_per_shipment: 500.00,
+        rate_per_shipment: 500.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -694,10 +698,12 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(heavyShipment as Shipment);
 
-      expect(result.expected_base_amount).toBe(500.00);
+      expect(result.expected_base_amount).toBe(500.0);
       expect(result.cost_breakdown[0].description).toBe('Zone 3 base rate (kg)');
       expect(result.cost_breakdown[0].weight).toBe(800); // Using actual weight
-      expect(result.cost_breakdown[0].note).toBe('LDM weight 555kg < actual weight, using actual; Pallet weight 500kg < chargeable weight, using current');
+      expect(result.cost_breakdown[0].note).toBe(
+        'LDM weight 555kg < actual weight, using actual; Pallet weight 500kg < chargeable weight, using current'
+      );
     });
 
     it('should calculate diesel surcharge correctly', async () => {
@@ -720,7 +726,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -744,7 +750,7 @@ describe('TariffEngineService', () => {
       const result = await service.calculateExpectedCost(mockShipment as Shipment);
 
       // Base: 294.30 EUR, Toll: 0 EUR (under threshold), Diesel: 18.5% = 54.45 EUR (rounded), Total: 348.75 EUR
-      expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_base_amount).toBe(294.3);
       expect(result.expected_toll_amount).toBe(0);
       expect(result.expected_diesel_amount).toBe(54.45);
       expect(result.expected_total_amount).toBe(348.75);
@@ -760,7 +766,7 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
-        base: 294.30,
+        base: 294.3,
         pct: 18.5,
         value: 54.45,
         amount: 54.45,
@@ -789,7 +795,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -807,7 +813,7 @@ describe('TariffEngineService', () => {
       expect(result.cost_breakdown[2]).toEqual({
         item: 'diesel_surcharge',
         description: 'Diesel surcharge (18.5% on base)',
-        base: 294.30,
+        base: 294.3,
         pct: 18.5,
         value: 54.45,
         amount: 54.45,
@@ -818,7 +824,7 @@ describe('TariffEngineService', () => {
     it('should use invoice toll amount when provided', async () => {
       const shipmentWithToll = {
         ...mockShipment,
-        toll_amount: 15.50,
+        toll_amount: 15.5,
       };
 
       const mockTariffTable: TariffTable = {
@@ -840,7 +846,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -862,12 +868,12 @@ describe('TariffEngineService', () => {
 
       const result = await service.calculateExpectedCost(shipmentWithToll as Shipment);
 
-      expect(result.expected_toll_amount).toBe(15.50);
+      expect(result.expected_toll_amount).toBe(15.5);
       expect(result.cost_breakdown[1]).toEqual({
         item: 'toll',
         description: 'Toll charges (from_invoice)',
-        value: 15.50,
-        amount: 15.50,
+        value: 15.5,
+        amount: 15.5,
         currency: 'EUR',
         note: 'from_invoice',
       });
@@ -899,7 +905,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 3500,
         weight_to_kg: 4500,
-        rate_per_shipment: 600.00,
+        rate_per_shipment: 600.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -959,7 +965,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 3500,
         weight_to_kg: 4500,
-        rate_per_shipment: 300.00,
+        rate_per_shipment: 300.0,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -984,8 +990,8 @@ describe('TariffEngineService', () => {
 
       // Base: 300.00, Toll: 12.00, Diesel base: 312.00 (base + toll)
       // Diesel: 312.00 * 0.185 = 57.72, Total: 300 + 12 + 57.72 = 369.72
-      const expectedBase = 300.00;
-      const expectedToll = 12.00;
+      const expectedBase = 300.0;
+      const expectedToll = 12.0;
       const expectedDieselBase = expectedBase + expectedToll; // 312.00
       const expectedDiesel = Math.round(expectedDieselBase * 0.185 * 100) / 100; // 57.72
       const expectedTotal = expectedBase + expectedToll + expectedDiesel;
@@ -1031,7 +1037,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -1056,7 +1062,7 @@ describe('TariffEngineService', () => {
       const result = await service.calculateExpectedCost(fullShipment as Shipment);
 
       // Verify full benchmark calculation
-      expect(result.expected_base_amount).toBe(294.30);
+      expect(result.expected_base_amount).toBe(294.3);
       expect(result.expected_toll_amount).toBe(0);
       expect(result.expected_diesel_amount).toBe(54.45);
       expect(result.expected_total_amount).toBe(348.75);
@@ -1084,7 +1090,7 @@ describe('TariffEngineService', () => {
         expect.objectContaining({
           shipment_id: 'shipment-full-test',
           tenant_id: mockTenantId,
-          expected_base_amount: 294.30,
+          expected_base_amount: 294.3,
           expected_toll_amount: null,
           expected_diesel_amount: 54.45,
           expected_total_amount: 348.75,
@@ -1096,7 +1102,7 @@ describe('TariffEngineService', () => {
           report_currency: null,
           diesel_basis_used: 'base',
           diesel_pct_used: 18.5,
-        }),
+        })
       );
     });
 
@@ -1104,7 +1110,7 @@ describe('TariffEngineService', () => {
       const expensiveShipment = {
         ...mockShipment,
         id: 'shipment-expensive',
-        actual_total_amount: 400.00, // Expected: 348.75, Delta: +51.25 EUR (+14.7%)
+        actual_total_amount: 400.0, // Expected: 348.75, Delta: +51.25 EUR (+14.7%)
       };
 
       const mockTariffTable: TariffTable = {
@@ -1126,7 +1132,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -1149,7 +1155,7 @@ describe('TariffEngineService', () => {
       const result = await service.calculateExpectedCost(expensiveShipment as Shipment);
 
       expect(result.expected_total_amount).toBe(348.75);
-      expect(result.actual_total_amount).toBe(400.00);
+      expect(result.actual_total_amount).toBe(400.0);
       expect(result.delta_amount).toBe(51.25); // 400.00 - 348.75
       expect(result.delta_pct).toBe(14.7); // round((51.25 / 348.75) * 100)
       expect(result.classification).toBe('drüber'); // 14.69% > 5%
@@ -1159,7 +1165,7 @@ describe('TariffEngineService', () => {
       const cheapShipment = {
         ...mockShipment,
         id: 'shipment-cheap',
-        actual_total_amount: 300.00, // Expected: 348.75, Delta: -48.75 EUR (-13.98%)
+        actual_total_amount: 300.0, // Expected: 348.75, Delta: -48.75 EUR (-13.98%)
       };
 
       const mockTariffTable: TariffTable = {
@@ -1181,7 +1187,7 @@ describe('TariffEngineService', () => {
         zone: 3,
         weight_from_kg: 400,
         weight_to_kg: 500,
-        rate_per_shipment: 294.30,
+        rate_per_shipment: 294.3,
         rate_per_kg: null,
         tariff_table: mockTariffTable,
       };
@@ -1204,7 +1210,7 @@ describe('TariffEngineService', () => {
       const result = await service.calculateExpectedCost(cheapShipment as Shipment);
 
       expect(result.expected_total_amount).toBe(348.75);
-      expect(result.actual_total_amount).toBe(300.00);
+      expect(result.actual_total_amount).toBe(300.0);
       expect(result.delta_amount).toBe(-48.75); // 300.00 - 348.75
       expect(result.delta_pct).toBe(-13.98); // round((-48.75 / 348.75) * 100)
       expect(result.classification).toBe('unter'); // -13.98% < -5%

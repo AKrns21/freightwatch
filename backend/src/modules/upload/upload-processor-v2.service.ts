@@ -35,7 +35,7 @@ export class UploadProcessorV2 {
     private readonly uploadRepo: Repository<Upload>,
     private readonly llmParser: LlmParserService,
     private readonly templateMatcher: TemplateMatcherService,
-    private readonly uploadService: UploadService,
+    private readonly uploadService: UploadService
   ) {}
 
   /**
@@ -87,12 +87,7 @@ export class UploadProcessorV2 {
         });
 
         // Use template-based parsing
-        await this.parseWithTemplate(
-          upload,
-          templateMatch.template,
-          fileBuffer,
-          tenantId
-        );
+        await this.parseWithTemplate(upload, templateMatch.template, fileBuffer, tenantId);
 
         await this.uploadRepo.update(uploadId, {
           status: 'parsed',
@@ -120,14 +115,11 @@ export class UploadProcessorV2 {
         throw new Error('LLM parser not available (ANTHROPIC_API_KEY not set)');
       }
 
-      const llmResult = await this.llmParser.analyzeFile(
-        fileBuffer,
-        {
-          filename: upload.filename,
-          mime_type: upload.mime_type,
-          content_preview: '',
-        } as any
-      );
+      const llmResult = await this.llmParser.analyzeFile(fileBuffer, {
+        filename: upload.filename,
+        mime_type: upload.mime_type,
+        content_preview: '',
+      } as any);
 
       // Save LLM analysis
       await this.uploadRepo.update(uploadId, {
@@ -147,7 +139,6 @@ export class UploadProcessorV2 {
         needs_review: llmResult.needs_review,
         issues_count: llmResult.issues.length,
       });
-
     } catch (error: unknown) {
       const err = error as Error;
       this.logger.error({
@@ -253,11 +244,7 @@ export class UploadProcessorV2 {
   /**
    * Parse tariff table PDF
    */
-  private async parseTariff(
-    _buffer: Buffer,
-    template: any,
-    tenantId: string
-  ): Promise<void> {
+  private async parseTariff(_buffer: Buffer, template: any, tenantId: string): Promise<void> {
     this.logger.log({
       event: 'parse_tariff',
       tenant_id: tenantId,

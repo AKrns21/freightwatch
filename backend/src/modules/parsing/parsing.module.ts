@@ -22,14 +22,7 @@ import { TemplateService } from './template.service';
  * - ServiceMapperService now uses pure fuzzy matching (no DB lookups)
  */
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Shipment,
-      ParsingTemplate,
-      ManualMapping,
-      Upload,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Shipment, ParsingTemplate, ManualMapping, Upload])],
   providers: [
     CsvParserService,
     ServiceMapperService,

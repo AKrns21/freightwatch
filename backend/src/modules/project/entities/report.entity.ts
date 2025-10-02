@@ -30,7 +30,7 @@ export class Report {
 
   @Column({
     length: 50,
-    comment: 'quick_check, deep_dive, final'
+    comment: 'quick_check, deep_dive, final',
   })
   report_type: string;
 
@@ -39,7 +39,7 @@ export class Report {
 
   @Column({
     type: 'jsonb',
-    comment: 'Complete snapshot of aggregated data at generation time'
+    comment: 'Complete snapshot of aggregated data at generation time',
   })
   data_snapshot: Record<string, any>;
 
@@ -48,7 +48,7 @@ export class Report {
     precision: 3,
     scale: 2,
     nullable: true,
-    comment: 'Data completeness score (0.00 - 1.00)'
+    comment: 'Data completeness score (0.00 - 1.00)',
   })
   data_completeness: number;
 

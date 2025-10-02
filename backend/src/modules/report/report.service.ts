@@ -32,7 +32,7 @@ export class ReportService {
     private readonly reportRepo: Repository<Report>,
     @InjectRepository(Project)
     private readonly projectRepo: Repository<Project>,
-    private readonly aggregationService: ReportAggregationService,
+    private readonly aggregationService: ReportAggregationService
   ) {}
 
   /**
@@ -42,7 +42,7 @@ export class ReportService {
   async generate(
     projectId: string,
     tenantId: string,
-    options: GenerateReportOptions = {},
+    options: GenerateReportOptions = {}
   ): Promise<Report> {
     this.logger.log({
       event: 'generate_report_start',
@@ -69,19 +69,16 @@ export class ReportService {
     // Aggregate data
     const statistics = await this.aggregationService.calculateProjectStatistics(
       projectId,
-      tenantId,
+      tenantId
     );
 
     const dataCompleteness = await this.aggregationService.calculateDataCompleteness(
       projectId,
-      tenantId,
+      tenantId
     );
 
     // Calculate date range from shipments
-    const dateRangeResult = await this.aggregationService.getDateRange(
-      projectId,
-      tenantId,
-    );
+    const dateRangeResult = await this.aggregationService.getDateRange(projectId, tenantId);
 
     // Build data snapshot
     const dataSnapshot: Record<string, any> = {
@@ -102,7 +99,7 @@ export class ReportService {
       const topOverpays = await this.aggregationService.getTopOverpays(
         projectId,
         tenantId,
-        options.topOverpaysLimit || 10,
+        options.topOverpaysLimit || 10
       );
 
       dataSnapshot.top_overpays = topOverpays.map((benchmark) => ({
@@ -149,10 +146,7 @@ export class ReportService {
   /**
    * Get latest report for a project
    */
-  async getLatest(
-    projectId: string,
-    tenantId: string,
-  ): Promise<Report | null> {
+  async getLatest(projectId: string, tenantId: string): Promise<Report | null> {
     // Verify project belongs to tenant
     const project = await this.projectRepo.findOne({
       where: { id: projectId, tenant_id: tenantId },
@@ -173,11 +167,7 @@ export class ReportService {
   /**
    * Get specific report version
    */
-  async getByVersion(
-    projectId: string,
-    tenantId: string,
-    version: number,
-  ): Promise<Report | null> {
+  async getByVersion(projectId: string, tenantId: string, version: number): Promise<Report | null> {
     // Verify project belongs to tenant
     const project = await this.projectRepo.findOne({
       where: { id: projectId, tenant_id: tenantId },
@@ -197,10 +187,7 @@ export class ReportService {
   /**
    * List all reports for a project
    */
-  async listAll(
-    projectId: string,
-    tenantId: string,
-  ): Promise<Report[]> {
+  async listAll(projectId: string, tenantId: string): Promise<Report[]> {
     // Verify project belongs to tenant
     const project = await this.projectRepo.findOne({
       where: { id: projectId, tenant_id: tenantId },
@@ -225,7 +212,7 @@ export class ReportService {
     projectId: string,
     tenantId: string,
     version1: number,
-    version2: number,
+    version2: number
   ): Promise<{
     report1: Report;
     report2: Report;
@@ -261,7 +248,7 @@ export class ReportService {
   async pruneOldVersions(
     projectId: string,
     tenantId: string,
-    keepVersions: number = 5,
+    keepVersions: number = 5
   ): Promise<number> {
     // Verify project belongs to tenant
     const project = await this.projectRepo.findOne({

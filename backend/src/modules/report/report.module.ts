@@ -18,14 +18,7 @@ import { ReportController } from './report.controller';
  * - Data completeness tracking
  */
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Report,
-      Project,
-      Shipment,
-      ShipmentBenchmark,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Report, Project, Shipment, ShipmentBenchmark])],
   providers: [ReportService, ReportAggregationService],
   controllers: [ReportController],
   exports: [ReportService, ReportAggregationService],

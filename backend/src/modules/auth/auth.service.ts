@@ -9,12 +9,12 @@ import { User } from './user.entity';
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.userRepository.findOne({ 
-      where: { email, is_active: true } 
+    const user = await this.userRepository.findOne({
+      where: { email, is_active: true },
     });
 
     if (!user) {
@@ -37,7 +37,7 @@ export class AuthService {
     const user = await this.validateUser(email, password);
 
     const payload = user.toJwtPayload();
-    
+
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'dev-secret', {
       expiresIn: '24h',
     });

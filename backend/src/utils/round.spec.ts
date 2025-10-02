@@ -12,14 +12,14 @@ describe('Rounding Utilities', () => {
 
       it('should handle the specified test cases', () => {
         expect(round2(294.305)).toBe(294.31);
-        expect(round2(294.295)).toBe(294.30);
+        expect(round2(294.295)).toBe(294.3);
       });
 
       it('should round negative numbers correctly', () => {
         expect(round2(-2.555)).toBe(-2.56);
         expect(round2(-2.554)).toBe(-2.55);
         expect(round2(-294.305)).toBe(-294.31);
-        expect(round2(-294.295)).toBe(-294.30);
+        expect(round2(-294.295)).toBe(-294.3);
       });
 
       it('should handle edge cases', () => {
@@ -33,7 +33,7 @@ describe('Rounding Utilities', () => {
 
       it('should handle large numbers', () => {
         expect(round2(999999.995)).toBe(1000000.0);
-        expect(round2(1234567.895)).toBe(1234567.90);
+        expect(round2(1234567.895)).toBe(1234567.9);
         expect(round2(1234567.894)).toBe(1234567.89);
       });
 
@@ -46,20 +46,20 @@ describe('Rounding Utilities', () => {
 
     describe('BANKERS mode', () => {
       it('should round 0.5 to nearest even number', () => {
-        expect(round2(2.505, RoundingMode.BANKERS)).toBe(2.5);  // 250.5 -> 250 (even)
-        expect(round2(3.505, RoundingMode.BANKERS)).toBe(3.5);  // 350.5 -> 350 (even)
-        expect(round2(4.505, RoundingMode.BANKERS)).toBe(4.5);  // 450.5 -> 450 (even)
-        expect(round2(5.505, RoundingMode.BANKERS)).toBe(5.5);  // 550.5 -> 550 (even)
+        expect(round2(2.505, RoundingMode.BANKERS)).toBe(2.5); // 250.5 -> 250 (even)
+        expect(round2(3.505, RoundingMode.BANKERS)).toBe(3.5); // 350.5 -> 350 (even)
+        expect(round2(4.505, RoundingMode.BANKERS)).toBe(4.5); // 450.5 -> 450 (even)
+        expect(round2(5.505, RoundingMode.BANKERS)).toBe(5.5); // 550.5 -> 550 (even)
       });
 
-      it('should handle decimal cases with banker\'s rounding', () => {
+      it("should handle decimal cases with banker's rounding", () => {
         expect(round2(2.505, RoundingMode.BANKERS)).toBe(2.5); // 250.5 -> 250 (even)
         expect(round2(2.515, RoundingMode.BANKERS)).toBe(2.52); // 251.5 -> 252 (even)
         expect(round2(2.525, RoundingMode.BANKERS)).toBe(2.52); // 252.5 -> 252 (even)
         expect(round2(2.535, RoundingMode.BANKERS)).toBe(2.54); // 253.5 -> 254 (even)
       });
 
-      it('should handle negative numbers with banker\'s rounding', () => {
+      it("should handle negative numbers with banker's rounding", () => {
         expect(round2(-2.505, RoundingMode.BANKERS)).toBe(-2.5);
         expect(round2(-3.505, RoundingMode.BANKERS)).toBe(-3.5);
         expect(round2(-2.515, RoundingMode.BANKERS)).toBe(-2.52);
@@ -74,7 +74,7 @@ describe('Rounding Utilities', () => {
       });
 
       it('should handle edge cases', () => {
-        expect(round2(0.005, RoundingMode.BANKERS)).toBe(0.0);  // 0.5 -> 0 (even)
+        expect(round2(0.005, RoundingMode.BANKERS)).toBe(0.0); // 0.5 -> 0 (even)
         expect(round2(0.015, RoundingMode.BANKERS)).toBe(0.02); // 1.5 -> 2 (even)
         expect(round2(0.025, RoundingMode.BANKERS)).toBe(0.02); // 2.5 -> 2 (even)
         expect(round2(0.035, RoundingMode.BANKERS)).toBe(0.04); // 3.5 -> 4 (even)
@@ -99,21 +99,18 @@ describe('Rounding Utilities', () => {
   describe('round convenience function', () => {
     it('should use HALF_UP mode by default', () => {
       expect(round(294.305)).toBe(294.31);
-      expect(round(294.295)).toBe(294.30);
+      expect(round(294.295)).toBe(294.3);
       expect(round(2.5)).toBe(2.5);
       expect(round(2.555)).toBe(2.56);
     });
 
     it('should be equivalent to round2 with HALF_UP', () => {
       const testValues = [
-        0, 0.1, 0.01, 0.005, 0.004,
-        1.234, 2.555, 3.445, 
-        294.305, 294.295,
-        -1.234, -2.555, -3.445,
-        999.995, 1000000.001
+        0, 0.1, 0.01, 0.005, 0.004, 1.234, 2.555, 3.445, 294.305, 294.295, -1.234, -2.555, -3.445,
+        999.995, 1000000.001,
       ];
 
-      testValues.forEach(value => {
+      testValues.forEach((value) => {
         expect(round(value)).toBe(round2(value, RoundingMode.HALF_UP));
       });
     });
@@ -128,9 +125,9 @@ describe('Rounding Utilities', () => {
   describe('Floating point precision handling', () => {
     it('should handle floating point precision issues', () => {
       // These test cases address common floating point precision issues
-      expect(round2(0.1 + 0.2)).toBe(0.30); // 0.30000000000000004
-      expect(round2(1.005)).toBe(1.01);     // Should round up despite floating point issues
-      expect(round2(2.675)).toBe(2.68);     // Should round up despite floating point issues
+      expect(round2(0.1 + 0.2)).toBe(0.3); // 0.30000000000000004
+      expect(round2(1.005)).toBe(1.01); // Should round up despite floating point issues
+      expect(round2(2.675)).toBe(2.68); // Should round up despite floating point issues
     });
 
     it('should be consistent with repeated operations', () => {
@@ -144,32 +141,32 @@ describe('Rounding Utilities', () => {
   describe('Financial calculation scenarios', () => {
     it('should handle typical freight cost calculations', () => {
       // Base cost calculation
-      const baseCost = 294.30;
+      const baseCost = 294.3;
       const dieselPct = 18.5;
       const dieselAmount = round(baseCost * (dieselPct / 100));
       expect(dieselAmount).toBe(54.45);
 
       // Total calculation
-      const toll = 15.20;
+      const toll = 15.2;
       const total = round(baseCost + dieselAmount + toll);
       expect(total).toBe(363.95);
     });
 
     it('should handle currency conversion scenarios', () => {
-      const eurAmount = 1000.00;
+      const eurAmount = 1000.0;
       const exchangeRate = 1.08567;
       const usdAmount = round(eurAmount * exchangeRate);
       expect(usdAmount).toBe(1085.67);
     });
 
     it('should maintain precision in chained calculations', () => {
-      let amount = 1000.00;
+      let amount = 1000.0;
       amount = round(amount * 1.19); // Add 19% VAT
-      expect(amount).toBe(1190.00);
-      
+      expect(amount).toBe(1190.0);
+
       amount = round(amount * 0.85); // Apply 15% discount
-      expect(amount).toBe(1011.50);
-      
+      expect(amount).toBe(1011.5);
+
       amount = round(amount + 25.337); // Add surcharge
       expect(amount).toBe(1036.84);
     });
@@ -178,16 +175,18 @@ describe('Rounding Utilities', () => {
   describe('Performance and consistency', () => {
     it('should be deterministic with same inputs', () => {
       const testValue = 123.456789;
-      const results = Array(100).fill(0).map(() => round2(testValue));
+      const results = Array(100)
+        .fill(0)
+        .map(() => round2(testValue));
       const firstResult = results[0];
-      
-      expect(results.every(result => result === firstResult)).toBe(true);
+
+      expect(results.every((result) => result === firstResult)).toBe(true);
     });
 
     it('should handle arrays of values consistently', () => {
       const values = [1.235, 2.345, 3.455, 4.565, 5.675];
       const rounded = values.map(round);
-      
+
       expect(rounded).toEqual([1.24, 2.35, 3.46, 4.57, 5.68]);
     });
   });

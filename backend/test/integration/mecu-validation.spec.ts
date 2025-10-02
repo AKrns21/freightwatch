@@ -76,7 +76,9 @@ describe('MECU Dataset Validation', () => {
     // Get repositories
     uploadRepository = app.get<Repository<Upload>>(getRepositoryToken(Upload));
     shipmentRepository = app.get<Repository<Shipment>>(getRepositoryToken(Shipment));
-    benchmarkRepository = app.get<Repository<ShipmentBenchmark>>(getRepositoryToken(ShipmentBenchmark));
+    benchmarkRepository = app.get<Repository<ShipmentBenchmark>>(
+      getRepositoryToken(ShipmentBenchmark)
+    );
     zoneMapRepository = app.get<Repository<TariffZoneMap>>(getRepositoryToken(TariffZoneMap));
     tariffTableRepository = app.get<Repository<TariffTable>>(getRepositoryToken(TariffTable));
     tariffRateRepository = app.get<Repository<TariffRate>>(getRepositoryToken(TariffRate));
@@ -90,7 +92,7 @@ describe('MECU Dataset Validation', () => {
   afterAll(async () => {
     // Clean up test data
     await cleanupTestData();
-    
+
     // Close connections
     await uploadQueue.close();
     await app.close();
@@ -108,18 +110,24 @@ describe('MECU Dataset Validation', () => {
     testTariffTableId = 'test-tariff-table';
 
     // 1. Create test tenant (insert directly into database)
-    await app.get('DataSource').query(`
+    await app.get('DataSource').query(
+      `
       INSERT INTO tenant (id, name, settings, created_at)
       VALUES ($1, 'MECU Test', '{"currency": "EUR"}', NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
-    `, [testTenantId]);
+    `,
+      [testTenantId]
+    );
 
     // 2. Create test carrier
-    await app.get('DataSource').query(`
+    await app.get('DataSource').query(
+      `
       INSERT INTO carrier (id, name, code, contact_info, created_at)
       VALUES ($1, 'COSI Logistics', 'COSI', '{}', NOW())
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
-    `, [testCarrierId]);
+    `,
+      [testCarrierId]
+    );
 
     // 3. Insert carrier alias
     await carrierAliasRepository.save({
@@ -162,7 +170,7 @@ describe('MECU Dataset Validation', () => {
       zone: 3,
       weight_from_kg: 400,
       weight_to_kg: 500,
-      rate_per_shipment: 294.30,
+      rate_per_shipment: 294.3,
       rate_per_kg: null,
       tariff_table: null as any, // Will be populated by TypeORM
     });
@@ -191,7 +199,7 @@ describe('MECU Dataset Validation', () => {
     await dieselFloaterRepository.delete({ tenant_id: testTenantId });
     await zoneMapRepository.delete({ tenant_id: testTenantId });
     await carrierAliasRepository.delete({ tenant_id: testTenantId });
-    
+
     // Clean up tenant and carrier from database
     await app.get('DataSource').query('DELETE FROM carrier WHERE id = $1', [testCarrierId]);
     await app.get('DataSource').query('DELETE FROM tenant WHERE id = $1', [testTenantId]);
@@ -202,11 +210,11 @@ describe('MECU Dataset Validation', () => {
   async function waitForQueueProcessing(timeout = 10000): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
-      
+
       const checkQueue = async () => {
         const waiting = await uploadQueue.getWaiting();
         const active = await uploadQueue.getActive();
-        
+
         if (waiting.length === 0 && active.length === 0) {
           resolve();
         } else if (Date.now() - startTime > timeout) {
@@ -215,7 +223,7 @@ describe('MECU Dataset Validation', () => {
           setTimeout(checkQueue, 100);
         }
       };
-      
+
       checkQueue();
     });
   }
@@ -225,7 +233,7 @@ describe('MECU Dataset Validation', () => {
       // Read the sample CSV file
       const csvPath = path.join(__dirname, '..', 'fixtures', 'mecu', 'sample.csv');
       const csvContent = await fs.readFile(csvPath);
-      
+
       // Create a mock file object
       const mockFile = {
         originalname: 'sample.csv',
@@ -234,11 +242,7 @@ describe('MECU Dataset Validation', () => {
       } as Express.Multer.File;
 
       // Upload the file
-      const result = await uploadService.uploadFile(
-        mockFile,
-        testTenantId,
-        'invoice'
-      );
+      const result = await uploadService.uploadFile(mockFile, testTenantId, 'invoice');
 
       expect(result.upload).toBeDefined();
       expect(result.alreadyProcessed).toBe(false);
@@ -252,9 +256,9 @@ describe('MECU Dataset Validation', () => {
       });
 
       expect(shipments).toHaveLength(10);
-      
+
       // Verify shipment details
-      const firstShipment = shipments.find(s => s.origin_zip === '60311');
+      const firstShipment = shipments.find((s) => s.origin_zip === '60311');
       expect(firstShipment).toBeDefined();
       expect(firstShipment?.carrier_id).toBe(testCarrierId);
       expect(firstShipment?.weight_kg).toBe(450);
@@ -289,7 +293,7 @@ describe('MECU Dataset Validation', () => {
       }
 
       // Assert: zone 3 / 450kg has expected_base_amount ≈ 294.30
-      const testShipment = shipments.find(s => s.weight_kg === 450 && s.origin_zip === '60311');
+      const testShipment = shipments.find((s) => s.weight_kg === 450 && s.origin_zip === '60311');
       expect(testShipment).toBeDefined();
 
       const testBenchmark = await benchmarkRepository.findOne({
@@ -297,7 +301,7 @@ describe('MECU Dataset Validation', () => {
       });
 
       expect(testBenchmark).toBeDefined();
-      expect(testBenchmark?.expected_base_amount).toBeCloseTo(294.30, 2);
+      expect(testBenchmark?.expected_base_amount).toBeCloseTo(294.3, 2);
       expect(testBenchmark?.expected_diesel_amount).toBeCloseTo(54.45, 2); // 18.5% of 294.30
       expect(testBenchmark?.expected_total_amount).toBeCloseTo(348.75, 2); // 294.30 + 54.45
       expect(testBenchmark?.classification).toBe('im_markt'); // Should be within market range
@@ -323,7 +327,7 @@ describe('MECU Dataset Validation', () => {
         length_m: 1.2,
         width_m: 0.8,
         height_m: 0.5,
-        actual_total_amount: 500.00, // Overpaid amount
+        actual_total_amount: 500.0, // Overpaid amount
         currency: 'EUR',
         service_code: 'STANDARD',
         reference_number: 'TEST-OVERPAY-001',
@@ -340,10 +344,10 @@ describe('MECU Dataset Validation', () => {
       expect(benchmark.delta_amount).toBeCloseTo(151.25, 2); // 500 - 348.75 = 151.25
 
       // Assert: expected amounts are correct
-      expect(benchmark.expected_base_amount).toBeCloseTo(294.30, 2);
+      expect(benchmark.expected_base_amount).toBeCloseTo(294.3, 2);
       expect(benchmark.expected_diesel_amount).toBeCloseTo(54.45, 2);
       expect(benchmark.expected_total_amount).toBeCloseTo(348.75, 2);
-      expect(benchmark.actual_total_amount).toBe(500.00);
+      expect(benchmark.actual_total_amount).toBe(500.0);
 
       // Assert: percentage calculation
       const expectedDeltaPct = Math.round((151.25 / 348.75) * 100);
@@ -376,7 +380,7 @@ describe('MECU Dataset Validation', () => {
         length_m: 1.1,
         width_m: 0.7,
         height_m: 0.5,
-        actual_total_amount: 200.00, // Underpaid amount
+        actual_total_amount: 200.0, // Underpaid amount
         currency: 'EUR',
         service_code: 'STANDARD',
         reference_number: 'TEST-UNDERPAY-001',

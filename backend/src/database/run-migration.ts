@@ -1,4 +1,5 @@
 #!/usr/bin/env ts-node
+/* eslint-disable no-console */
 /**
  * Manual migration runner for SQL files
  * Usage: ts-node src/database/run-migration.ts <migration-file>
@@ -45,7 +46,7 @@ async function runMigration(migrationFile: string): Promise<void> {
       // Check if we enter or exit a dollar-quoted block
       const dollarMatches = line.match(/\$\$/g);
       if (dollarMatches) {
-        for (const _ of dollarMatches) {
+        for (const _match of dollarMatches) {
           inDollarQuote = !inDollarQuote;
         }
       }
@@ -79,7 +80,7 @@ async function runMigration(migrationFile: string): Promise<void> {
         if (executed % 10 === 0) {
           console.log(`  Executed ${executed}/${statements.length} statements`);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`\nFailed at statement ${executed + 1}:`);
         console.error(statement.substring(0, 200) + '...');
         throw error;
@@ -168,8 +169,8 @@ async function runMigration(migrationFile: string): Promise<void> {
     console.table(shipmentColumns);
 
     console.log('\n✅ Migration completed successfully!');
-
-  } catch (error: any) {    console.error('Migration failed:', error);
+  } catch (error: unknown) {
+    console.error('Migration failed:', error);
     throw error;
   } finally {
     await dataSource.destroy();

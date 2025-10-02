@@ -18,7 +18,7 @@ interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -33,11 +33,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const user = await this.userRepository.findOne({
-      where: { 
+      where: {
         id: payload.sub,
         email: payload.email,
         tenant_id: payload.tenantId,
-        is_active: true 
+        is_active: true,
       },
     });
 

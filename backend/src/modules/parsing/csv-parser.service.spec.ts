@@ -79,7 +79,7 @@ describe('CsvParserService', () => {
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(2);
-      
+
       const firstShipment = result[0];
       expect(firstShipment.tenant_id).toBe(mockTenantId);
       expect(firstShipment.upload_id).toBe(mockUploadId);
@@ -103,7 +103,7 @@ describe('CsvParserService', () => {
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(1);
-      
+
       const shipment = result[0];
       expect(shipment.date).toEqual(new Date(2024, 2, 1)); // March 1, 2024
       expect(shipment.origin_zip).toBe('12345');
@@ -138,9 +138,9 @@ describe('CsvParserService', () => {
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(3);
-      
+
       const expectedDate = new Date(2024, 2, 1); // March 1, 2024
-      result.forEach(shipment => {
+      result.forEach((shipment) => {
         expect(shipment.date).toEqual(expectedDate);
       });
     });
@@ -206,7 +206,7 @@ invalid-date,20.00
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(1);
-      
+
       const shipment = result[0];
       expect(shipment.actual_base_amount).toBe(100);
       expect(shipment.diesel_amount).toBe(18.5);
@@ -234,7 +234,7 @@ special_value,01.03.2024,10.00,additional_data`;
       const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
       expect(result).toHaveLength(1);
-      
+
       const shipment = result[0];
       expect(shipment.source_data).toEqual({
         custom_field: 'special_value',
@@ -247,9 +247,9 @@ special_value,01.03.2024,10.00,additional_data`;
     it('should handle file read errors', async () => {
       (fs.readFile as jest.Mock).mockRejectedValue(new Error('File not found'));
 
-      await expect(
-        service.parse(mockFilePath, mockTenantId, mockUploadId)
-      ).rejects.toThrow('File not found');
+      await expect(service.parse(mockFilePath, mockTenantId, mockUploadId)).rejects.toThrow(
+        'File not found'
+      );
     });
   });
 

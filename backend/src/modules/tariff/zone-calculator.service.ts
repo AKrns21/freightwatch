@@ -9,7 +9,7 @@ export class ZoneCalculatorService {
 
   constructor(
     @InjectRepository(TariffZoneMap)
-    private readonly tariffZoneMapRepository: Repository<TariffZoneMap>,
+    private readonly tariffZoneMapRepository: Repository<TariffZoneMap>
   ) {}
 
   async calculateZone(
@@ -17,7 +17,7 @@ export class ZoneCalculatorService {
     carrierId: string,
     country: string,
     destZip: string,
-    date: Date,
+    date: Date
   ): Promise<number> {
     if (!destZip || destZip.trim() === '') {
       throw new Error('Destination ZIP code is required for zone calculation');
@@ -27,7 +27,7 @@ export class ZoneCalculatorService {
     const normalizedCountry = country.trim().toUpperCase();
 
     this.logger.debug(
-      `Calculating zone for tenant ${tenantId}, carrier ${carrierId}, country ${normalizedCountry}, zip ${normalizedZip}, date ${date.toISOString()}`,
+      `Calculating zone for tenant ${tenantId}, carrier ${carrierId}, country ${normalizedCountry}, zip ${normalizedZip}, date ${date.toISOString()}`
     );
 
     try {
@@ -36,12 +36,12 @@ export class ZoneCalculatorService {
         carrierId,
         normalizedCountry,
         normalizedZip,
-        date,
+        date
       );
 
       if (zone !== null) {
         this.logger.debug(
-          `Found zone ${zone} via prefix matching for ${normalizedCountry}-${normalizedZip}`,
+          `Found zone ${zone} via prefix matching for ${normalizedCountry}-${normalizedZip}`
         );
         return zone;
       }
@@ -51,18 +51,18 @@ export class ZoneCalculatorService {
         carrierId,
         normalizedCountry,
         normalizedZip,
-        date,
+        date
       );
 
       if (zone !== null) {
         this.logger.debug(
-          `Found zone ${zone} via pattern matching for ${normalizedCountry}-${normalizedZip}`,
+          `Found zone ${zone} via pattern matching for ${normalizedCountry}-${normalizedZip}`
         );
         return zone;
       }
 
       throw new NotFoundException(
-        `No zone mapping found for carrier ${carrierId}, country ${normalizedCountry}, ZIP ${normalizedZip}`,
+        `No zone mapping found for carrier ${carrierId}, country ${normalizedCountry}, ZIP ${normalizedZip}`
       );
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -71,7 +71,7 @@ export class ZoneCalculatorService {
 
       this.logger.error(
         `Error calculating zone for ${normalizedCountry}-${normalizedZip}: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       throw new Error(`Zone calculation failed: ${(error as Error).message}`);
     }
@@ -82,7 +82,7 @@ export class ZoneCalculatorService {
     carrierId: string,
     country: string,
     destZip: string,
-    date: Date,
+    date: Date
   ): Promise<number | null> {
     for (let prefixLen = Math.min(5, destZip.length); prefixLen >= 2; prefixLen--) {
       const prefix = destZip.substring(0, prefixLen);
@@ -105,14 +105,12 @@ export class ZoneCalculatorService {
 
         if (mapping) {
           this.logger.debug(
-            `Prefix match found: ${prefix} (length ${prefixLen}) -> zone ${mapping.zone}`,
+            `Prefix match found: ${prefix} (length ${prefixLen}) -> zone ${mapping.zone}`
           );
           return mapping.zone;
         }
       } catch (error) {
-        this.logger.warn(
-          `Error in prefix matching for ${prefix}: ${(error as Error).message}`,
-        );
+        this.logger.warn(`Error in prefix matching for ${prefix}: ${(error as Error).message}`);
       }
     }
 
@@ -124,7 +122,7 @@ export class ZoneCalculatorService {
     carrierId: string,
     country: string,
     destZip: string,
-    date: Date,
+    date: Date
   ): Promise<number | null> {
     try {
       const patternMappings = await this.tariffZoneMapRepository.find({
@@ -146,14 +144,12 @@ export class ZoneCalculatorService {
           try {
             const regex = new RegExp(mapping.pattern, 'i');
             if (regex.test(destZip)) {
-              this.logger.debug(
-                `Pattern match found: ${mapping.pattern} -> zone ${mapping.zone}`,
-              );
+              this.logger.debug(`Pattern match found: ${mapping.pattern} -> zone ${mapping.zone}`);
               return mapping.zone;
             }
           } catch (regexError) {
             this.logger.warn(
-              `Invalid regex pattern "${mapping.pattern}": ${(regexError as Error).message}`,
+              `Invalid regex pattern "${mapping.pattern}": ${(regexError as Error).message}`
             );
           }
         }
@@ -172,14 +168,14 @@ export class ZoneCalculatorService {
       country: string;
       destZip: string;
       date: Date;
-    }>,
+    }>
   ): Promise<Map<string, number>> {
     const results = new Map<string, number>();
     const cache = new Map<string, number>();
 
     for (const request of requests) {
       const cacheKey = `${request.country}-${request.destZip}-${request.date.toDateString()}`;
-      
+
       if (cache.has(cacheKey)) {
         results.set(cacheKey, cache.get(cacheKey)!);
         continue;
@@ -191,15 +187,13 @@ export class ZoneCalculatorService {
           carrierId,
           request.country,
           request.destZip,
-          request.date,
+          request.date
         );
-        
+
         results.set(cacheKey, zone);
         cache.set(cacheKey, zone);
       } catch (error) {
-        this.logger.warn(
-          `Failed to calculate zone for ${cacheKey}: ${(error as Error).message}`,
-        );
+        this.logger.warn(`Failed to calculate zone for ${cacheKey}: ${(error as Error).message}`);
         // Continue processing other requests even if one fails
       }
     }
@@ -211,7 +205,7 @@ export class ZoneCalculatorService {
     tenantId: string,
     carrierId: string,
     country: string,
-    date: Date,
+    date: Date
   ): Promise<number[]> {
     try {
       const mappings = await this.tariffZoneMapRepository.find({
@@ -225,17 +219,17 @@ export class ZoneCalculatorService {
         select: ['zone'],
       });
 
-      const zones = [...new Set(mappings.map(m => m.zone))].sort();
-      
+      const zones = [...new Set(mappings.map((m) => m.zone))].sort();
+
       this.logger.debug(
-        `Available zones for carrier ${carrierId}, country ${country}: [${zones.join(', ')}]`,
+        `Available zones for carrier ${carrierId}, country ${country}: [${zones.join(', ')}]`
       );
-      
+
       return zones;
     } catch (error) {
       this.logger.error(
         `Error fetching available zones: ${(error as Error).message}`,
-        (error as Error).stack,
+        (error as Error).stack
       );
       return [];
     }

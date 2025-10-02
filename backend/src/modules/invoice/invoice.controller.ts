@@ -1,12 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { InvoiceParserService } from './invoice-parser.service';
 import { InvoiceMatcherService } from './invoice-matcher.service';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
@@ -27,7 +20,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 export class InvoiceController {
   constructor(
     private readonly parserService: InvoiceParserService,
-    private readonly matcherService: InvoiceMatcherService,
+    private readonly matcherService: InvoiceMatcherService
   ) {}
 
   /**
@@ -44,31 +37,28 @@ export class InvoiceController {
       upload_id?: string;
       project_id?: string;
     },
-    @Req() req: any,
-  ) {
+    @Req() req: Request & { user: { tenant_id: string } }
+  ): Promise<{ success: boolean; data: unknown }> {
     const tenantId = req.user.tenant_id;
 
     // Decode base64 buffer
     const fileBuffer = Buffer.from(body.fileBuffer, 'base64');
 
     // Parse invoice
-    const parseResult = await this.parserService.parseInvoicePdf(
-      fileBuffer,
-      {
-        filename: body.filename,
-        carrier_id: body.carrier_id,
-        tenant_id: tenantId,
-        upload_id: body.upload_id,
-        project_id: body.project_id,
-      },
-    );
+    const parseResult = await this.parserService.parseInvoicePdf(fileBuffer, {
+      filename: body.filename,
+      carrier_id: body.carrier_id,
+      tenant_id: tenantId,
+      upload_id: body.upload_id,
+      project_id: body.project_id,
+    });
 
     // Import into database
     const invoice = await this.parserService.importInvoice(
       parseResult,
       tenantId,
       body.upload_id,
-      body.project_id,
+      body.project_id
     );
 
     return {
@@ -88,15 +78,11 @@ export class InvoiceController {
   async match(
     @Query('invoiceId') invoiceId: string,
     @Query('projectId') projectId: string | undefined,
-    @Req() req: any,
-  ) {
+    @Req() req: Request & { user: { tenant_id: string } }
+  ): Promise<{ success: boolean; data: unknown }> {
     const tenantId = req.user.tenant_id;
 
-    const stats = await this.matcherService.matchInvoiceLines(
-      invoiceId,
-      tenantId,
-      projectId,
-    );
+    const stats = await this.matcherService.matchInvoiceLines(invoiceId, tenantId, projectId);
 
     return {
       success: true,
@@ -115,15 +101,11 @@ export class InvoiceController {
       line_id: string;
       shipment_id: string;
     },
-    @Req() req: any,
-  ) {
+    @Req() req: Request & { user: { tenant_id: string } }
+  ): Promise<{ success: boolean; message: string }> {
     const tenantId = req.user.tenant_id;
 
-    await this.matcherService.manualMatch(
-      body.line_id,
-      body.shipment_id,
-      tenantId,
-    );
+    await this.matcherService.manualMatch(body.line_id, body.shipment_id, tenantId);
 
     return {
       success: true,
@@ -138,8 +120,8 @@ export class InvoiceController {
   @Post('unmatch')
   async unmatch(
     @Body() body: { line_id: string },
-    @Req() req: any,
-  ) {
+    @Req() req: Request & { user: { tenant_id: string } }
+  ): Promise<{ success: boolean; message: string }> {
     const tenantId = req.user.tenant_id;
 
     await this.matcherService.unmatch(body.line_id, tenantId);
@@ -157,14 +139,11 @@ export class InvoiceController {
   @Get('matching-stats')
   async getMatchingStats(
     @Query('projectId') projectId: string,
-    @Req() req: any,
-  ) {
+    @Req() req: Request & { user: { tenant_id: string } }
+  ): Promise<{ success: boolean; data: unknown }> {
     const tenantId = req.user.tenant_id;
 
-    const stats = await this.matcherService.getProjectMatchingStats(
-      projectId,
-      tenantId,
-    );
+    const stats = await this.matcherService.getProjectMatchingStats(projectId, tenantId);
 
     return {
       success: true,

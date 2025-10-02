@@ -51,7 +51,7 @@ export class InvoiceMatcherService {
     @InjectRepository(InvoiceLine)
     private readonly lineRepo: Repository<InvoiceLine>,
     @InjectRepository(Shipment)
-    private readonly shipmentRepo: Repository<Shipment>,
+    private readonly shipmentRepo: Repository<Shipment>
   ) {}
 
   /**
@@ -60,7 +60,7 @@ export class InvoiceMatcherService {
   async matchInvoiceLines(
     invoiceId: string,
     tenantId: string,
-    projectId?: string,
+    projectId?: string
   ): Promise<MatchingStats> {
     this.logger.log({
       event: 'match_invoice_lines_start',
@@ -75,7 +75,7 @@ export class InvoiceMatcherService {
 
     let matched = 0;
     let unmatched = 0;
-    let ambiguous = 0;
+    const ambiguous = 0;
     let manual = 0;
     let confidenceSum = 0;
 
@@ -120,8 +120,7 @@ export class InvoiceMatcherService {
       unmatched,
       ambiguous,
       manual,
-      avg_confidence:
-        lines.length > 0 ? confidenceSum / lines.length : 0,
+      avg_confidence: lines.length > 0 ? confidenceSum / lines.length : 0,
     };
 
     this.logger.log({
@@ -136,11 +135,7 @@ export class InvoiceMatcherService {
   /**
    * Match a single invoice line to a shipment
    */
-  async matchLine(
-    line: InvoiceLine,
-    tenantId: string,
-    projectId?: string,
-  ): Promise<MatchResult> {
+  async matchLine(line: InvoiceLine, tenantId: string, projectId?: string): Promise<MatchResult> {
     // Build base query
     const query = this.shipmentRepo
       .createQueryBuilder('shipment')
@@ -162,7 +157,7 @@ export class InvoiceMatcherService {
           {
             ref: line.shipment_reference,
             refLike: `%${line.shipment_reference}%`,
-          },
+          }
         )
         .getOne();
 
@@ -178,10 +173,7 @@ export class InvoiceMatcherService {
     }
 
     // Strategy 2: Multi-criteria exact match
-    const candidates = await this.findCandidateShipments(
-      line,
-      query,
-    );
+    const candidates = await this.findCandidateShipments(line, query);
 
     if (candidates.length === 0) {
       return {
@@ -195,9 +187,7 @@ export class InvoiceMatcherService {
     }
 
     // Strategy 3: Score candidates
-    const scored = candidates.map((shipment) =>
-      this.scoreMatch(line, shipment),
-    );
+    const scored = candidates.map((shipment) => this.scoreMatch(line, shipment));
 
     // Sort by confidence
     scored.sort((a, b) => b.confidence - a.confidence);
@@ -246,7 +236,7 @@ export class InvoiceMatcherService {
    */
   private async findCandidateShipments(
     line: InvoiceLine,
-    baseQuery: any,
+    baseQuery: ReturnType<Repository<Shipment>['createQueryBuilder']>
   ): Promise<Shipment[]> {
     const query = baseQuery.clone();
 
@@ -282,13 +272,10 @@ export class InvoiceMatcherService {
       const weightMin = line.weight_kg * 0.8;
       const weightMax = line.weight_kg * 1.2;
 
-      query.andWhere(
-        'shipment.weight_kg BETWEEN :weightMin AND :weightMax',
-        {
-          weightMin,
-          weightMax,
-        },
-      );
+      query.andWhere('shipment.weight_kg BETWEEN :weightMin AND :weightMax', {
+        weightMin,
+        weightMax,
+      });
     }
 
     // Limit to reasonable number of candidates
@@ -300,18 +287,14 @@ export class InvoiceMatcherService {
   /**
    * Score a potential match between line and shipment
    */
-  private scoreMatch(
-    line: InvoiceLine,
-    shipment: Shipment,
-  ): MatchResult {
+  private scoreMatch(line: InvoiceLine, shipment: Shipment): MatchResult {
     let score = 0;
     const criteria: string[] = [];
 
     // Date match (25%)
     if (line.shipment_date && shipment.date) {
       const daysDiff = Math.abs(
-        (line.shipment_date.getTime() - shipment.date.getTime()) /
-          (1000 * 60 * 60 * 24),
+        (line.shipment_date.getTime() - shipment.date.getTime()) / (1000 * 60 * 60 * 24)
       );
 
       if (daysDiff === 0) {
@@ -331,10 +314,7 @@ export class InvoiceMatcherService {
       if (line.origin_zip === shipment.origin_zip) {
         score += 0.2;
         criteria.push('origin_exact');
-      } else if (
-        line.origin_zip.substring(0, 3) ===
-        shipment.origin_zip.substring(0, 3)
-      ) {
+      } else if (line.origin_zip.substring(0, 3) === shipment.origin_zip.substring(0, 3)) {
         score += 0.15;
         criteria.push('origin_prefix');
       }
@@ -345,10 +325,7 @@ export class InvoiceMatcherService {
       if (line.dest_zip === shipment.dest_zip) {
         score += 0.2;
         criteria.push('dest_exact');
-      } else if (
-        line.dest_zip.substring(0, 3) ===
-        shipment.dest_zip.substring(0, 3)
-      ) {
+      } else if (line.dest_zip.substring(0, 3) === shipment.dest_zip.substring(0, 3)) {
         score += 0.15;
         criteria.push('dest_prefix');
       }
@@ -356,9 +333,7 @@ export class InvoiceMatcherService {
 
     // Weight match (15%)
     if (line.weight_kg && shipment.weight_kg) {
-      const weightDiff =
-        Math.abs(line.weight_kg - shipment.weight_kg) /
-        line.weight_kg;
+      const weightDiff = Math.abs(line.weight_kg - shipment.weight_kg) / line.weight_kg;
 
       if (weightDiff < 0.05) {
         score += 0.15;
@@ -374,9 +349,7 @@ export class InvoiceMatcherService {
 
     // Amount match (20%)
     if (line.line_total && shipment.actual_total_amount) {
-      const amountDiff =
-        Math.abs(line.line_total - shipment.actual_total_amount) /
-        line.line_total;
+      const amountDiff = Math.abs(line.line_total - shipment.actual_total_amount) / line.line_total;
 
       if (amountDiff < 0.01) {
         score += 0.2;
@@ -392,10 +365,7 @@ export class InvoiceMatcherService {
 
     // Service level match (bonus 5%)
     if (line.service_level && shipment.service_level) {
-      if (
-        line.service_level.toLowerCase() ===
-        shipment.service_level.toLowerCase()
-      ) {
+      if (line.service_level.toLowerCase() === shipment.service_level.toLowerCase()) {
         score += 0.05;
         criteria.push('service_level');
       }
@@ -423,11 +393,7 @@ export class InvoiceMatcherService {
   /**
    * Manually match an invoice line to a shipment
    */
-  async manualMatch(
-    lineId: string,
-    shipmentId: string,
-    tenantId: string,
-  ): Promise<void> {
+  async manualMatch(lineId: string, shipmentId: string, tenantId: string): Promise<void> {
     // Verify both belong to tenant
     const line = await this.lineRepo.findOne({
       where: { id: lineId, tenant_id: tenantId },
@@ -447,10 +413,10 @@ export class InvoiceMatcherService {
       match_status: 'manual',
       match_confidence: 1.0,
       meta: {
-        ...line.meta,
+        ...(line.meta as Record<string, unknown>),
         match_criteria: ['manual'],
         matched_at: new Date().toISOString(),
-      } as any,
+      },
     });
 
     this.logger.log({
@@ -471,7 +437,7 @@ export class InvoiceMatcherService {
         match_status: 'unmatched',
         match_confidence: 0,
         meta: {},
-      },
+      }
     );
 
     this.logger.log({
@@ -483,10 +449,7 @@ export class InvoiceMatcherService {
   /**
    * Get matching statistics for a project
    */
-  async getProjectMatchingStats(
-    projectId: string,
-    tenantId: string,
-  ): Promise<MatchingStats> {
+  async getProjectMatchingStats(projectId: string, tenantId: string): Promise<MatchingStats> {
     const lines = await this.lineRepo
       .createQueryBuilder('line')
       .leftJoin('line.invoice', 'invoice')
@@ -527,8 +490,7 @@ export class InvoiceMatcherService {
       unmatched,
       ambiguous,
       manual,
-      avg_confidence:
-        lines.length > 0 ? confidenceSum / lines.length : 0,
+      avg_confidence: lines.length > 0 ? confidenceSum / lines.length : 0,
     };
   }
 }

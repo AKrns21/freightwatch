@@ -18,12 +18,12 @@ export type FileType =
  * Column mapping suggestion from LLM
  */
 export interface ColumnMapping {
-  column: string;              // Source column name or letter (e.g., "A", "Carrier Name")
-  field: string;               // Target database field (e.g., "carrier_name", "origin_zip")
-  confidence: number;          // 0.0 - 1.0
-  pattern?: string;            // Transformation pattern if needed
-  sample_values: string[];     // Sample values from the column
-  data_type?: string;          // Detected data type (string, number, date)
+  column: string; // Source column name or letter (e.g., "A", "Carrier Name")
+  field: string; // Target database field (e.g., "carrier_name", "origin_zip")
+  confidence: number; // 0.0 - 1.0
+  pattern?: string; // Transformation pattern if needed
+  sample_values: string[]; // Sample values from the column
+  data_type?: string; // Detected data type (string, number, date)
 }
 
 /**
@@ -64,7 +64,7 @@ export interface LlmParseResult {
   issues: DataQualityIssue[];
   suggested_actions: string[];
   needs_review: boolean;
-  raw_analysis?: string;      // Raw LLM response for debugging
+  raw_analysis?: string; // Raw LLM response for debugging
 }
 
 /**
@@ -73,7 +73,7 @@ export interface LlmParseResult {
 export interface LlmPromptContext {
   filename: string;
   mime_type: string;
-  content_preview: string;     // First N rows/lines
+  content_preview: string; // First N rows/lines
   tenant_context?: {
     known_carriers?: string[];
     expected_fields?: string[];

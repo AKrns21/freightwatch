@@ -31,7 +31,7 @@ export class ParsingTemplate {
 
   @Column({
     length: 50,
-    comment: 'csv, excel, pdf, xml, json'
+    comment: 'csv, excel, pdf, xml, json',
   })
   @Index()
   file_type: string;
@@ -39,27 +39,27 @@ export class ParsingTemplate {
   @Column({
     length: 50,
     nullable: true,
-    comment: 'shipment_list, invoice, tariff, route_documentation'
+    comment: 'shipment_list, invoice, tariff, route_documentation',
   })
   @Index()
   template_category: string;
 
   @Column({
     type: 'jsonb',
-    comment: 'Detection rules: file patterns, header keywords, structure checks'
+    comment: 'Detection rules: file patterns, header keywords, structure checks',
   })
   detection: Record<string, any>;
 
   @Column({
     type: 'jsonb',
-    comment: 'Field mappings: column -> database field transformations'
+    comment: 'Field mappings: column -> database field transformations',
   })
   mappings: Record<string, any>;
 
   @Column({
     length: 50,
     default: 'manual',
-    comment: 'manual, llm_suggested, system'
+    comment: 'manual, llm_suggested, system',
   })
   source: string;
 

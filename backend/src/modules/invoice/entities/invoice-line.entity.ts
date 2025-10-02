@@ -98,14 +98,14 @@ export class InvoiceLine {
     nullable: true,
     comment: 'Raw line data as parsed',
   })
-  source_data: Record<string, any>;
+  source_data: Record<string, unknown>;
 
   @Column({
     type: 'jsonb',
     default: {},
     comment: 'Matching details, manual corrections, etc.',
   })
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 
   @CreateDateColumn()
   created_at: Date;
@@ -119,8 +119,8 @@ export class InvoiceLine {
   /**
    * Get safe object for API responses
    */
-  toSafeObject(): Partial<InvoiceLine> {
-    const { source_data, ...safe } = this;
-    return safe;
+  toSafeObject(): Omit<InvoiceLine, 'source_data'> {
+    const { source_data: _source_data, ...safe } = this;
+    return safe as Omit<InvoiceLine, 'source_data'>;
   }
 }

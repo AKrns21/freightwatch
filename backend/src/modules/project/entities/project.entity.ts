@@ -33,14 +33,14 @@ export class Project {
   @Column({
     length: 50,
     default: 'quick_check',
-    comment: 'quick_check, deep_dive, final_report'
+    comment: 'quick_check, deep_dive, final_report',
   })
   phase: string;
 
   @Column({
     length: 50,
     default: 'draft',
-    comment: 'draft, in_progress, review, completed, archived'
+    comment: 'draft, in_progress, review, completed, archived',
   })
   status: string;
 
@@ -60,10 +60,10 @@ export class Project {
   deleted_at: Date;
 
   // Relations
-  @OneToMany(() => ConsultantNote, note => note.project)
+  @OneToMany(() => ConsultantNote, (note) => note.project)
   notes: ConsultantNote[];
 
-  @OneToMany(() => Report, report => report.project)
+  @OneToMany(() => Report, (report) => report.project)
   reports: Report[];
 
   /**
