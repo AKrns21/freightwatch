@@ -39,9 +39,11 @@ export class DatabaseService {
     }
 
     try {
-      // PostgreSQL SET command doesn't support parameter placeholders
+      // Use parameterized query to prevent SQL injection
+      // Note: PostgreSQL SET requires special handling - we use format() function
       await this.dataSource.query(
-        `SET LOCAL app.current_tenant = '${tenantId}'`
+        `SELECT set_config('app.current_tenant', $1, true)`,
+        [tenantId]
       );
 
       this.logger.debug(`Tenant context set to: ${tenantId}`);
@@ -105,10 +107,13 @@ export class DatabaseService {
     
     try {
       await queryRunner.startTransaction();
-      
-      // Set tenant context within the transaction
-      await queryRunner.query('SET LOCAL app.current_tenant = $1', [tenantId]);
-      
+
+      // Set tenant context within the transaction using parameterized query
+      await queryRunner.query(
+        `SELECT set_config('app.current_tenant', $1, true)`,
+        [tenantId]
+      );
+
       // Execute the query function
       const result = await queryFn(queryRunner);
       

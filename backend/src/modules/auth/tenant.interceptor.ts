@@ -65,7 +65,8 @@ export class TenantInterceptor implements NestInterceptor {
 
     try {
       // TEMPORARY DEV MODE: Skip auth completely for MVP development
-      const isDevelopment = process.env.NODE_ENV !== 'production';
+      // Use whitelist approach: only allow bypass in explicitly defined development mode
+      const isDevelopment = process.env.NODE_ENV === 'development';
       const authHeader = request.headers.authorization;
 
       let tenantId: string;
@@ -164,10 +165,15 @@ export class TenantInterceptor implements NestInterceptor {
     }
 
     try {
-      // Decode JWT (without verification for now - add verification in production)
-      // TODO: Add proper JWT verification with secret/public key
-      const decoded = jwt.decode(token) as JwtPayload;
-      
+      // Verify JWT signature (CRITICAL: prevents forged tokens)
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        this.logger.error('JWT_SECRET environment variable is not set - cannot verify tokens!');
+        throw new UnauthorizedException('Server authentication configuration error');
+      }
+
+      const decoded = jwt.verify(token, secret) as JwtPayload;
+
       if (!decoded) {
         throw new UnauthorizedException('Invalid JWT token format');
       }
