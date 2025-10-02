@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProjectsPage } from './pages/Projects';
+import { NewProjectPage } from './pages/NewProject';
 import { UploadReviewPage } from './pages/UploadReview';
 import { ReportViewerPage } from './pages/ReportViewer';
 
@@ -25,6 +26,7 @@ function App() {
 
           {/* Projects */}
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/new" element={<NewProjectPage />} />
 
           {/* Upload Review */}
           <Route path="/uploads/:uploadId/review" element={<UploadReviewPage />} />
