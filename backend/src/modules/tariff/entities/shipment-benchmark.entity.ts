@@ -6,21 +6,21 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { Shipment } from '../../parsing/entities/shipment.entity';
 
 @Entity('shipment_benchmark')
 export class ShipmentBenchmark {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Column({ type: 'uuid' })
   shipment_id: string;
 
   @ManyToOne(() => Shipment)
   @JoinColumn({ name: 'shipment_id' })
   shipment: Shipment;
 
-  @Column('uuid')
+  @Column({ type: 'uuid' })
   tenant_id: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
@@ -44,7 +44,7 @@ export class ShipmentBenchmark {
   @Column({ type: 'decimal', precision: 5, scale: 2 })
   delta_pct: number;
 
-  @Column({ length: 20 })
+  @Column({ type: 'varchar', length: 20 })
   classification: string;
 
   @Column({ type: 'char', length: 3 })
@@ -59,7 +59,7 @@ export class ShipmentBenchmark {
   @Column({ type: 'date', nullable: true })
   fx_rate_date: Date | null;
 
-  @Column({ length: 20, nullable: true })
+  @Column({ type: 'varchar', length: 20, nullable: true })
   diesel_basis_used: string | null;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
