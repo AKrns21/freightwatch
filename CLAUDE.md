@@ -13,33 +13,66 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FreightWatch is a multi-tenant B2B SaaS system for freight cost analysis. It parses invoices from carriers (CSV/Excel/PDF), calculates expected costs using tariff tables, and identifies overpayment opportunities. The system supports multiple currencies, countries, and carriers with strict tenant isolation via PostgreSQL Row Level Security (RLS).
 
-**Stack:** NestJS + TypeScript + PostgreSQL 14+ + Redis + TypeORM
+**Stack:**
+- **Backend:** NestJS + TypeScript + PostgreSQL 14+ + Redis + TypeORM + Bull (queues)
+- **Frontend:** React 19 + TypeScript + Vite + TailwindCSS + React Router
+- **LLM Integration:** Anthropic Claude 3.5 Sonnet (carrier/service detection)
+- **Infrastructure:** Docker Compose (dev), PostgreSQL 14, Redis 7
 
 ## Quick Commands
 
-### Development
-- Start dev server: `npm run start:dev`
-- Build for production: `npm run build`
-- Run migrations: `npm run migration:run`
-- Seed dev data: `npm run seed:dev`
+### Initial Setup
+```bash
+# 1. Start infrastructure (PostgreSQL + Redis)
+docker compose up -d
 
-### Testing
+# 2. Backend setup
+cd backend
+npm install
+cp .env.example .env
+# Edit .env with your configuration
+npm run migration:run    # Run database migrations
+npm run start:dev        # Start backend dev server (port 3000)
+
+# 3. Frontend setup (in separate terminal)
+cd frontend
+npm install
+cp .env.example .env
+# Edit .env (set VITE_API_URL=http://localhost:3000)
+npm run dev             # Start frontend dev server (port 5173)
+```
+
+### Backend Development (run from `backend/` directory)
+- Start dev server: `npm run start:dev` (watches for changes)
+- Build for production: `npm run build`
+- Format code: `npm run format`
+- Lint code: `npm run lint`
+
+### Frontend Development (run from `frontend/` directory)
+- Start dev server: `npm run dev` (Vite dev server on port 5173)
+- Build for production: `npm run build`
+- Preview production build: `npm run preview`
+- Lint code: `npm run lint`
+
+### Testing (run from `backend/` directory)
 - Unit tests: `npm run test`
+- Watch mode: `npm run test:watch`
 - Integration tests: `npm run test:e2e`
 - Coverage report: `npm run test:cov`
-- MECU validation: `npm run test:mecu`
+- MECU validation: `npm run test:integration`
 
-### Database
+### Database (run from `backend/` directory)
 - Generate migration: `npm run typeorm migration:generate -- -n MigrationName`
 - Revert migration: `npm run typeorm migration:revert`
 - Check schema: `npm run typeorm schema:log`
 
 ### Docker
-- Start services: `docker-compose up -d`
-- View logs: `docker-compose logs -f api`
-- Stop services: `docker-compose down`
+- Start services: `docker compose up -d`
+- View logs: `docker compose logs -f postgres`
+- Stop services: `docker compose down`
+- Clean volumes: `docker compose down -v`
 
-**Note:** Always use `npm` (not yarn) for consistency.
+**Note:** Always use `npm` (not yarn) for consistency. All backend commands run from `backend/`, frontend from `frontend/`.
 
 ## CRITICAL RULES ⚠️
 
@@ -77,36 +110,76 @@ const ldmToKg = carrier.ldm_to_kg_factor || 1850; // ✅ with logged fallback
 **If fallback needed:** Document in code comments + log warning with `logger.warn()`.
 **MVP Exception:** Zone fallbacks (1 for DE, 3 for international) are temporarily allowed during MVP phase with extensive logging. See tariff-engine.service.ts for documentation.
 
-### 5. TypeScript Strict
-**Explicit return types for all public methods:**
+### 5. TypeScript Guidelines
+**Note:** TypeScript strict mode is currently **disabled** for MVP development speed. However, new code should still follow best practices:
+
 ```typescript
-async calculateCost(s: Shipment): Promise<BenchmarkResult> { } // ✅
-// NOT: async calculateCost(s: Shipment) { } // ❌
+// ✅ GOOD: Explicit return types for all public methods
+async calculateCost(s: Shipment): Promise<BenchmarkResult> { }
+
+// ❌ BAD: No return type
+async calculateCost(s: Shipment) { }
+
+// ✅ GOOD: Explicit parameter types
+function round(value: number): number { }
+
+// ❌ BAD: Avoid 'any' when possible
+function process(data: any): any { }
 ```
 
-## Project Structure
+**Post-MVP:** Strict mode will be re-enabled gradually. See `@docs/claude/coding-standards.md` for full guidelines.
+
+## Repository Structure
 
 ```
-backend/
-├── src/
-│   ├── modules/
-│   │   ├── auth/           # JWT + Tenant Interceptor (RLS)
-│   │   ├── upload/         # File handling + Queue
-│   │   ├── parsing/        # CSV/PDF parsers
-│   │   ├── tariff/         # Core calculation engine
-│   │   ├── report/         # Report generation
-│   │   └── fleet/          # Fleet analytics
-│   ├── database/
-│   │   ├── migrations/     # SQL migrations (001_, 002_, ...)
-│   │   └── seeds/          # Test/dev seed data
-│   ├── utils/
-│   │   ├── round.ts        # Monetary rounding (CRITICAL)
-│   │   ├── date-parser.ts  # EU date formats (dd.mm.yyyy)
-│   │   └── hash.ts         # SHA256 file hashing
-│   └── types/              # Shared TypeScript interfaces
-└── test/
-    ├── fixtures/mecu/      # Real customer test data
-    └── integration/        # E2E tests
+Repository/
+├── backend/                 # NestJS API Backend
+│   ├── src/
+│   │   ├── modules/
+│   │   │   ├── auth/       # JWT + Tenant Interceptor (RLS)
+│   │   │   ├── upload/     # File handling + Bull Queue
+│   │   │   ├── parsing/    # CSV/PDF parsers + LLM integration
+│   │   │   ├── tariff/     # Core calculation engine
+│   │   │   ├── project/    # Project management (Phase 4.1)
+│   │   │   ├── report/     # Report generation
+│   │   │   └── invoice/    # Invoice entities
+│   │   ├── database/
+│   │   │   ├── migrations/ # SQL migrations (001_, 002_, ...)
+│   │   │   └── seeds/      # Test/dev seed data
+│   │   ├── utils/
+│   │   │   ├── round.ts    # Monetary rounding (CRITICAL)
+│   │   │   ├── date-parser.ts  # EU date formats (dd.mm.yyyy)
+│   │   │   └── hash.ts     # SHA256 file hashing
+│   │   └── types/          # Shared TypeScript interfaces
+│   ├── test/
+│   │   ├── fixtures/mecu/  # Real customer test data
+│   │   └── integration/    # E2E tests
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env.example
+├── frontend/                # React + Vite Frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── services/       # API client services
+│   │   ├── types/          # TypeScript types
+│   │   └── utils/          # Helper functions
+│   ├── public/             # Static assets
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── .env.example
+├── docs/                    # Documentation
+│   └── claude/             # Claude Code documentation
+│       ├── architecture.md
+│       ├── database-patterns.md
+│       ├── business-logic.md
+│       ├── project-workflow.md
+│       ├── coding-standards.md
+│       └── testing-standards.md
+├── docker-compose.yml       # PostgreSQL + Redis
+├── CLAUDE.md               # This file
+└── README.md               # Project overview
 ```
 
 ## Core Data Flow
@@ -199,5 +272,5 @@ See @docs/claude/coding-standards.md for details.
 
 ---
 
-**Last Updated:** 2025-10-02
-**Version:** 1.1 (MVP + Security Fixes + Phase 4.1)
+**Last Updated:** 2025-10-14
+**Version:** 1.2 (MVP + Phase 4.1 + Frontend Integration)
