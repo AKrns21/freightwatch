@@ -1,0 +1,917 @@
+{
+  "meta": {
+    "title": "Speditionsentgelte",
+    "service_type": "Stückgutversand Deutschland",
+    "origin": "ab Velbert",
+    "valid_from": "01.01.2023",
+    "carrier_name": "Cosi Stahllogistik GmbH & Co. KG",
+    "customer_name": "Mecu Metallhalbzeug GmbH & Co. KG",
+    "carrier_address": "Verbandsstr. 101, 58093 Hagen",
+    "customer_address": "Haberstr. 14, 42551 Velbert"
+  },
+  "tariff": {
+    "zones": [
+      {
+        "zone_number": 1,
+        "label": "Zone I",
+        "plz_description": "42, 44, 50-51, 58-59"
+      },
+      {
+        "zone_number": 2,
+        "label": "Zone II",
+        "plz_description": "32-33, 40-41, 45-48, 52-53 57"
+      },
+      {
+        "zone_number": 3,
+        "label": "Zone III",
+        "plz_description": "26-31, 49, 34-37 54-56, 60-61117, 61119-65, 67-69"
+      },
+      {
+        "zone_number": 4,
+        "label": "Zone IV",
+        "plz_description": "20-22, 38 66, 70-71, 74-76, 97-98"
+      },
+      {
+        "zone_number": 5,
+        "label": "Zone V",
+        "plz_description": "04-07, 39, 73, 77, 95-96, 99"
+      },
+      {
+        "zone_number": 6,
+        "label": "Zone VI",
+        "plz_description": "01-03, 08-09, 10-19 23-25, 72, 78-79, 82- 82218, 82220-89, 90-94"
+      },
+      {
+        "zone_number": 7,
+        "label": "Zone VII",
+        "plz_description": "82219"
+      },
+      {
+        "zone_number": 8,
+        "label": "Zone VIII",
+        "plz_description": "61118"
+      }
+    ],
+    "matrix": [
+      {
+        "band_label": "bis 200 kg",
+        "weight_from": 1,
+        "weight_to": 200,
+        "prices": {
+          "zone_1": 52,
+          "zone_2": 61.5,
+          "zone_3": 62.2,
+          "zone_4": 62.7,
+          "zone_5": 64.3,
+          "zone_6": 67,
+          "zone_7": 67,
+          "zone_8": 62.2
+        }
+      },
+      {
+        "band_label": "bis 300 kg",
+        "weight_from": 201,
+        "weight_to": 300,
+        "prices": {
+          "zone_1": 67.8,
+          "zone_2": 75.2,
+          "zone_3": 77,
+          "zone_4": 78.1,
+          "zone_5": 80.4,
+          "zone_6": 84.4,
+          "zone_7": 84.4,
+          "zone_8": 77
+        }
+      },
+      {
+        "band_label": "bis 400 kg",
+        "weight_from": 301,
+        "weight_to": 400,
+        "prices": {
+          "zone_1": 82.9,
+          "zone_2": 100.2,
+          "zone_3": 102.1,
+          "zone_4": 103.7,
+          "zone_5": 106.6,
+          "zone_6": 112,
+          "zone_7": 112,
+          "zone_8": 102.1
+        }
+      },
+      {
+        "band_label": "bis 500 kg",
+        "weight_from": 401,
+        "weight_to": 500,
+        "prices": {
+          "zone_1": 92.8,
+          "zone_2": 114.6,
+          "zone_3": 117.7,
+          "zone_4": 120,
+          "zone_5": 123.9,
+          "zone_6": 130,
+          "zone_7": 130,
+          "zone_8": 117.7
+        }
+      },
+      {
+        "band_label": "bis 600 kg",
+        "weight_from": 501,
+        "weight_to": 600,
+        "prices": {
+          "zone_1": 106.9,
+          "zone_2": 132.3,
+          "zone_3": 135.9,
+          "zone_4": 138.1,
+          "zone_5": 142.7,
+          "zone_6": 150.8,
+          "zone_7": 150.8,
+          "zone_8": 135.9
+        }
+      },
+      {
+        "band_label": "bis 700 kg",
+        "weight_from": 601,
+        "weight_to": 700,
+        "prices": {
+          "zone_1": 122.8,
+          "zone_2": 152.5,
+          "zone_3": 157.7,
+          "zone_4": 159.3,
+          "zone_5": 164.6,
+          "zone_6": 174.1,
+          "zone_7": 174.1,
+          "zone_8": 157.7
+        }
+      },
+      {
+        "band_label": "bis 800 kg",
+        "weight_from": 701,
+        "weight_to": 800,
+        "prices": {
+          "zone_1": 132.5,
+          "zone_2": 165.3,
+          "zone_3": 169.2,
+          "zone_4": 172.2,
+          "zone_5": 178.2,
+          "zone_6": 187.1,
+          "zone_7": 187.1,
+          "zone_8": 169.2
+        }
+      },
+      {
+        "band_label": "bis 900 kg",
+        "weight_from": 801,
+        "weight_to": 900,
+        "prices": {
+          "zone_1": 138.9,
+          "zone_2": 175.9,
+          "zone_3": 181.4,
+          "zone_4": 183.6,
+          "zone_5": 190.3,
+          "zone_6": 202.7,
+          "zone_7": 202.7,
+          "zone_8": 181.4
+        }
+      },
+      {
+        "band_label": "bis 1.000 kg",
+        "weight_from": 901,
+        "weight_to": 1000,
+        "prices": {
+          "zone_1": 151.8,
+          "zone_2": 191.5,
+          "zone_3": 197.7,
+          "zone_4": 200.3,
+          "zone_5": 207.7,
+          "zone_6": 220.2,
+          "zone_7": 220.2,
+          "zone_8": 197.7
+        }
+      },
+      {
+        "band_label": "bis 1.250 kg",
+        "weight_from": 1001,
+        "weight_to": 1250,
+        "prices": {
+          "zone_1": 171.1,
+          "zone_2": 227,
+          "zone_3": 234.9,
+          "zone_4": 239.4,
+          "zone_5": 248.7,
+          "zone_6": 262.7,
+          "zone_7": 262.7,
+          "zone_8": 234.9
+        }
+      },
+      {
+        "band_label": "bis 1.500 kg",
+        "weight_from": 1251,
+        "weight_to": 1500,
+        "prices": {
+          "zone_1": 179.2,
+          "zone_2": 242.6,
+          "zone_3": 249.9,
+          "zone_4": 255.6,
+          "zone_5": 264.9,
+          "zone_6": 281.8,
+          "zone_7": 281.8,
+          "zone_8": 249.9
+        }
+      },
+      {
+        "band_label": "bis 2.000 kg",
+        "weight_from": 1501,
+        "weight_to": 2000,
+        "prices": {
+          "zone_1": 196.6,
+          "zone_2": 263.7,
+          "zone_3": 271.1,
+          "zone_4": 276.1,
+          "zone_5": 290.9,
+          "zone_6": 308.3,
+          "zone_7": 308.3,
+          "zone_8": 271.1
+        }
+      },
+      {
+        "band_label": "bis 2.500 kg",
+        "weight_from": 2001,
+        "weight_to": 2500,
+        "prices": {
+          "zone_1": 205.2,
+          "zone_2": 270.4,
+          "zone_3": 282.9,
+          "zone_4": 289.2,
+          "zone_5": 301.4,
+          "zone_6": 323.3,
+          "zone_7": 323.3,
+          "zone_8": 282.9
+        }
+      },
+      {
+        "band_label": "bis 3.000 kg",
+        "weight_from": 2501,
+        "weight_to": 3000,
+        "prices": {
+          "zone_1": 217.7,
+          "zone_2": 276.1,
+          "zone_3": 290.9,
+          "zone_4": 294.6,
+          "zone_5": 309.7,
+          "zone_6": 335.7,
+          "zone_7": 335.7,
+          "zone_8": 290.9
+        }
+      },
+      {
+        "band_label": "bis 3.500 kg",
+        "weight_from": 3001,
+        "weight_to": 3500,
+        "prices": {
+          "zone_1": null,
+          "zone_2": null,
+          "zone_3": null,
+          "zone_4": null,
+          "zone_5": null,
+          "zone_6": null,
+          "zone_7": 369,
+          "zone_8": 324.2
+        }
+      },
+      {
+        "band_label": "bis 4.000 kg",
+        "weight_from": 3501,
+        "weight_to": 4000,
+        "prices": {
+          "zone_1": null,
+          "zone_2": null,
+          "zone_3": null,
+          "zone_4": null,
+          "zone_5": null,
+          "zone_6": null,
+          "zone_7": 403,
+          "zone_8": 360.8
+        }
+      },
+      {
+        "band_label": "bis 4.500 kg",
+        "weight_from": 4001,
+        "weight_to": 4500,
+        "prices": {
+          "zone_1": null,
+          "zone_2": null,
+          "zone_3": null,
+          "zone_4": null,
+          "zone_5": null,
+          "zone_6": null,
+          "zone_7": 438.5,
+          "zone_8": 394.1
+        }
+      },
+      {
+        "band_label": "bis 5.000 kg",
+        "weight_from": 4501,
+        "weight_to": 5000,
+        "prices": {
+          "zone_1": null,
+          "zone_2": null,
+          "zone_3": null,
+          "zone_4": null,
+          "zone_5": null,
+          "zone_6": null,
+          "zone_7": 477.3,
+          "zone_8": 438.5
+        }
+      }
+    ],
+    "plz_zone_map": [
+      {
+        "plz_prefix": "01",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "04",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "08",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "10",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "20",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "23",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "26",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "32",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "34",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "38",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "39",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "40",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "42",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "plz_prefix": "44",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "plz_prefix": "45",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "49",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "50",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "plz_prefix": "52",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "54",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "57",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "58",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "plz_prefix": "60",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "61118",
+        "match_type": "exact",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "61119",
+        "match_type": "exact",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "66",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "67",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "70",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "72",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "73",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "74",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "77",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "78",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "82",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "82219",
+        "match_type": "exact",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "82220",
+        "match_type": "exact",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "90",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "95",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "97",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "99",
+        "match_type": "prefix",
+        "zone": 5
+      }
+    ],
+    "plz_lookup_rules": {
+      "priority": "exact_before_prefix",
+      "description": "When resolving a PLZ to a zone, first check for an exact 5-digit match (match_type=\"exact\"), then fall back to the longest matching prefix (match_type=\"prefix\"). Example: PLZ 82219 → zone 7 (exact), PLZ 82345 → zone 6 (prefix \"82\")."
+    }
+  },
+  "nebenkosten": {
+    "typed": {
+      "diesel_floater_pct": 18.5,
+      "oversize_note": "bitte Tagespreise erfragen !",
+      "min_weight_half_pallet_kg": 200,
+      "min_weight_pallet_kg": 200,
+      "min_weight_per_cbm_kg": 300,
+      "min_weight_per_ldm_kg": 1500,
+      "min_weight_small_format_kg": 300,
+      "min_weight_medium_format_kg": 500,
+      "min_weight_large_format_kg": 800,
+      "pallet_exchange_euro_flat": 9.5,
+      "pallet_exchange_euro_mesh": 19.5,
+      "return_pickup": "nach Absprache",
+      "transport_insurance": "Verbotskunde ! Transportversicherung decken sie selber ein !",
+      "liability_surcharge": "entfällt",
+      "manual_order_fee_euro": 4.5,
+      "avis_neutralization_fee_euro": 16.5,
+      "avis_neutralization_per_service": true,
+      "island_trade_fair_surcharge": "Fracht zzgl. Auslagen",
+      "payment_days": 20,
+      "billing_cycle": "wöchentlich",
+      "valid_until": "31.12.2023",
+      "legal_basis": "Wir arbeiten ausschließlich auf Grundlage der Allgemeinen Deutschen Spediteurbedingungen 2017 (ADSp 2017)"
+    },
+    "raw": [
+      {
+        "label": "NK",
+        "value": null
+      },
+      {
+        "label": "Stückgutversand Deutschland",
+        "value": null
+      },
+      {
+        "label": "ab Velbert",
+        "value": null
+      },
+      {
+        "label": "Stand: 01.01.2023",
+        "value": null
+      },
+      {
+        "label": "von",
+        "value": "an"
+      },
+      {
+        "label": "Cosi Stahllogistik GmbH & Co. KG",
+        "value": "Mecu Metallhalbzeug GmbH & Co. KG"
+      },
+      {
+        "label": "Verbandsstr. 101",
+        "value": "Haberstr. 14"
+      },
+      {
+        "label": "58093 Hagen",
+        "value": "42551 Velbert"
+      },
+      {
+        "label": "zzgl. aktueller Maut    zzgl. Dieselfloater (akt. 18,5 %)",
+        "value": null
+      },
+      {
+        "label": "Bei  Lieferungen über 3.000 kg und über 7 mtr., im volumigen Bereich und anderen Abgangsstationen -",
+        "value": null
+      },
+      {
+        "label": "bitte Tagespreise erfragen !",
+        "value": null
+      },
+      {
+        "label": "Allgemeines",
+        "value": null
+      },
+      {
+        "label": "Mindestgewicht pro Halbpalette (max. 80 cm x 60 cm):",
+        "value": "200 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Palette (max. 100 cm x 120 cm):",
+        "value": "200 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Kubikmeter:",
+        "value": "300 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Lademeter:",
+        "value": "1500 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Kleinformat(200x100cm):",
+        "value": "300 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Mittelformat(250x125cm):",
+        "value": "500 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Gr0ßformat(300x150cm)",
+        "value": "800 kg"
+      },
+      {
+        "label": "Kosten für Palettentausch:",
+        "value": "9,50 €je Euroflachpalette"
+      },
+      {
+        "label": "Kosten für Palettentausch:",
+        "value": "19,50 €je Gitterboxpalette"
+      },
+      {
+        "label": "Entgelte für Zusatzleistungen / Nebengebühren",
+        "value": null
+      },
+      {
+        "label": "Rückholungen bzw. Abholaufträge:",
+        "value": "nach Absprache"
+      },
+      {
+        "label": "Speditionsversicherung:",
+        "value": "Verbotskunde ! Transportversicherung decken sie selber ein !"
+      },
+      {
+        "label": "Haftungszuschlag für Verzichtskunden:",
+        "value": "entfällt"
+      },
+      {
+        "label": "manuelle Auftragserfassung:",
+        "value": "pro Auftrag 4,50 Euro"
+      },
+      {
+        "label": "Neutralisierung, Avis und Zeitfensterbuchung jeweils:",
+        "value": "pro Sendung 16,50 Euro"
+      },
+      {
+        "label": "Insel- bzw. Messezustellung:",
+        "value": "Fracht zzgl. Auslagen"
+      },
+      {
+        "label": "Zahlungsziel: 20 Tage",
+        "value": "Abrechnung: wöchentlich | Gültig bis 31.12.2023"
+      },
+      {
+        "label": "Wir arbeiten ausschließlich auf Grundlage der Allgemeinen Deutschen Spediteurbedingungen 2017 (ADSp 2017)",
+        "value": "Seite 2 / 2"
+      }
+    ]
+  },
+  "maut": {
+    "distance_ranges": [
+      "001-100",
+      "101-200",
+      "201-300",
+      "301-400",
+      "401-500",
+      "501-600",
+      "601-700",
+      "ab 701"
+    ],
+    "matrix": [
+      {
+        "weight_from": 1,
+        "weight_to": 50,
+        "prices": {
+          "001-100": 2.64,
+          "101-200": 3.22,
+          "201-300": 3.35,
+          "301-400": 3.47,
+          "401-500": 3.59,
+          "501-600": 3.71,
+          "601-700": 3.83,
+          "ab 701": 3.97
+        }
+      },
+      {
+        "weight_from": 51,
+        "weight_to": 100,
+        "prices": {
+          "001-100": 3.32,
+          "101-200": 3.51,
+          "201-300": 3.7,
+          "301-400": 3.88,
+          "401-500": 4.07,
+          "501-600": 4.26,
+          "601-700": 4.43,
+          "ab 701": 4.62
+        }
+      },
+      {
+        "weight_from": 101,
+        "weight_to": 200,
+        "prices": {
+          "001-100": 4.01,
+          "101-200": 4.38,
+          "201-300": 4.74,
+          "301-400": 5.12,
+          "401-500": 5.5,
+          "501-600": 5.87,
+          "601-700": 6.23,
+          "ab 701": 6.6
+        }
+      },
+      {
+        "weight_from": 201,
+        "weight_to": 300,
+        "prices": {
+          "001-100": 4.92,
+          "101-200": 5.53,
+          "201-300": 6.15,
+          "301-400": 6.78,
+          "401-500": 7.39,
+          "501-600": 8,
+          "601-700": 9.53,
+          "ab 701": 10.99
+        }
+      },
+      {
+        "weight_from": 301,
+        "weight_to": 400,
+        "prices": {
+          "001-100": 5.83,
+          "101-200": 6.7,
+          "201-300": 7.56,
+          "301-400": 8.42,
+          "401-500": 9.28,
+          "501-600": 11.28,
+          "601-700": 13.34,
+          "ab 701": 15.39
+        }
+      },
+      {
+        "weight_from": 401,
+        "weight_to": 500,
+        "prices": {
+          "001-100": 6.74,
+          "101-200": 7.85,
+          "201-300": 8.96,
+          "301-400": 10.07,
+          "401-500": 11.88,
+          "501-600": 14.52,
+          "601-700": 17.17,
+          "ab 701": 19.77
+        }
+      },
+      {
+        "weight_from": 501,
+        "weight_to": 600,
+        "prices": {
+          "001-100": 7.65,
+          "101-200": 9.01,
+          "201-300": 10.37,
+          "301-400": 11.72,
+          "401-500": 14.52,
+          "501-600": 17.73,
+          "601-700": 20.96,
+          "ab 701": 24.2
+        }
+      },
+      {
+        "weight_from": 601,
+        "weight_to": 700,
+        "prices": {
+          "001-100": 8.56,
+          "101-200": 10.17,
+          "201-300": 11.77,
+          "301-400": 13.37,
+          "401-500": 17.17,
+          "501-600": 20.96,
+          "601-700": 24.79,
+          "ab 701": 28.59
+        }
+      },
+      {
+        "weight_from": 701,
+        "weight_to": 800,
+        "prices": {
+          "001-100": 9.47,
+          "101-200": 11.33,
+          "201-300": 13.18,
+          "301-400": 15.39,
+          "401-500": 19.81,
+          "501-600": 24.2,
+          "601-700": 28.59,
+          "ab 701": 32.98
+        }
+      },
+      {
+        "weight_from": 801,
+        "weight_to": 900,
+        "prices": {
+          "001-100": 10.38,
+          "101-200": 12.48,
+          "201-300": 14.58,
+          "301-400": 17.43,
+          "401-500": 22.45,
+          "501-600": 27.41,
+          "601-700": 32.39,
+          "ab 701": 37.38
+        }
+      },
+      {
+        "weight_from": 901,
+        "weight_to": 1000,
+        "prices": {
+          "001-100": 11.29,
+          "101-200": 13.65,
+          "201-300": 15.99,
+          "301-400": 19.49,
+          "401-500": 25.09,
+          "501-600": 30.64,
+          "601-700": 36.22,
+          "ab 701": 41.77
+        }
+      },
+      {
+        "weight_from": 1001,
+        "weight_to": 1250,
+        "prices": {
+          "001-100": 12.89,
+          "101-200": 15.67,
+          "201-300": 18.44,
+          "301-400": 23.08,
+          "401-500": 29.7,
+          "501-600": 36.27,
+          "601-700": 42.88,
+          "ab 701": 49.48
+        }
+      },
+      {
+        "weight_from": 1251,
+        "weight_to": 1500,
+        "prices": {
+          "001-100": 15.17,
+          "101-200": 18.56,
+          "201-300": 21.96,
+          "301-400": 28.22,
+          "401-500": 36.29,
+          "501-600": 44.34,
+          "601-700": 52.42,
+          "ab 701": 60.47
+        }
+      },
+      {
+        "weight_from": 1501,
+        "weight_to": 2000,
+        "prices": {
+          "001-100": 18.59,
+          "101-200": 22.9,
+          "201-300": 27.22,
+          "301-400": 35.9,
+          "401-500": 46.19,
+          "501-600": 56.44,
+          "601-700": 66.7,
+          "ab 701": 76.95
+        }
+      },
+      {
+        "weight_from": 2001,
+        "weight_to": 2500,
+        "prices": {
+          "001-100": 23.14,
+          "101-200": 28.69,
+          "201-300": 34.25,
+          "301-400": 46.17,
+          "401-500": 59.38,
+          "501-600": 72.55,
+          "601-700": 85.76,
+          "ab 701": 98.93
+        }
+      },
+      {
+        "weight_from": 2501,
+        "weight_to": 3000,
+        "prices": {
+          "001-100": 27.69,
+          "101-200": 34.48,
+          "201-300": 41.26,
+          "301-400": 56.42,
+          "401-500": 72.59,
+          "501-600": 88.68,
+          "601-700": 104.82,
+          "ab 701": 120.92
+        }
+      }
+    ]
+  },
+  "extracted_at": "2026-03-16T15:17:16.956Z",
+  "source_file": "Mecu - Tarif 01.01.2023 Dirk Beese.xlsx"
+}

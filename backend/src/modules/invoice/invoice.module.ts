@@ -4,6 +4,7 @@ import { InvoiceHeader } from './entities/invoice-header.entity';
 import { InvoiceLine } from './entities/invoice-line.entity';
 import { InvoiceParserService } from './invoice-parser.service';
 import { InvoiceMatcherService } from './invoice-matcher.service';
+import { PdfVisionService } from './pdf-vision.service';
 import { InvoiceController } from './invoice.controller';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
@@ -23,7 +24,7 @@ import { ParsingModule } from '@/modules/parsing/parsing.module';
     TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, ParsingTemplate, Shipment]),
     ParsingModule,
   ],
-  providers: [InvoiceParserService, InvoiceMatcherService],
+  providers: [InvoiceParserService, InvoiceMatcherService, PdfVisionService],
   controllers: [InvoiceController],
   exports: [InvoiceParserService, InvoiceMatcherService],
 })

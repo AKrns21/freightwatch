@@ -1,0 +1,512 @@
+Fahrzeug;Kennzeichen;Abfahrt_datum;Abfahrt_uhrzeit;Ankunft_datum;Ankunft_uhrzeit;Abfahrt_adresse;Startort;Ankunft_adresse;Zielort;Fahrtdauer_min;Standdauer_min;Standdauer_danach_min;Entfernung_in_km
+MAN TGL;ME CU 167;14.03.2022;06:19:19;14.03.2022;06:41:23;Haberstraße 17, 42551 Velbert, Deutschland;Zentrale;Bornberg 105, 42109 Wuppertal, Deutschland;;22;;14;20,398
+MAN TGL;ME CU 167;14.03.2022;06:55:31;14.03.2022;07:12:12;Bornberg 105, 42109 Wuppertal, Deutschland;;Hölker Feld 46, 42279 Wuppertal, Deutschland;;17;14;11;12,333
+MAN TGL;ME CU 167;14.03.2022;07:23:02;14.03.2022;08:03:41;Hölker Feld 46, 42279 Wuppertal, Deutschland;;Robert-Bosch-Straße 5, 42477 Radevormwald, Deutschland;;41;11;5;20,072
+MAN TGL;ME CU 167;14.03.2022;08:08:16;14.03.2022;08:36:03;Robert-Bosch-Straße 5, 42477 Radevormwald, Deutschland;;Jan-Wellem-Straße 1A, 42859 Remscheid, Deutschland;;28;5;8;15,863
+MAN TGL;ME CU 167;14.03.2022;08:44:11;14.03.2022;09:15:34;Jan-Wellem-Straße 1A, 42859 Remscheid, Deutschland;;Lange Str. 19, 42857 Remscheid, Deutschland;;31;8;16;7,339
+MAN TGL;ME CU 167;14.03.2022;09:31:05;14.03.2022;09:45:51;Lange Str. 19, 42857 Remscheid, Deutschland;;Kuller Str. 40, 42651 Solingen, Deutschland;;15;16;8;10,446
+MAN TGL;ME CU 167;14.03.2022;09:54:02;14.03.2022;10:02:53;Kuller Str. 40, 42651 Solingen, Deutschland;;Adlerstraße 43, 42655 Solingen, Deutschland;;9;8;17;2,013
+MAN TGL;ME CU 167;14.03.2022;10:19:44;14.03.2022;10:29:24;Adlerstraße 43, 42655 Solingen, Deutschland;;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;10;17;16;6,31
+MAN TGL;ME CU 167;14.03.2022;10:44:59;14.03.2022;11:08:31;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;Derken 12, 42327 Wuppertal, Deutschland;;24;16;4;11,663
+MAN TGL;ME CU 167;14.03.2022;11:12:59;14.03.2022;11:37:39;Derken 12, 42327 Wuppertal, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;25;4;31;16,902
+MAN TGL;ME CU 167;14.03.2022;12:09:02;14.03.2022;12:18:39;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;10;31;39;2,082
+MAN TGL;ME CU 167;14.03.2022;12:57:30;14.03.2022;12:59:50;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Bessemerstraße 32, 42551 Velbert, Deutschland;;2;39;9;0,851
+MAN TGL;ME CU 167;14.03.2022;13:09:05;14.03.2022;13:11:54;Bessemerstraße 32, 42551 Velbert, Deutschland;;Industriestraße 60, 42551 Velbert, Deutschland;;3;9;10;0,729
+MAN TGL;ME CU 167;14.03.2022;13:21:57;14.03.2022;13:23:16;Industriestraße 60, 42551 Velbert, Deutschland;;L427 137, 42551 Velbert, Deutschland;;1;10;4;0,722
+MAN TGL;ME CU 167;14.03.2022;13:27:28;14.03.2022;13:31:33;L427 137, 42551 Velbert, Deutschland;;Mettmanner Str. 113, 42549 Velbert, Deutschland;;4;4;13;1,664
+MAN TGL;ME CU 167;14.03.2022;13:44:49;14.03.2022;13:48:58;Mettmanner Str. 113, 42549 Velbert, Deutschland;;Auf'm Angst 10, 42553 Velbert, Deutschland;;4;13;8;1,432
+MAN TGL;ME CU 167;14.03.2022;13:57:00;14.03.2022;14:01:59;Auf'm Angst 10, 42553 Velbert, Deutschland;;Schmalenhofer Str. 29, 42551 Velbert, Deutschland;;5;8;16;1,118
+MAN TGL;ME CU 167;14.03.2022;14:17:37;14.03.2022;14:43:27;Schmalenhofer Str. 29, 42551 Velbert, Deutschland;;Velbert Bleibergstraße, 42555 Velbert, Deutschland;;26;16;5;12,809
+MAN TGL;ME CU 167;14.03.2022;14:48:04;14.03.2022;14:56:02;Velbert Bleibergstraße, 42555 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;8;5;924;3,242
+MAN TGL;ME CU 167;15.03.2022;06:20:31;15.03.2022;06:42:54;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Ruhrtalstraße 5, 58456 Witten, Deutschland;;22;924;25;11,8
+MAN TGL;ME CU 167;15.03.2022;07:07:54;15.03.2022;08:01:08;Ruhrtalstraße 5, 58456 Witten, Deutschland;;Egerstraße 3, 58256 Ennepetal, Deutschland;;53;25;8;44,554
+MAN TGL;ME CU 167;15.03.2022;08:08:55;15.03.2022;08:30:28;Egerstraße 3, 58256 Ennepetal, Deutschland;;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;22;8;7;17,974
+MAN TGL;ME CU 167;15.03.2022;08:37:33;15.03.2022;08:46:15;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;Gutenbergstraße 25, 58300 Wetter (Ruhr), Deutschland;;9;7;14;6,816
+MAN TGL;ME CU 167;15.03.2022;09:00:41;15.03.2022;09:39:36;Gutenbergstraße 25, 58300 Wetter (Ruhr), Deutschland;;Oberste-Wilms-Straße 15 d, 44309 Dortmund, Deutschland;;39;14;12;42,28
+MAN TGL;ME CU 167;15.03.2022;09:51:34;15.03.2022;10:21:01;Oberste-Wilms-Straße 15 d, 44309 Dortmund, Deutschland;;Kanalstraße 25, 44147 Dortmund, Deutschland;;29;12;15;31,853
+MAN TGL;ME CU 167;15.03.2022;10:35:52;15.03.2022;11:03:54;Kanalstraße 25, 44147 Dortmund, Deutschland;;Heerstraße 46, 44653 Herne, Deutschland;;28;15;40;25,808
+MAN TGL;ME CU 167;15.03.2022;11:44:17;15.03.2022;12:03:26;Heerstraße 46, 44653 Herne, Deutschland;;Herner Str. 403, 44807 Bochum, Deutschland;;19;40;18;7,301
+MAN TGL;ME CU 167;15.03.2022;12:21:14;15.03.2022;13:05:57;Herner Str. 403, 44807 Bochum, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;45;18;27;55,104
+MAN TGL;ME CU 167;15.03.2022;13:33:07;15.03.2022;13:37:44;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;5;27;13;2,07
+MAN TGL;ME CU 167;15.03.2022;13:51:03;15.03.2022;13:59:13;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;8;13;975;2,029
+MAN TGL;ME CU 167;16.03.2022;06:14:16;16.03.2022;06:15:29;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;975;8;0,457
+MAN TGL;ME CU 167;16.03.2022;06:23:45;16.03.2022;06:45:47;Siemensstraße 5A, 42551 Velbert, Deutschland;;Essener Str. 68, 42327 Wuppertal, Deutschland;;22;8;16;15,347
+MAN TGL;ME CU 167;16.03.2022;07:01:20;16.03.2022;07:58:42;Essener Str. 68, 42327 Wuppertal, Deutschland;;Kruppstraße 21, 58553 Halver, Deutschland;;57;16;7;46,995
+MAN TGL;ME CU 167;16.03.2022;08:06:02;16.03.2022;08:39:10;Kruppstraße 21, 58553 Halver, Deutschland;;Zum Schnüffel 6, 58540 Meinerzhagen, Deutschland;;33;7;6;23,258
+MAN TGL;ME CU 167;16.03.2022;08:44:54;16.03.2022;09:07:37;Zum Schnüffel 6, 58540 Meinerzhagen, Deutschland;;Osemundstraße 3, 58849 Herscheid, Deutschland;;23;6;48;18,717
+MAN TGL;ME CU 167;16.03.2022;09:55:27;16.03.2022;10:02:08;Osemundstraße 3, 58849 Herscheid, Deutschland;;Am Mühlengraben 7, 58849 Herscheid, Deutschland;;7;48;5;3,206
+MAN TGL;ME CU 167;16.03.2022;10:07:15;16.03.2022;10:17:32;Am Mühlengraben 7, 58849 Herscheid, Deutschland;;Max-Planck-Straße 4, 58840 Plettenberg, Deutschland;;10;5;9;8,618
+MAN TGL;ME CU 167;16.03.2022;10:26:52;16.03.2022;10:38:10;Max-Planck-Straße 4, 58840 Plettenberg, Deutschland;;Kroppstraße 2, 58840 Plettenberg, Deutschland;;11;9;11;4,36
+MAN TGL;ME CU 167;16.03.2022;10:49:05;16.03.2022;11:14:23;Kroppstraße 2, 58840 Plettenberg, Deutschland;;K5 27, 59846 Sundern (Sauerland), Deutschland;;25;11;7;19,507
+MAN TGL;ME CU 167;16.03.2022;11:21:39;16.03.2022;11:22:19;K5 27, 59846 Sundern (Sauerland), Deutschland;;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;1;7;19;0,227
+MAN TGL;ME CU 167;16.03.2022;11:41:04;16.03.2022;11:50:18;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;9;19;3;6,608
+MAN TGL;ME CU 167;16.03.2022;11:53:39;16.03.2022;13:03:43;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;A1, 58089 Hagen, Deutschland;;70;3;37;73,813
+MAN TGL;ME CU 167;16.03.2022;13:40:34;16.03.2022;14:14:31;A1, 58089 Hagen, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;34;37;969;40,172
+MAN TGL;ME CU 167;17.03.2022;06:23:46;17.03.2022;07:34:20;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Am Großen Teich 16, 58640 Iserlohn, Deutschland;;71;969;6;80,4
+MAN TGL;ME CU 167;17.03.2022;07:40:48;17.03.2022;07:41:46;Am Großen Teich 16, 58640 Iserlohn, Deutschland;;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;1;6;12;0,292
+MAN TGL;ME CU 167;17.03.2022;07:53:48;17.03.2022;08:07:57;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;Hennenbusch 1, 58708 Menden (Sauerland), Deutschland;;14;12;8;8,064
+MAN TGL;ME CU 167;17.03.2022;08:16:12;17.03.2022;08:32:27;Hennenbusch 1, 58708 Menden (Sauerland), Deutschland;;Oesestraße 49, 58675 Hemer, Deutschland;;16;8;7;9,895
+MAN TGL;ME CU 167;17.03.2022;08:39:13;17.03.2022;08:40:24;Oesestraße 49, 58675 Hemer, Deutschland;;Oesestraße 55a, 58675 Hemer, Deutschland;;1;7;14;0,276
+MAN TGL;ME CU 167;17.03.2022;08:54:29;17.03.2022;09:19:32;Oesestraße 55a, 58675 Hemer, Deutschland;;Am Stadtwald 10, 58739 Wickede (Ruhr), Deutschland;;25;14;13;17,847
+MAN TGL;ME CU 167;17.03.2022;09:32:08;17.03.2022;09:50:00;Am Stadtwald 10, 58739 Wickede (Ruhr), Deutschland;;Raiffeisenstraße 30, 59757 Arnsberg, Deutschland;;18;13;11;12,708
+MAN TGL;ME CU 167;17.03.2022;10:00:51;17.03.2022;10:23:52;Raiffeisenstraße 30, 59757 Arnsberg, Deutschland;;Widayweg 10, 59823 Arnsberg, Deutschland;;23;11;14;18,281
+MAN TGL;ME CU 167;17.03.2022;10:38:14;17.03.2022;10:53:36;Widayweg 10, 59823 Arnsberg, Deutschland;;Heinrich-Lübke-Straße 49A, 59759 Arnsberg, Deutschland;;15;14;5;15,378
+MAN TGL;ME CU 167;17.03.2022;10:58:29;17.03.2022;11:21:29;Heinrich-Lübke-Straße 49A, 59759 Arnsberg, Deutschland;;Hanns-Martin-Schleyer-Straße 26, 59846 Sundern (Sauerland), Deutschland;;23;5;5;15,554
+MAN TGL;ME CU 167;17.03.2022;11:26:49;17.03.2022;11:33:50;Hanns-Martin-Schleyer-Straße 26, 59846 Sundern (Sauerland), Deutschland;;Röhre 50, 59846 Sundern (Sauerland), Deutschland;;7;5;6;2,969
+MAN TGL;ME CU 167;17.03.2022;11:40:17;17.03.2022;11:49:29;Röhre 50, 59846 Sundern (Sauerland), Deutschland;;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;9;6;51;4,367
+MAN TGL;ME CU 167;17.03.2022;12:40:29;17.03.2022;13:40:59;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;9CC7+WP Hagen, Deutschland;;60;51;43;69,02
+MAN TGL;ME CU 167;17.03.2022;14:23:59;17.03.2022;15:18:32;9CC7+WP Hagen, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;55;43;900;44,018
+MAN TGL;ME CU 167;18.03.2022;06:18:36;18.03.2022;06:20:02;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;900;7;0,487
+MAN TGL;ME CU 167;18.03.2022;06:27:12;18.03.2022;07:55:31;Siemensstraße 5A, 42551 Velbert, Deutschland;;An d. Tumpe 25, 58791 Werdohl, Deutschland;;88;7;9;89,993
+MAN TGL;ME CU 167;18.03.2022;08:04:03;18.03.2022;08:25:24;An d. Tumpe 25, 58791 Werdohl, Deutschland;;Neue Mühle 4, 58809 Neuenrade, Deutschland;;21;9;13;12,501
+MAN TGL;ME CU 167;18.03.2022;08:38:44;18.03.2022;09:33:58;Neue Mühle 4, 58809 Neuenrade, Deutschland;;Dieselstraße 11, 57439 Attendorn, Deutschland;;55;13;19;40,104
+MAN TGL;ME CU 167;18.03.2022;09:53:04;18.03.2022;10:36:16;Dieselstraße 11, 57439 Attendorn, Deutschland;;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;43;19;10;33,318
+MAN TGL;ME CU 167;18.03.2022;10:46:14;18.03.2022;10:53:12;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;Kalmecke 5, 59846 Sundern (Sauerland), Deutschland;;7;10;48;4,657
+MAN TGL;ME CU 167;18.03.2022;11:41:41;18.03.2022;13:13:24;Kalmecke 5, 59846 Sundern (Sauerland), Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;92;48;3902;109,257
+MAN TGL;ME CU 167;21.03.2022;06:15:21;21.03.2022;07:23:19;Haberstraße 8, 42551 Velbert, Deutschland;Zentrale;Liegnitzer Str. 14, 58642 Iserlohn, Deutschland;;68;3902;52;67,619
+MAN TGL;ME CU 167;21.03.2022;08:15:19;21.03.2022;08:30:42;Liegnitzer Str. 14, 58642 Iserlohn, Deutschland;;Am Großen Teich 16, 58640 Iserlohn, Deutschland;;15;52;6;13,654
+MAN TGL;ME CU 167;21.03.2022;08:37:02;21.03.2022;08:50:06;Am Großen Teich 16, 58640 Iserlohn, Deutschland;;Hennenbusch 1, 58708 Menden (Sauerland), Deutschland;;13;6;9;7,501
+MAN TGL;ME CU 167;21.03.2022;08:59:07;21.03.2022;09:24:53;Hennenbusch 1, 58708 Menden (Sauerland), Deutschland;;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;26;9;9;19,208
+MAN TGL;ME CU 167;21.03.2022;09:33:37;21.03.2022;09:47:39;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;Auf d. Breihe 7, 59469 Ense, Deutschland;;14;9;10;6,814
+MAN TGL;ME CU 167;21.03.2022;09:57:41;21.03.2022;10:22:02;Auf d. Breihe 7, 59469 Ense, Deutschland;;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;24;10;10;21,181
+MAN TGL;ME CU 167;21.03.2022;10:31:53;21.03.2022;10:40:43;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;9;10;16;7,092
+MAN TGL;ME CU 167;21.03.2022;10:56:17;21.03.2022;11:08:10;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;Amecke, Lütkehöhe, 59846 Sundern (Sauerland), Deutschland;;12;16;4;5,594
+MAN TGL;ME CU 167;21.03.2022;11:11:42;21.03.2022;11:50:29;Amecke, Lütkehöhe, 59846 Sundern (Sauerland), Deutschland;;Benzstraße 14-18, 57439 Attendorn, Deutschland;;39;4;34;29,172
+MAN TGL;ME CU 167;21.03.2022;12:24:52;21.03.2022;14:19:33;Benzstraße 14-18, 57439 Attendorn, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;115;34;29;139,292
+MAN TGL;ME CU 167;21.03.2022;14:48:51;21.03.2022;15:01:55;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;13;29;916;2,333
+MAN TGL;ME CU 167;22.03.2022;06:18:02;22.03.2022;06:20:36;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;3;916;6;0,506
+MAN TGL;ME CU 167;22.03.2022;06:26:54;22.03.2022;07:46:30;Siemensstraße 5A, 42551 Velbert, Deutschland;;Oesestraße 55a, 58675 Hemer, Deutschland;;80;6;13;82,686
+MAN TGL;ME CU 167;22.03.2022;07:59:38;22.03.2022;08:28:51;Oesestraße 55a, 58675 Hemer, Deutschland;;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;29;13;9;20,856
+MAN TGL;ME CU 167;22.03.2022;08:37:48;22.03.2022;08:57:38;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;Kalmecke 5, 59846 Sundern (Sauerland), Deutschland;;20;9;18;17,717
+MAN TGL;ME CU 167;22.03.2022;09:15:54;22.03.2022;09:18:10;Kalmecke 5, 59846 Sundern (Sauerland), Deutschland;;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;2;18;9;0,841
+MAN TGL;ME CU 167;22.03.2022;09:26:56;22.03.2022;09:33:24;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;6;9;10;4,34
+MAN TGL;ME CU 167;22.03.2022;09:42:59;22.03.2022;10:02:38;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;Müllers Weg 2, 59846 Sundern (Sauerland), Deutschland;;20;10;10;6,955
+MAN TGL;ME CU 167;22.03.2022;10:12:51;22.03.2022;10:24:09;Müllers Weg 2, 59846 Sundern (Sauerland), Deutschland;;K5 27, 59846 Sundern (Sauerland), Deutschland;;11;10;7;8,908
+MAN TGL;ME CU 167;22.03.2022;10:30:59;22.03.2022;11:15:57;K5 27, 59846 Sundern (Sauerland), Deutschland;;Werdohler Landstraße 182, 58513 Lüdenscheid, Deutschland;;45;7;65;32,151
+MAN TGL;ME CU 167;22.03.2022;12:20:50;22.03.2022;13:09:44;Werdohler Landstraße 182, 58513 Lüdenscheid, Deutschland;;Langenstück 5, 58579 Schalksmühle, Deutschland;;49;65;17;8,814
+MAN TGL;ME CU 167;22.03.2022;13:27:09;22.03.2022;13:52:03;Langenstück 5, 58579 Schalksmühle, Deutschland;;Am Rüpping 1A, 58239 Schwerte, Deutschland;;25;17;6;28,207
+MAN TGL;ME CU 167;22.03.2022;13:58:01;22.03.2022;14:55:26;Am Rüpping 1A, 58239 Schwerte, Deutschland;;Haberstraße 16, 42551 Velbert, Deutschland;Zentrale;57;6;921;49,564
+MAN TGL;ME CU 167;23.03.2022;06:16:09;23.03.2022;06:37:17;Haberstraße 16, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 13, 42551 Velbert, Deutschland;Servicecenter;21;921;11;10,544
+MAN TGL;ME CU 167;23.03.2022;06:48:07;23.03.2022;06:57:35;Konrad-Zuse-Straße 13, 42551 Velbert, Deutschland;Servicecenter;Dieselstraße 9, 42551 Velbert, Deutschland;;9;11;9;2,287
+MAN TGL;ME CU 167;23.03.2022;07:06:28;23.03.2022;07:15:46;Dieselstraße 9, 42551 Velbert, Deutschland;;Ewald-Jochem-Straße 26B, 42553 Velbert, Deutschland;;9;9;8;4,719
+MAN TGL;ME CU 167;23.03.2022;07:24:02;23.03.2022;08:30:26;Ewald-Jochem-Straße 26B, 42553 Velbert, Deutschland;;Heerstraße 46, 44653 Herne, Deutschland;;66;8;31;58,843
+MAN TGL;ME CU 167;23.03.2022;09:01:08;23.03.2022;09:51:35;Heerstraße 46, 44653 Herne, Deutschland;;Siemensstraße 13, 42551 Velbert, Deutschland;;50;31;47;37,187
+MAN TGL;ME CU 167;23.03.2022;10:38:15;23.03.2022;10:39:52;Siemensstraße 13, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;2;47;23;0,343
+MAN TGL;ME CU 167;23.03.2022;11:02:31;23.03.2022;11:06:50;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;4;23;33;2,03
+MAN TGL;ME CU 167;23.03.2022;11:39:42;23.03.2022;11:46:38;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;7;33;14;2,123
+MAN TGL;ME CU 167;23.03.2022;12:00:09;23.03.2022;12:06:13;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Talstraße 73, 42551 Velbert, Deutschland;Servicecenter;6;14;35;1,456
+MAN TGL;ME CU 167;23.03.2022;12:41:28;23.03.2022;12:44:18;Talstraße 73, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;3;35;18;1,618
+MAN TGL;ME CU 167;23.03.2022;13:02:01;23.03.2022;13:05:39;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Gießereistraße 1, 42551 Velbert, Deutschland;Servicecenter;4;18;9;1,45
+MAN TGL;ME CU 167;23.03.2022;13:15:02;23.03.2022;13:16:30;Gießereistraße 1, 42551 Velbert, Deutschland;Servicecenter;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;1;9;39;0,526
+MAN TGL;ME CU 167;23.03.2022;13:55:11;23.03.2022;14:01:39;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Siemensstraße 5A, 42551 Velbert, Deutschland;;6;39;14;1,466
+MAN TGL;ME CU 167;23.03.2022;14:15:51;23.03.2022;14:18:03;Siemensstraße 5A, 42551 Velbert, Deutschland;;Haberstraße 16, 42551 Velbert, Deutschland;Zentrale;2;14;956;0,545
+MAN TGL;ME CU 167;24.03.2022;06:13:57;24.03.2022;08:06:36;Haberstraße 16, 42551 Velbert, Deutschland;Zentrale;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;113;956;11;108,972
+MAN TGL;ME CU 167;24.03.2022;08:17:34;24.03.2022;08:28:02;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;10;11;34;6,445
+MAN TGL;ME CU 167;24.03.2022;09:01:40;24.03.2022;09:02:21;Illingheimer Str. 33, 59846 Sundern (Sauerland), Deutschland;;K5 27, 59846 Sundern (Sauerland), Deutschland;;1;34;5;0,168
+MAN TGL;ME CU 167;24.03.2022;09:07:35;24.03.2022;09:12:10;K5 27, 59846 Sundern (Sauerland), Deutschland;;Eichenbergweg 22, 59846 Sundern (Sauerland), Deutschland;;5;5;5;2,542
+MAN TGL;ME CU 167;24.03.2022;09:17:37;24.03.2022;09:46:12;Eichenbergweg 22, 59846 Sundern (Sauerland), Deutschland;;Kroppstraße 2, 58840 Plettenberg, Deutschland;;29;5;10;20,629
+MAN TGL;ME CU 167;24.03.2022;09:56:23;24.03.2022;10:00:34;Kroppstraße 2, 58840 Plettenberg, Deutschland;;Wiesenstraße 2, 58840 Plettenberg, Deutschland;;4;10;8;1,646
+MAN TGL;ME CU 167;24.03.2022;10:08:48;24.03.2022;10:15:01;Wiesenstraße 2, 58840 Plettenberg, Deutschland;;Max-Planck-Straße 4, 58840 Plettenberg, Deutschland;;6;8;8;3,046
+MAN TGL;ME CU 167;24.03.2022;10:22:51;24.03.2022;10:28:53;Max-Planck-Straße 4, 58840 Plettenberg, Deutschland;;Schulstraße 4, 58849 Herscheid, Deutschland;;6;8;6;3,654
+MAN TGL;ME CU 167;24.03.2022;10:35:22;24.03.2022;11:15:41;Schulstraße 4, 58849 Herscheid, Deutschland;;Zu Hildringhausen 9, 57462 Olpe, Deutschland;;40;6;6;45,414
+MAN TGL;ME CU 167;24.03.2022;11:21:58;24.03.2022;11:22:48;Zu Hildringhausen 9, 57462 Olpe, Deutschland;;Zu Hildringhausen 19, 57462 Olpe, Deutschland;;1;6;9;0,281
+MAN TGL;ME CU 167;24.03.2022;11:31:41;24.03.2022;12:36:56;Zu Hildringhausen 19, 57462 Olpe, Deutschland;;Langenstück 5, 58579 Schalksmühle, Deutschland;;65;9;44;51,515
+MAN TGL;ME CU 167;24.03.2022;13:21:26;24.03.2022;14:41:27;Langenstück 5, 58579 Schalksmühle, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;80;44;930;77,584
+MAN TGL;ME CU 167;25.03.2022;06:11:44;25.03.2022;06:22:40;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Wülfrather Str. 45, 42553 Velbert, Deutschland;;11;930;11;5,978
+MAN TGL;ME CU 167;25.03.2022;06:33:45;25.03.2022;07:36:52;Wülfrather Str. 45, 42553 Velbert, Deutschland;;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;63;11;11;75,378
+MAN TGL;ME CU 167;25.03.2022;07:47:54;25.03.2022;08:23:02;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;Hüttenstraße 6, 59759 Arnsberg, Deutschland;;35;11;7;27,386
+MAN TGL;ME CU 167;25.03.2022;08:30:30;25.03.2022;08:36:11;Hüttenstraße 6, 59759 Arnsberg, Deutschland;;Heinrich-Lübke-Straße 49, 59759 Arnsberg, Deutschland;;6;7;7;2,505
+MAN TGL;ME CU 167;25.03.2022;08:43:06;25.03.2022;08:55:22;Heinrich-Lübke-Straße 49, 59759 Arnsberg, Deutschland;;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;12;7;12;10,568
+MAN TGL;ME CU 167;25.03.2022;09:07:07;25.03.2022;09:49:49;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;Dieselstraße 11, 57439 Attendorn, Deutschland;;43;12;13;34,057
+MAN TGL;ME CU 167;25.03.2022;10:03:02;25.03.2022;10:15:51;Dieselstraße 11, 57439 Attendorn, Deutschland;;5W9G+VW Finnentrop, Deutschland;;13;13;59;6,617
+MAN TGL;ME CU 167;25.03.2022;11:14:31;25.03.2022;11:35:55;5W9G+VW Finnentrop, Deutschland;;Schulstraße 4, 58849 Herscheid, Deutschland;;21;59;12;14,852
+MAN TGL;ME CU 167;25.03.2022;11:47:32;25.03.2022;14:07:58;Schulstraße 4, 58849 Herscheid, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;140;12;;103,105
+MAN TGL;ME CU 8812;14.03.2022;06:30:17;14.03.2022;07:09:10;Velbert Industriestraße, 42551 Velbert, Deutschland;;Robert-Koch-Straße 19, 40764 Langenfeld (Rheinland), Deutschland;;39;;7;40,409
+MAN TGL;ME CU 8812;14.03.2022;07:15:53;14.03.2022;07:37:40;Robert-Koch-Straße 19, 40764 Langenfeld (Rheinland), Deutschland;;Linde 13, 51399 Burscheid, Deutschland;;22;7;21;23,947
+MAN TGL;ME CU 8812;14.03.2022;07:58:40;14.03.2022;08:11:15;Linde 13, 51399 Burscheid, Deutschland;;Höhestraße 51, 51399 Burscheid, Deutschland;;13;21;8;2,089
+MAN TGL;ME CU 8812;14.03.2022;08:19:27;14.03.2022;09:00:39;Höhestraße 51, 51399 Burscheid, Deutschland;;Hansekai 7, 50735 Köln, Deutschland;;41;8;20;30,117
+MAN TGL;ME CU 8812;14.03.2022;09:20:17;14.03.2022;09:40:53;Hansekai 7, 50735 Köln, Deutschland;;Widdersdorfer Str. 215, 50825 Köln, Deutschland;;21;20;10;8,354
+MAN TGL;ME CU 8812;14.03.2022;09:50:47;14.03.2022;10:21:22;Widdersdorfer Str. 215, 50825 Köln, Deutschland;;Am Eifeltor 1, 50997 Köln, Deutschland;;31;10;17;15,672
+MAN TGL;ME CU 8812;14.03.2022;10:38:31;14.03.2022;11:04:33;Am Eifeltor 1, 50997 Köln, Deutschland;;Belgische Allee 66, 53842 Troisdorf, Deutschland;;26;17;11;22,912
+MAN TGL;ME CU 8812;14.03.2022;11:15:20;14.03.2022;11:19:03;Belgische Allee 66, 53842 Troisdorf, Deutschland;;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;4;11;123;0,223
+MAN TGL;ME CU 8812;14.03.2022;13:22:03;14.03.2022;14:30:50;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;69;123;949;73,038
+MAN TGL;ME CU 8812;15.03.2022;06:20:01;15.03.2022;06:21:17;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;949;17;0,425
+MAN TGL;ME CU 8812;15.03.2022;06:38:30;15.03.2022;07:18:07;Siemensstraße 5A, 42551 Velbert, Deutschland;;Hansastraße 13, 40764 Langenfeld (Rheinland), Deutschland;;40;17;5;40,674
+MAN TGL;ME CU 8812;15.03.2022;07:22:42;15.03.2022;07:55:59;Hansastraße 13, 40764 Langenfeld (Rheinland), Deutschland;;Kurt-Schumacher-Straße 1, 51427 Bergisch Gladbach, Deutschland;;33;5;16;32,322
+MAN TGL;ME CU 8812;15.03.2022;08:12:11;15.03.2022;08:50:04;Kurt-Schumacher-Straße 1, 51427 Bergisch Gladbach, Deutschland;;Hansestraße 10, 51688 Wipperfürth, Deutschland;;38;16;15;32,343
+MAN TGL;ME CU 8812;15.03.2022;09:04:38;15.03.2022;09:19:49;Hansestraße 10, 51688 Wipperfürth, Deutschland;;Georg-Schaeffler-Straße 4, 42499 Hückeswagen, Deutschland;;15;15;8;11,701
+MAN TGL;ME CU 8812;15.03.2022;09:28:14;15.03.2022;09:42:54;Georg-Schaeffler-Straße 4, 42499 Hückeswagen, Deutschland;;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;15;8;4;10,96
+MAN TGL;ME CU 8812;15.03.2022;09:47:03;15.03.2022;10:44:25;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;Beethovenstraße 17, 42553 Velbert, Deutschland;;57;4;10;40,165
+MAN TGL;ME CU 8812;15.03.2022;10:54:27;15.03.2022;11:06:53;Beethovenstraße 17, 42553 Velbert, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;12;10;26;6,173
+MAN TGL;ME CU 8812;15.03.2022;11:33:09;15.03.2022;11:38:21;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;5;26;76;2,128
+MAN TGL;ME CU 8812;15.03.2022;12:54:44;15.03.2022;13:33:24;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 33, 40885 Ratingen, Deutschland;;39;76;28;24,601
+MAN TGL;ME CU 8812;15.03.2022;14:01:22;15.03.2022;14:36:35;Siemensstraße 33, 40885 Ratingen, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;35;28;949;25,099
+MAN TGL;ME CU 8812;16.03.2022;06:25:32;16.03.2022;06:45:04;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Bornberg 105, 42109 Wuppertal, Deutschland;;20;949;23;19,882
+MAN TGL;ME CU 8812;16.03.2022;07:08:10;16.03.2022;07:55:24;Bornberg 105, 42109 Wuppertal, Deutschland;;Karl-Benz-Straße 1, 40764 Langenfeld (Rheinland), Deutschland;;47;23;12;35,533
+MAN TGL;ME CU 8812;16.03.2022;08:06:58;16.03.2022;08:12:22;Karl-Benz-Straße 1, 40764 Langenfeld (Rheinland), Deutschland;;Hans-Böckler-Straße 20, 40764 Langenfeld (Rheinland), Deutschland;;5;12;13;1,984
+MAN TGL;ME CU 8812;16.03.2022;08:25:32;16.03.2022;09:04:29;Hans-Böckler-Straße 20, 40764 Langenfeld (Rheinland), Deutschland;;Kurt-Schumacher-Straße 1, 51427 Bergisch Gladbach, Deutschland;;39;13;22;34,02
+MAN TGL;ME CU 8812;16.03.2022;09:26:47;16.03.2022;09:52:06;Kurt-Schumacher-Straße 1, 51427 Bergisch Gladbach, Deutschland;;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;25;22;13;19,483
+MAN TGL;ME CU 8812;16.03.2022;10:05:09;16.03.2022;10:39:30;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;Reutherstraße 34, 53773 Hennef (Sieg), Deutschland;;34;13;8;22,421
+MAN TGL;ME CU 8812;16.03.2022;10:47:17;16.03.2022;11:18:26;Reutherstraße 34, 53773 Hennef (Sieg), Deutschland;;Bahnhofstraße 27, 53577 Neustadt (Wied), Deutschland;;31;8;33;35,469
+MAN TGL;ME CU 8812;16.03.2022;11:51:42;16.03.2022;11:56:41;Bahnhofstraße 27, 53577 Neustadt (Wied), Deutschland;;Reeg 2, 53577 Asbach, Deutschland;;5;33;55;1,044
+MAN TGL;ME CU 8812;16.03.2022;12:51:16;16.03.2022;13:37:18;Reeg 2, 53577 Asbach, Deutschland;;Koblenzer Str. 64, 57537 Wissen, Deutschland;;46;55;9;38,689
+MAN TGL;ME CU 8812;16.03.2022;13:45:51;16.03.2022;14:10:05;Koblenzer Str. 64, 57537 Wissen, Deutschland;;Industriestraße 20, 51597 Morsbach, Deutschland;;24;9;9;19,249
+MAN TGL;ME CU 8812;16.03.2022;14:19:29;16.03.2022;14:46:04;Industriestraße 20, 51597 Morsbach, Deutschland;;Albert-Einstein-Straße 4, 51674 Wiehl, Deutschland;;27;9;5;18,759
+MAN TGL;ME CU 8812;16.03.2022;14:51:19;16.03.2022;16:20:37;Albert-Einstein-Straße 4, 51674 Wiehl, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;89;5;850;96,58
+MAN TGL;ME CU 8812;17.03.2022;06:30:41;17.03.2022;06:31:46;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;850;8;0,457
+MAN TGL;ME CU 8812;17.03.2022;06:39:49;17.03.2022;07:50:15;Siemensstraße 5A, 42551 Velbert, Deutschland;;Belgische Allee 66, 53842 Troisdorf, Deutschland;;70;8;62;71,232
+MAN TGL;ME CU 8812;17.03.2022;08:52:41;17.03.2022;09:29:26;Belgische Allee 66, 53842 Troisdorf, Deutschland;;Ottostraße 6, 50259 Pulheim, Deutschland;;37;62;8;38,813
+MAN TGL;ME CU 8812;17.03.2022;09:37:39;17.03.2022;10:05:00;Ottostraße 6, 50259 Pulheim, Deutschland;;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;27;8;7;26,307
+MAN TGL;ME CU 8812;17.03.2022;10:11:34;17.03.2022;10:51:18;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;Auf dem Flabig 5, 52355 Düren, Deutschland;;40;7;7;45,84
+MAN TGL;ME CU 8812;17.03.2022;10:58:31;17.03.2022;11:37:56;Auf dem Flabig 5, 52355 Düren, Deutschland;;Vennhorn 4, 52159 Roetgen, Deutschland;;39;7;57;42,686
+MAN TGL;ME CU 8812;17.03.2022;12:35:21;17.03.2022;13:01:08;Vennhorn 4, 52159 Roetgen, Deutschland;;Philipsstraße 8, 52068 Aachen, Deutschland;;26;57;13;18,63
+MAN TGL;ME CU 8812;17.03.2022;13:13:47;17.03.2022;13:48:52;Philipsstraße 8, 52068 Aachen, Deutschland;;Rudolf-Diesel-Straße 24, 52428 Jülich, Deutschland;;35;13;8;34,454
+MAN TGL;ME CU 8812;17.03.2022;13:56:23;17.03.2022;13:56:45;Rudolf-Diesel-Straße 24, 52428 Jülich, Deutschland;;Rudolf-Diesel-Straße 3, 52428 Jülich, Deutschland;;0;8;11;0,171
+MAN TGL;ME CU 8812;17.03.2022;14:07:56;17.03.2022;15:39:30;Rudolf-Diesel-Straße 3, 52428 Jülich, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;92;11;891;94,881
+MAN TGL;ME CU 8812;18.03.2022;06:30:28;18.03.2022;07:04:36;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Bessemerstraße 17, 40699 Erkrath, Deutschland;;34;891;14;33,191
+MAN TGL;ME CU 8812;18.03.2022;07:18:42;18.03.2022;07:33:01;Bessemerstraße 17, 40699 Erkrath, Deutschland;;Langhansstr. 13, 42697 Solingen, Deutschland;;14;14;13;11,046
+MAN TGL;ME CU 8812;18.03.2022;07:45:32;18.03.2022;07:55:07;Langhansstr. 13, 42697 Solingen, Deutschland;;Langenfeld Poensgenstraße, 40764 Langenfeld (Rheinland), Deutschland;;10;13;4;6,952
+MAN TGL;ME CU 8812;18.03.2022;07:59:29;18.03.2022;08:17:04;Langenfeld Poensgenstraße, 40764 Langenfeld (Rheinland), Deutschland;;Porschestraße 16, 51381 Leverkusen, Deutschland;;18;4;5;12,996
+MAN TGL;ME CU 8812;18.03.2022;08:21:56;18.03.2022;08:51:44;Porschestraße 16, 51381 Leverkusen, Deutschland;;Belgische Allee 70, 53842 Troisdorf, Deutschland;;30;5;26;31,624
+MAN TGL;ME CU 8812;18.03.2022;09:17:44;18.03.2022;09:19:09;Belgische Allee 70, 53842 Troisdorf, Deutschland;;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;1;26;20;0,323
+MAN TGL;ME CU 8812;18.03.2022;09:39:18;18.03.2022;10:41:46;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;Zum Brinkesnocken 3, 51709 Marienheide, Deutschland;;62;20;31;70,444
+MAN TGL;ME CU 8812;18.03.2022;11:13:08;18.03.2022;11:17:21;Zum Brinkesnocken 3, 51709 Marienheide, Deutschland;;Unnenberger Str. 5, 51709 Marienheide, Deutschland;;4;31;46;0,494
+MAN TGL;ME CU 8812;18.03.2022;12:03:38;18.03.2022;12:10:17;Unnenberger Str. 5, 51709 Marienheide, Deutschland;;Hauptstraße 96, 51709 Marienheide, Deutschland;;7;46;14;4,438
+MAN TGL;ME CU 8812;18.03.2022;12:24:25;18.03.2022;13:44:03;Hauptstraße 96, 51709 Marienheide, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;80;14;3871;75,612
+MAN TGL;ME CU 8812;21.03.2022;06:15:08;21.03.2022;06:19:45;Siemensstraße 17, 42551 Velbert, Deutschland;;Siemensstraße 5A, 42551 Velbert, Deutschland;;5;3871;4;0,385
+MAN TGL;ME CU 8812;21.03.2022;06:23:37;21.03.2022;06:42:59;Siemensstraße 5A, 42551 Velbert, Deutschland;;Essener Str. 68, 42327 Wuppertal, Deutschland;;19;4;11;14,665
+MAN TGL;ME CU 8812;21.03.2022;06:53:50;21.03.2022;07:09:37;Essener Str. 68, 42327 Wuppertal, Deutschland;;Bornberg 105, 42109 Wuppertal, Deutschland;;16;11;14;8,261
+MAN TGL;ME CU 8812;21.03.2022;07:23:41;21.03.2022;07:30:42;Bornberg 105, 42109 Wuppertal, Deutschland;;BAB46 Sternenberg Süd, 42279 Wuppertal, Deutschland;;7;14;14;6,066
+MAN TGL;ME CU 8812;21.03.2022;07:44:25;21.03.2022;07:58:29;BAB46 Sternenberg Süd, 42279 Wuppertal, Deutschland;;Möddinghofe 27, 42279 Wuppertal, Deutschland;;14;14;33;5,889
+MAN TGL;ME CU 8812;21.03.2022;08:31:34;21.03.2022;09:03:10;Möddinghofe 27, 42279 Wuppertal, Deutschland;;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;32;33;24;20,234
+MAN TGL;ME CU 8812;21.03.2022;09:27:38;21.03.2022;10:14:57;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;3XPQ+CM Leverkusen, Deutschland;;47;24;51;42,772
+MAN TGL;ME CU 8812;21.03.2022;11:06:11;21.03.2022;11:22:28;3XPQ+CM Leverkusen, Deutschland;;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;16;51;13;10,435
+MAN TGL;ME CU 8812;21.03.2022;11:35:40;21.03.2022;11:51:19;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;Wuppertaler Str. 76, 42653 Solingen, Deutschland;;16;13;17;9,042
+MAN TGL;ME CU 8812;21.03.2022;12:08:35;21.03.2022;12:21:28;Wuppertaler Str. 76, 42653 Solingen, Deutschland;;Memeler Str. 21A, 42781 Haan, Deutschland;;13;17;120;6,207
+MAN TGL;ME CU 8812;21.03.2022;14:21:44;21.03.2022;14:47:19;Memeler Str. 21A, 42781 Haan, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;26;120;1060;21,518
+MAN TGL;ME CU 8812;22.03.2022;08:27:31;22.03.2022;09:03:47;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 33, 40885 Ratingen, Deutschland;;36;1060;49;24,611
+MAN TGL;ME CU 8812;22.03.2022;09:52:26;22.03.2022;10:33:29;Siemensstraße 33, 40885 Ratingen, Deutschland;;Redinghovenstraße 15, 40225 Düsseldorf, Deutschland;;41;49;6;28,45
+MAN TGL;ME CU 8812;22.03.2022;10:39:51;22.03.2022;10:41:36;Redinghovenstraße 15, 40225 Düsseldorf, Deutschland;;Redinghovenstraße 20, 40225 Düsseldorf, Deutschland;;2;6;7;0,281
+MAN TGL;ME CU 8812;22.03.2022;10:48:46;22.03.2022;11:29:08;Redinghovenstraße 20, 40225 Düsseldorf, Deutschland;;Geneickener Str. 60A, 41238 Mönchengladbach, Deutschland;;40;7;7;28,721
+MAN TGL;ME CU 8812;22.03.2022;11:36:37;22.03.2022;11:54:53;Geneickener Str. 60A, 41238 Mönchengladbach, Deutschland;;Hocksteiner Weg 35, 41189 Mönchengladbach, Deutschland;;18;7;6;6,844
+MAN TGL;ME CU 8812;22.03.2022;12:01:13;22.03.2022;12:41:31;Hocksteiner Weg 35, 41189 Mönchengladbach, Deutschland;;Römerstraße 17, 47809 Krefeld, Deutschland;;40;6;14;43,949
+MAN TGL;ME CU 8812;22.03.2022;12:55:41;22.03.2022;13:17:40;Römerstraße 17, 47809 Krefeld, Deutschland;;Kulturstraße 55-57, 47055 Duisburg, Deutschland;;22;14;6;18,367
+MAN TGL;ME CU 8812;22.03.2022;13:23:58;22.03.2022;13:39:04;Kulturstraße 55-57, 47055 Duisburg, Deutschland;;Zu den Gärten 13, 47228 Duisburg, Deutschland;;15;6;7;5,355
+MAN TGL;ME CU 8812;22.03.2022;13:46:04;22.03.2022;14:05:15;Zu den Gärten 13, 47228 Duisburg, Deutschland;;Ludwig-Krohne-Straße 5, 47058 Duisburg, Deutschland;;19;7;7;8,265
+MAN TGL;ME CU 8812;22.03.2022;14:12:39;22.03.2022;14:41:08;Ludwig-Krohne-Straße 5, 47058 Duisburg, Deutschland;;Selbsternte 1, 45481 Mülheim an der Ruhr, Deutschland;;28;7;43;12,874
+MAN TGL;ME CU 8812;22.03.2022;15:24:28;22.03.2022;16:06:31;Selbsternte 1, 45481 Mülheim an der Ruhr, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;42;43;859;22,748
+MAN TGL;ME CU 8812;23.03.2022;06:25:38;23.03.2022;07:12:36;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Industriestraße 16, 42477 Radevormwald, Deutschland;;47;859;8;42,799
+MAN TGL;ME CU 8812;23.03.2022;07:20:40;23.03.2022;08:09:29;Industriestraße 16, 42477 Radevormwald, Deutschland;;Zum Brinkesnocken 3, 51709 Marienheide, Deutschland;;49;8;7;32,682
+MAN TGL;ME CU 8812;23.03.2022;08:16:37;23.03.2022;08:54:38;Zum Brinkesnocken 3, 51709 Marienheide, Deutschland;;Hommericher Strasse 6c, nur Lager, Versandhandel, 51789 Lindlar, Deutschland;;38;7;16;29,833
+MAN TGL;ME CU 8812;23.03.2022;09:10:22;23.03.2022;10:01:19;Hommericher Strasse 6c, nur Lager, Versandhandel, 51789 Lindlar, Deutschland;;Friedrich-Engels-Straße 12, 51545 Waldbröl, Deutschland;;51;16;7;57,616
+MAN TGL;ME CU 8812;23.03.2022;10:08:45;23.03.2022;10:34:55;Friedrich-Engels-Straße 12, 51545 Waldbröl, Deutschland;;Koblenzer Str. 64, 57537 Wissen, Deutschland;;26;7;7;19,511
+MAN TGL;ME CU 8812;23.03.2022;10:42:19;23.03.2022;11:32:33;Koblenzer Str. 64, 57537 Wissen, Deutschland;;Bahnhofstraße 27, 53577 Neustadt (Wied), Deutschland;;50;7;24;39,638
+MAN TGL;ME CU 8812;23.03.2022;11:56:38;23.03.2022;12:07:50;Bahnhofstraße 27, 53577 Neustadt (Wied), Deutschland;;JC4R+HP Neustadt (Wied), Deutschland;;11;24;48;3,634
+MAN TGL;ME CU 8812;23.03.2022;12:55:52;23.03.2022;13:28:50;JC4R+HP Neustadt (Wied), Deutschland;;An d. Lohmühle 7 a, 53639 Königswinter, Deutschland;;33;48;13;27,302
+MAN TGL;ME CU 8812;23.03.2022;13:41:36;23.03.2022;14:06:58;An d. Lohmühle 7 a, 53639 Königswinter, Deutschland;;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;25;13;14;23,278
+MAN TGL;ME CU 8812;23.03.2022;14:20:47;23.03.2022;14:21:25;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;Troisdorf Camp Spich Casino, 53842 Troisdorf, Deutschland;Reusch;1;14;11;0,168
+MAN TGL;ME CU 8812;23.03.2022;14:32:06;23.03.2022;15:48:15;Troisdorf Camp Spich Casino, 53842 Troisdorf, Deutschland;Reusch;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;76;11;873;70,848
+MAN TGL;ME CU 8812;24.03.2022;06:21:12;24.03.2022;06:21:56;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;873;10;0,278
+MAN TGL;ME CU 8812;24.03.2022;06:32:01;24.03.2022;06:53:38;Siemensstraße 5A, 42551 Velbert, Deutschland;;Bornberg 105, 42109 Wuppertal, Deutschland;;22;10;18;19,789
+MAN TGL;ME CU 8812;24.03.2022;07:11:34;24.03.2022;07:29:21;Bornberg 105, 42109 Wuppertal, Deutschland;;In d. Fleute 53, 42389 Wuppertal, Deutschland;;18;18;7;15,053
+MAN TGL;ME CU 8812;24.03.2022;07:36:35;24.03.2022;07:58:36;In d. Fleute 53, 42389 Wuppertal, Deutschland;;Unnamed Road, 42859, Wermelskirchen, Deutschland;;22;7;21;17,646
+MAN TGL;ME CU 8812;24.03.2022;08:19:52;24.03.2022;08:45:46;Unnamed Road, 42859, Wermelskirchen, Deutschland;;Frohntaler Str. 32, 42929 Wermelskirchen, Deutschland;;26;21;7;21,903
+MAN TGL;ME CU 8812;24.03.2022;08:52:35;24.03.2022;09:08:02;Frohntaler Str. 32, 42929 Wermelskirchen, Deutschland;;Auf d. Huhfuhr 8, 42929 Wermelskirchen, Deutschland;;15;7;29;6,727
+MAN TGL;ME CU 8812;24.03.2022;09:36:44;24.03.2022;10:14:16;Auf d. Huhfuhr 8, 42929 Wermelskirchen, Deutschland;;Tannenstraße 10, 42857 Remscheid, Deutschland;;38;29;6;23,211
+MAN TGL;ME CU 8812;24.03.2022;10:20:07;24.03.2022;10:51:24;Tannenstraße 10, 42857 Remscheid, Deutschland;;Schmalzgrube 5, 42655 Solingen, Deutschland;;31;6;11;14,739
+MAN TGL;ME CU 8812;24.03.2022;11:02:17;24.03.2022;11:08:58;Schmalzgrube 5, 42655 Solingen, Deutschland;;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;7;11;12;3,156
+MAN TGL;ME CU 8812;24.03.2022;11:20:33;24.03.2022;11:41:35;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;Wuppertaler Str. 76, 42653 Solingen, Deutschland;;21;12;7;7,815
+MAN TGL;ME CU 8812;24.03.2022;11:48:53;24.03.2022;11:55:11;Wuppertaler Str. 76, 42653 Solingen, Deutschland;;Dycker Feld 63, 42653 Solingen, Deutschland;;6;7;47;1,235
+MAN TGL;ME CU 8812;24.03.2022;12:41:59;24.03.2022;12:49:56;Dycker Feld 63, 42653 Solingen, Deutschland;;Vohwinkeler Str. 115, 42329 Wuppertal, Deutschland;;8;47;13;3,794
+MAN TGL;ME CU 8812;24.03.2022;13:03:21;24.03.2022;13:25:20;Vohwinkeler Str. 115, 42329 Wuppertal, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;22;13;14;15,909
+MAN TGL;ME CU 8812;24.03.2022;13:39:18;24.03.2022;13:46:30;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;7;14;44;2,004
+MAN TGL;ME CU 8812;24.03.2022;14:30:11;24.03.2022;14:39:28;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;9;44;945;2,046
+MAN TGL;ME CU 8812;25.03.2022;06:24:40;25.03.2022;07:30:48;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Belgische Allee 70, 53842 Troisdorf, Deutschland;;66;945;72;71,625
+MAN TGL;ME CU 8812;25.03.2022;08:42:37;25.03.2022;09:40:59;Belgische Allee 70, 53842 Troisdorf, Deutschland;;Gewerbeparkstraße 34, 51580 Reichshof, Deutschland;;58;72;14;66,601
+MAN TGL;ME CU 8812;25.03.2022;09:55:00;25.03.2022;09:55:23;Gewerbeparkstraße 34, 51580 Reichshof, Deutschland;;Gewerbeparkstraße 30, 51580 Reichshof, Deutschland;;0;14;10;0,113
+MAN TGL;ME CU 8812;25.03.2022;10:05:17;25.03.2022;10:16:08;Gewerbeparkstraße 30, 51580 Reichshof, Deutschland;;Euelerhammerstraße 13, 51580 Reichshof, Deutschland;;11;10;10;7,713
+MAN TGL;ME CU 8812;25.03.2022;10:25:38;25.03.2022;10:47:13;Euelerhammerstraße 13, 51580 Reichshof, Deutschland;;Albert-Einstein-Straße 4, 51674 Wiehl, Deutschland;;22;10;17;11,078
+MAN TGL;ME CU 8812;25.03.2022;11:04:11;25.03.2022;12:07:25;Albert-Einstein-Straße 4, 51674 Wiehl, Deutschland;;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;63;17;12;46,755
+MAN TGL;ME CU 8812;25.03.2022;12:19:03;25.03.2022;12:24:22;Robert-Bosch-Straße 4, 42477 Radevormwald, Deutschland;;Albert-Einstein-Straße 6, 42477 Radevormwald, Deutschland;;5;12;63;0,945
+MAN TGL;ME CU 8812;25.03.2022;13:27:35;25.03.2022;14:33:23;Albert-Einstein-Straße 6, 42477 Radevormwald, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;66;63;;57,66
+MAN TGL;ME CU 270;14.03.2022;06:13:30;14.03.2022;07:22:29;Haberstraße 8, 42551 Velbert, Deutschland;Zentrale;Piepenstockstraße 73B, 58636 Iserlohn, Deutschland;;69;;12;77,027
+MAN TGL;ME CU 270;14.03.2022;07:34:33;14.03.2022;08:48:56;Piepenstockstraße 73B, 58636 Iserlohn, Deutschland;;Am Ohrt 5, 59469 Ense, Deutschland;;74;12;6;42,192
+MAN TGL;ME CU 270;14.03.2022;08:55:18;14.03.2022;09:23:14;Am Ohrt 5, 59469 Ense, Deutschland;;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;28;6;23;21,404
+MAN TGL;ME CU 270;14.03.2022;09:46:11;14.03.2022;10:14:26;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;Wasserburgstraße 43, 58809 Neuenrade, Deutschland;;28;23;4;21,663
+MAN TGL;ME CU 270;14.03.2022;10:18:53;14.03.2022;10:30:25;Wasserburgstraße 43, 58809 Neuenrade, Deutschland;;Neue Mühle 4, 58809 Neuenrade, Deutschland;;12;4;17;3,301
+MAN TGL;ME CU 270;14.03.2022;10:47:00;14.03.2022;11:02:32;Neue Mühle 4, 58809 Neuenrade, Deutschland;;Gewerbestraße 32, 58791 Werdohl, Deutschland;;16;17;18;9,401
+MAN TGL;ME CU 270;14.03.2022;11:20:33;14.03.2022;11:21:33;Gewerbestraße 32, 58791 Werdohl, Deutschland;;Gewerbestraße 22, 58791 Werdohl, Deutschland;;1;18;15;0,196
+MAN TGL;ME CU 270;14.03.2022;11:36:09;14.03.2022;12:20:41;Gewerbestraße 22, 58791 Werdohl, Deutschland;;Ennester Weg 3A, 57439 Attendorn, Deutschland;;45;15;6;25,039
+MAN TGL;ME CU 270;14.03.2022;12:27:03;14.03.2022;12:35:35;Ennester Weg 3A, 57439 Attendorn, Deutschland;;In d. Stesse 18, 57439 Attendorn, Deutschland;;9;6;41;2,682
+MAN TGL;ME CU 270;14.03.2022;13:16:48;14.03.2022;15:05:01;In d. Stesse 18, 57439 Attendorn, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;108;41;909;133,883
+MAN TGL;ME CU 270;15.03.2022;06:14:27;15.03.2022;07:22:33;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;68;909;13;80,518
+MAN TGL;ME CU 270;15.03.2022;07:35:39;15.03.2022;08:23:12;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;48;13;18;30,741
+MAN TGL;ME CU 270;15.03.2022;08:41:10;15.03.2022;08:51:56;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;11;18;18;4,492
+MAN TGL;ME CU 270;15.03.2022;09:09:47;15.03.2022;09:19:33;Am Gelben Berg 4, 59846 Sundern (Sauerland), Deutschland;;K5 27, 59846 Sundern (Sauerland), Deutschland;;10;18;12;6,792
+MAN TGL;ME CU 270;15.03.2022;09:31:20;15.03.2022;10:18:35;K5 27, 59846 Sundern (Sauerland), Deutschland;;Wibschla 39, 58513 Lüdenscheid, Deutschland;;47;12;15;33,068
+MAN TGL;ME CU 270;15.03.2022;10:33:25;15.03.2022;10:35:25;Wibschla 39, 58513 Lüdenscheid, Deutschland;;6MH8+7M Lüdenscheid, Deutschland;;2;15;6;0,815
+MAN TGL;ME CU 270;15.03.2022;10:41:14;15.03.2022;11:02:07;6MH8+7M Lüdenscheid, Deutschland;;6G5M+99 Halver, Deutschland;;21;6;14;12,217
+MAN TGL;ME CU 270;15.03.2022;11:15:44;15.03.2022;12:03:00;6G5M+99 Halver, Deutschland;;Erich-Hoepner-Ring 9, 42369 Wuppertal, Deutschland;;47;14;39;32,727
+MAN TGL;ME CU 270;15.03.2022;12:42:25;15.03.2022;13:07:42;Erich-Hoepner-Ring 9, 42369 Wuppertal, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;25;39;31;23,276
+MAN TGL;ME CU 270;15.03.2022;13:38:25;15.03.2022;13:40:40;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Industriestraße 60, 42551 Velbert, Deutschland;;2;31;7;0,523
+MAN TGL;ME CU 270;15.03.2022;13:47:33;15.03.2022;13:54:47;Industriestraße 60, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;7;7;982;1,099
+MAN TGL;ME CU 270;16.03.2022;06:16:20;16.03.2022;06:52:21;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Am Timpen 53, 42389 Wuppertal, Deutschland;;36;982;20;33,466
+MAN TGL;ME CU 270;16.03.2022;07:12:42;16.03.2022;07:50:37;Am Timpen 53, 42389 Wuppertal, Deutschland;;Radevormwald Grüne, 42477 Radevormwald, Deutschland;;38;20;9;27,051
+MAN TGL;ME CU 270;16.03.2022;07:59:42;16.03.2022;08:49:00;Radevormwald Grüne, 42477 Radevormwald, Deutschland;;Solinger Str. 30, 42349 Wuppertal, Deutschland;;49;9;8;28,919
+MAN TGL;ME CU 270;16.03.2022;08:57:30;16.03.2022;09:03:51;Solinger Str. 30, 42349 Wuppertal, Deutschland;;Fleußmühle 1, 42651 Solingen, Deutschland;;6;8;17;3,373
+MAN TGL;ME CU 270;16.03.2022;09:21:16;16.03.2022;09:26:45;Fleußmühle 1, 42651 Solingen, Deutschland;;Kuller Str. 40, 42651 Solingen, Deutschland;;5;17;13;2,889
+MAN TGL;ME CU 270;16.03.2022;09:39:35;16.03.2022;09:50:27;Kuller Str. 40, 42651 Solingen, Deutschland;;Wittkuller Str. 144, 42719 Solingen, Deutschland;;11;13;13;3,817
+MAN TGL;ME CU 270;16.03.2022;10:03:38;16.03.2022;10:13:08;Wittkuller Str. 144, 42719 Solingen, Deutschland;;Dycker Feld 47, 42653 Solingen, Deutschland;;10;13;8;3,95
+MAN TGL;ME CU 270;16.03.2022;10:20:56;16.03.2022;10:41:21;Dycker Feld 47, 42653 Solingen, Deutschland;;Am Kiesberg 12-14, 42117 Wuppertal, Deutschland;;20;8;36;12,364
+MAN TGL;ME CU 270;16.03.2022;11:17:34;16.03.2022;11:38:57;Am Kiesberg 12-14, 42117 Wuppertal, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;21;36;28;17,196
+MAN TGL;ME CU 270;16.03.2022;12:06:47;16.03.2022;12:14:18;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;8;28;31;1,989
+MAN TGL;ME CU 270;16.03.2022;12:45:25;16.03.2022;13:01:20;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Fellerstraße 2, 42555 Velbert, Deutschland;;16;31;4;7,859
+MAN TGL;ME CU 270;16.03.2022;13:05:26;16.03.2022;13:23:09;Fellerstraße 2, 42555 Velbert, Deutschland;;Am Rosenhügel 9, 42553 Velbert, Deutschland;;18;4;15;10,721
+MAN TGL;ME CU 270;16.03.2022;13:37:52;16.03.2022;13:52:19;Am Rosenhügel 9, 42553 Velbert, Deutschland;;Röttgenstraße 40, 42549 Velbert, Deutschland;;14;15;40;9,729
+MAN TGL;ME CU 270;16.03.2022;14:32:23;16.03.2022;14:35:29;Röttgenstraße 40, 42549 Velbert, Deutschland;;Konrad-Zuse-Straße 1, 42551 Velbert, Deutschland;Servicecenter;3;40;6;0,815
+MAN TGL;ME CU 270;16.03.2022;14:41:47;16.03.2022;14:53:09;Konrad-Zuse-Straße 1, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;11;6;924;2,436
+MAN TGL;ME CU 270;17.03.2022;06:17:28;17.03.2022;06:37:43;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Ruhrtalstraße 5, 58456 Witten, Deutschland;;20;924;11;11,603
+MAN TGL;ME CU 270;17.03.2022;06:48:16;17.03.2022;07:26:05;Ruhrtalstraße 5, 58456 Witten, Deutschland;;Nierenhofer Str. 68, 45257 Essen, Deutschland;;38;11;20;21,328
+MAN TGL;ME CU 270;17.03.2022;07:46:01;17.03.2022;08:14:01;Nierenhofer Str. 68, 45257 Essen, Deutschland;;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;28;20;16;15,87
+MAN TGL;ME CU 270;17.03.2022;08:30:01;17.03.2022;08:53:31;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;Herner Str. 403, 44807 Bochum, Deutschland;;24;16;19;8,159
+MAN TGL;ME CU 270;17.03.2022;09:12:28;17.03.2022;09:56:20;Herner Str. 403, 44807 Bochum, Deutschland;;Unterer Graffweg 30, 44309 Dortmund, Deutschland;;44;19;22;40,672
+MAN TGL;ME CU 270;17.03.2022;10:18:40;17.03.2022;10:39:36;Unterer Graffweg 30, 44309 Dortmund, Deutschland;;Ostkirchstraße 177, 44287 Dortmund, Deutschland;;21;22;37;11,67
+MAN TGL;ME CU 270;17.03.2022;11:16:56;17.03.2022;11:40:11;Ostkirchstraße 177, 44287 Dortmund, Deutschland;;Verbandsstraße 60 b, 58093 Hagen, Deutschland;;23;37;12;16,21
+MAN TGL;ME CU 270;17.03.2022;11:51:47;17.03.2022;12:19:23;Verbandsstraße 60 b, 58093 Hagen, Deutschland;;Hochofenstraße 6, 58135 Hagen, Deutschland;;28;12;7;14,914
+MAN TGL;ME CU 270;17.03.2022;12:26:35;17.03.2022;12:34:13;Hochofenstraße 6, 58135 Hagen, Deutschland;;Gutenbergstraße 20, 58300 Wetter (Ruhr), Deutschland;;8;7;33;2,951
+MAN TGL;ME CU 270;17.03.2022;13:07:42;17.03.2022;13:18:10;Gutenbergstraße 20, 58300 Wetter (Ruhr), Deutschland;;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;10;33;12;6,673
+MAN TGL;ME CU 270;17.03.2022;13:30:36;17.03.2022;13:39:26;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;88G6+V9 Gevelsberg, Deutschland;;9;12;33;5,998
+MAN TGL;ME CU 270;17.03.2022;14:12:43;17.03.2022;15:07:10;88G6+V9 Gevelsberg, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;54;33;912;31,424
+MAN TGL;ME CU 270;18.03.2022;06:19:35;18.03.2022;07:29:54;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Hafenweg 2, 59192 Bergkamen, Deutschland;;70;912;14;85,325
+MAN TGL;ME CU 270;18.03.2022;07:44:02;18.03.2022;08:03:53;Hafenweg 2, 59192 Bergkamen, Deutschland;;Werkstraße 3, 59174 Kamen, Deutschland;;20;14;12;8,378
+MAN TGL;ME CU 270;18.03.2022;08:16:14;18.03.2022;08:52:07;Werkstraße 3, 59174 Kamen, Deutschland;;Werkstraße 14, 44267 Dortmund, Deutschland;;36;12;5;34,11
+MAN TGL;ME CU 270;18.03.2022;08:57:34;18.03.2022;09:18:53;Werkstraße 14, 44267 Dortmund, Deutschland;;Gutenbergstraße 24, 58300 Wetter (Ruhr), Deutschland;;21;5;16;16,983
+MAN TGL;ME CU 270;18.03.2022;09:34:47;18.03.2022;10:01:23;Gutenbergstraße 24, 58300 Wetter (Ruhr), Deutschland;;Ennepetal dormakaba, 58256 Ennepetal, Deutschland;;27;16;12;11,944
+MAN TGL;ME CU 270;18.03.2022;10:13:28;18.03.2022;11:06:01;Ennepetal dormakaba, 58256 Ennepetal, Deutschland;;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;53;12;28;43,208
+MAN TGL;ME CU 270;18.03.2022;11:33:32;18.03.2022;11:46:45;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;Darpestraße 22, 44793 Bochum, Deutschland;;13;28;27;7,864
+MAN TGL;ME CU 270;18.03.2022;12:13:29;18.03.2022;12:32:08;Darpestraße 22, 44793 Bochum, Deutschland;;Max-Keith-Straße 39, 45136 Essen, Deutschland;;19;27;6;14,618
+MAN TGL;ME CU 270;18.03.2022;12:38:30;18.03.2022;12:53:55;Max-Keith-Straße 39, 45136 Essen, Deutschland;;Bredeneyer Str. 181, 45133 Essen, Deutschland;;15;6;39;6,254
+MAN TGL;ME CU 270;18.03.2022;13:33:09;18.03.2022;14:02:28;Bredeneyer Str. 181, 45133 Essen, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;29;39;3847;12,829
+MAN TGL;ME CU 270;21.03.2022;06:09:45;21.03.2022;06:11:03;Haberstraße 8, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;3847;8;0,463
+MAN TGL;ME CU 270;21.03.2022;06:18:33;21.03.2022;07:32:49;Siemensstraße 5A, 42551 Velbert, Deutschland;;Breite Str. 160, 41238 Mönchengladbach, Deutschland;;74;8;17;69,341
+MAN TGL;ME CU 270;21.03.2022;07:49:53;21.03.2022;08:41:24;Breite Str. 160, 41238 Mönchengladbach, Deutschland;;Rudolf-Diesel-Straße 24, 52428 Jülich, Deutschland;;52;17;15;41,569
+MAN TGL;ME CU 270;21.03.2022;08:56:10;21.03.2022;09:21:55;Rudolf-Diesel-Straße 24, 52428 Jülich, Deutschland;;Carl-Zeiss-Straße 22, 52477 Alsdorf, Deutschland;;26;15;12;17,804
+MAN TGL;ME CU 270;21.03.2022;09:33:28;21.03.2022;10:06:43;Carl-Zeiss-Straße 22, 52477 Alsdorf, Deutschland;;Vennhorn 4, 52159 Roetgen, Deutschland;;33;12;22;32,498
+MAN TGL;ME CU 270;21.03.2022;10:28:34;21.03.2022;10:47:54;Vennhorn 4, 52159 Roetgen, Deutschland;;Rastplatz Königsberg, 52080 Aachen, Deutschland;;19;22;29;16,136
+MAN TGL;ME CU 270;21.03.2022;11:16:40;21.03.2022;12:00:29;Rastplatz Königsberg, 52080 Aachen, Deutschland;;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;44;29;11;58,467
+MAN TGL;ME CU 270;21.03.2022;12:11:06;21.03.2022;12:19:37;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;Goerdeler Str. 7, 50374 Erftstadt, Deutschland;;9;11;43;1,255
+MAN TGL;ME CU 270;21.03.2022;13:02:28;21.03.2022;14:08:22;Goerdeler Str. 7, 50374 Erftstadt, Deutschland;;Bessemerstraße 17, 40699 Erkrath, Deutschland;;66;43;14;71,472
+MAN TGL;ME CU 270;21.03.2022;14:22:43;21.03.2022;14:49:07;Bessemerstraße 17, 40699 Erkrath, Deutschland;;Velbert Röttgen, 42551 Velbert, Deutschland;;26;14;26;28,959
+MAN TGL;ME CU 270;21.03.2022;15:14:42;21.03.2022;15:16:24;Velbert Röttgen, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;2;26;15;0,613
+MAN TGL;ME CU 270;21.03.2022;15:31:01;21.03.2022;15:34:58;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;4;15;14;2,005
+MAN TGL;ME CU 270;21.03.2022;15:48:41;21.03.2022;15:58:18;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;10;14;857;2,025
+MAN TGL;ME CU 270;22.03.2022;06:15:35;22.03.2022;07:29:23;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Birtener Ring 6, 46509 Xanten, Deutschland;;74;857;10;79,601
+MAN TGL;ME CU 270;22.03.2022;07:39:41;22.03.2022;08:25:00;Birtener Ring 6, 46509 Xanten, Deutschland;;Gendringer Str. 85, 46419 Isselburg, Deutschland;;45;10;17;35,659
+MAN TGL;ME CU 270;22.03.2022;08:42:15;22.03.2022;10:30:53;Gendringer Str. 85, 46419 Isselburg, Deutschland;;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;109;17;19;119,417
+MAN TGL;ME CU 270;22.03.2022;10:49:54;22.03.2022;10:51:14;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;Industriestraße 11, 48465 Schüttorf, Deutschland;;1;19;41;0,607
+MAN TGL;ME CU 270;22.03.2022;11:31:47;22.03.2022;11:39:52;Industriestraße 11, 48465 Schüttorf, Deutschland;;Industriestraße 11, 48465 Schüttorf, Deutschland;;8;41;4;5,707
+MAN TGL;ME CU 270;22.03.2022;11:44:11;22.03.2022;12:47:58;Industriestraße 11, 48465 Schüttorf, Deutschland;;Im Heetwinkel 58, 46514 Schermbeck, Deutschland;;64;4;9;83,318
+MAN TGL;ME CU 270;22.03.2022;12:57:00;22.03.2022;13:28:30;Im Heetwinkel 58, 46514 Schermbeck, Deutschland;;An d. Knippenburg 15, 46238 Bottrop, Deutschland;;32;9;6;28,07
+MAN TGL;ME CU 270;22.03.2022;13:34:37;22.03.2022;14:06:09;An d. Knippenburg 15, 46238 Bottrop, Deutschland;;Bredeneyer Str. 181, 45133 Essen, Deutschland;;32;6;33;16,121
+MAN TGL;ME CU 270;22.03.2022;14:39:13;22.03.2022;15:17:01;Bredeneyer Str. 181, 45133 Essen, Deutschland;;Velbert Moltkeplatz, 42551 Velbert, Deutschland;;38;33;15;19,762
+MAN TGL;ME CU 270;22.03.2022;15:31:53;22.03.2022;15:43:30;Velbert Moltkeplatz, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;12;15;871;2,833
+MAN TGL;ME CU 270;23.03.2022;06:14:17;23.03.2022;06:15:42;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;871;12;0,448
+MAN TGL;ME CU 270;23.03.2022;06:27:37;23.03.2022;06:57:40;Siemensstraße 5A, 42551 Velbert, Deutschland;;Elberfelder Str. 107, 45549 Sprockhövel, Deutschland;;30;12;14;27,371
+MAN TGL;ME CU 270;23.03.2022;07:11:10;23.03.2022;07:30:13;Elberfelder Str. 107, 45549 Sprockhövel, Deutschland;;Ruhrstraße 38, 58332 Schwelm, Deutschland;;19;14;6;13,055
+MAN TGL;ME CU 270;23.03.2022;07:36:06;23.03.2022;07:49:31;Ruhrstraße 38, 58332 Schwelm, Deutschland;;Gewerbestraße 35, 58285 Gevelsberg, Deutschland;;13;6;8;9,618
+MAN TGL;ME CU 270;23.03.2022;07:57:23;23.03.2022;08:01:00;Gewerbestraße 35, 58285 Gevelsberg, Deutschland;;Gewerbestraße 30, 58285 Gevelsberg, Deutschland;;4;8;16;0,161
+MAN TGL;ME CU 270;23.03.2022;08:17:15;23.03.2022;08:31:23;Gewerbestraße 30, 58285 Gevelsberg, Deutschland;;Am Waldesrand 9, 58285 Gevelsberg, Deutschland;;14;16;6;11,085
+MAN TGL;ME CU 270;23.03.2022;08:37:04;23.03.2022;08:37:56;Am Waldesrand 9, 58285 Gevelsberg, Deutschland;;Kalthofs Park 12, 58285 Gevelsberg, Deutschland;;1;6;21;0,26
+MAN TGL;ME CU 270;23.03.2022;08:59:24;23.03.2022;09:24:21;Kalthofs Park 12, 58285 Gevelsberg, Deutschland;;Lange Eck 7, 58099 Hagen, Deutschland;;25;21;9;20,088
+MAN TGL;ME CU 270;23.03.2022;09:32:52;23.03.2022;09:46:11;Lange Eck 7, 58099 Hagen, Deutschland;;Verbandsstraße 60 b, 58093 Hagen, Deutschland;;13;9;17;2,998
+MAN TGL;ME CU 270;23.03.2022;10:02:57;23.03.2022;10:27:32;Verbandsstraße 60 b, 58093 Hagen, Deutschland;;Chaussee 72, 59439 Holzwickede, Deutschland;;25;17;7;25,182
+MAN TGL;ME CU 270;23.03.2022;10:34:03;23.03.2022;10:51:22;Chaussee 72, 59439 Holzwickede, Deutschland;;Hemsack 14, 59174 Kamen, Deutschland;;17;7;30;13,263
+MAN TGL;ME CU 270;23.03.2022;11:21:15;23.03.2022;11:24:50;Hemsack 14, 59174 Kamen, Deutschland;;Werkstraße 3, 59174 Kamen, Deutschland;;4;30;15;0,948
+MAN TGL;ME CU 270;23.03.2022;11:39:53;23.03.2022;12:51:38;Werkstraße 3, 59174 Kamen, Deutschland;;Hiddinghauser Str. 28, 58456 Witten, Deutschland;;72;15;53;49,81
+MAN TGL;ME CU 270;23.03.2022;13:44:34;23.03.2022;14:25:12;Hiddinghauser Str. 28, 58456 Witten, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;41;53;946;38,879
+MAN TGL;ME CU 270;24.03.2022;06:11:18;24.03.2022;07:21:11;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Corunnastraße 8, 58636 Iserlohn, Deutschland;;70;946;8;78,148
+MAN TGL;ME CU 270;24.03.2022;07:29:08;24.03.2022;07:43:38;Corunnastraße 8, 58636 Iserlohn, Deutschland;;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;14;8;8;7,907
+MAN TGL;ME CU 270;24.03.2022;07:51:41;24.03.2022;07:55:18;Am Großen Teich 27, 58640 Iserlohn, Deutschland;;Am Großen Teich 9, 58640 Iserlohn, Deutschland;;4;8;21;0,227
+MAN TGL;ME CU 270;24.03.2022;08:16:04;24.03.2022;08:38:18;Am Großen Teich 9, 58640 Iserlohn, Deutschland;;Oesestraße 30, 58675 Hemer, Deutschland;;22;21;6;12,942
+MAN TGL;ME CU 270;24.03.2022;08:44:05;24.03.2022;09:19:44;Oesestraße 30, 58675 Hemer, Deutschland;;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;36;6;12;21,425
+MAN TGL;ME CU 270;24.03.2022;09:31:42;24.03.2022;09:41:43;Raiffeisenstraße 28, 59757 Arnsberg, Deutschland;;Heinrich-Lübke-Straße 49, 59759 Arnsberg, Deutschland;;10;12;14;7,793
+MAN TGL;ME CU 270;24.03.2022;09:55:17;24.03.2022;10:10:53;Heinrich-Lübke-Straße 49, 59759 Arnsberg, Deutschland;;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;16;14;13;10,444
+MAN TGL;ME CU 270;24.03.2022;10:23:27;24.03.2022;10:28:35;Kalmecke 4, 59846 Sundern (Sauerland), Deutschland;;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;5;13;40;0,412
+MAN TGL;ME CU 270;24.03.2022;11:08:27;24.03.2022;12:02:40;Zum Dümpel 3, 59846 Sundern (Sauerland), Deutschland;;Hammerstraße 9, 58791 Werdohl, Deutschland;;54;40;24;30,832
+MAN TGL;ME CU 270;24.03.2022;12:26:39;24.03.2022;13:47:06;Hammerstraße 9, 58791 Werdohl, Deutschland;;Erich-Hoepner-Ring 9, 42369 Wuppertal, Deutschland;;80;24;40;53,504
+MAN TGL;ME CU 270;24.03.2022;14:26:55;24.03.2022;14:52:18;Erich-Hoepner-Ring 9, 42369 Wuppertal, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;25;40;927;23,298
+MAN TGL;ME CU 270;25.03.2022;06:19:21;25.03.2022;06:21:16;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Industriestraße 60, 42551 Velbert, Deutschland;;2;927;12;0,523
+MAN TGL;ME CU 270;25.03.2022;06:33:22;25.03.2022;07:09:52;Industriestraße 60, 42551 Velbert, Deutschland;;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;36;12;11;37,676
+MAN TGL;ME CU 270;25.03.2022;07:21:18;25.03.2022;07:44:07;Asbecker Str. 36, 58285 Gevelsberg, Deutschland;;Jacobstraße 29, 58256 Ennepetal, Deutschland;;23;11;6;9,137
+MAN TGL;ME CU 270;25.03.2022;07:50:25;25.03.2022;08:23:26;Jacobstraße 29, 58256 Ennepetal, Deutschland;;Unterberchum 3, 58093 Hagen, Deutschland;;33;6;24;26,25
+MAN TGL;ME CU 270;25.03.2022;08:47:01;25.03.2022;09:12:12;Unterberchum 3, 58093 Hagen, Deutschland;;Obermassener Kirchweg 9, 59423 Unna, Deutschland;;25;24;11;23,509
+MAN TGL;ME CU 270;25.03.2022;09:23:18;25.03.2022;09:34:29;Obermassener Kirchweg 9, 59423 Unna, Deutschland;;Hildebrandstraße 16, 44319 Dortmund, Deutschland;;11;11;9;4,498
+MAN TGL;ME CU 270;25.03.2022;09:43:37;25.03.2022;09:59:43;Hildebrandstraße 16, 44319 Dortmund, Deutschland;;Werkstraße 3, 59174 Kamen, Deutschland;;16;9;12;9,146
+MAN TGL;ME CU 270;25.03.2022;10:12:06;25.03.2022;10:56:22;Werkstraße 3, 59174 Kamen, Deutschland;;Salinger Feld 4, 58454 Witten, Deutschland;;44;12;30;42,82
+MAN TGL;ME CU 270;25.03.2022;11:26:08;25.03.2022;11:43:38;Salinger Feld 4, 58454 Witten, Deutschland;;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;18;30;13;14,128
+MAN TGL;ME CU 270;25.03.2022;11:56:11;25.03.2022;12:16:29;Prinz-Regent-Straße 76A, 44795 Bochum, Deutschland;;Herner Str. 395, 44807 Bochum, Deutschland;;20;13;30;16,715
+MAN TGL;ME CU 270;25.03.2022;12:46:50;25.03.2022;13:16:17;Herner Str. 395, 44807 Bochum, Deutschland;;Bredeneyer Str. 181, 45133 Essen, Deutschland;;29;30;42;23,43
+MAN TGL;ME CU 270;25.03.2022;13:58:24;25.03.2022;14:23:47;Bredeneyer Str. 181, 45133 Essen, Deutschland;;Siemensstraße 5A, 42551 Velbert, Deutschland;;25;42;8;12,368
+MAN TGL;ME CU 270;25.03.2022;14:31:18;25.03.2022;14:36:29;Siemensstraße 5A, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;5;8;;0,484
+MAN TGL;ME CU 90;17.03.2022;06:29:29;17.03.2022;06:59:05;Haberstraße 3-5, 42551 Velbert, Deutschland;;Möddinghofe 27, 42279 Wuppertal, Deutschland;;30;;14;30,144
+MAN TGL;ME CU 90;17.03.2022;07:12:37;17.03.2022;07:38:57;Möddinghofe 27, 42279 Wuppertal, Deutschland;;Dahlienstraße 43, 42477 Radevormwald, Deutschland;;26;14;15;18,789
+MAN TGL;ME CU 90;17.03.2022;07:54:09;17.03.2022;08:33:38;Dahlienstraße 43, 42477 Radevormwald, Deutschland;;549P+4R Remscheid, Deutschland;;39;15;11;21,226
+MAN TGL;ME CU 90;17.03.2022;08:44:23;17.03.2022;08:55:49;549P+4R Remscheid, Deutschland;;Alexander-Coppel-Straße 19-21, 42651 Solingen, Deutschland;;11;11;18;5,709
+MAN TGL;ME CU 90;17.03.2022;09:14:06;17.03.2022;09:28:22;Alexander-Coppel-Straße 19-21, 42651 Solingen, Deutschland;;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;14;18;15;7,045
+MAN TGL;ME CU 90;17.03.2022;09:43:07;17.03.2022;10:05:46;Atilla Tekin, Mühlenstraße 21, 42699 Solingen, Deutschland;;Yale-Allee 16, 42329 Wuppertal, Deutschland;;23;15;11;10,949
+MAN TGL;ME CU 90;17.03.2022;10:16:40;17.03.2022;10:35:41;Yale-Allee 16, 42329 Wuppertal, Deutschland;;Kocherscheidt 7, 42553 Velbert, Deutschland;;19;11;50;11,322
+MAN TGL;ME CU 90;17.03.2022;11:25:19;17.03.2022;11:39:07;Kocherscheidt 7, 42553 Velbert, Deutschland;;Otto-Hahn-Straße 19, 42579 Heiligenhaus, Deutschland;;14;50;11;12,467
+MAN TGL;ME CU 90;17.03.2022;11:49:38;17.03.2022;11:57:10;Otto-Hahn-Straße 19, 42579 Heiligenhaus, Deutschland;;u. Industriestraße 30, 42579 Heiligenhaus, Deutschland;;8;11;11;3,634
+MAN TGL;ME CU 90;17.03.2022;12:08:26;17.03.2022;12:17:19;u. Industriestraße 30, 42579 Heiligenhaus, Deutschland;;Schopshofer Weg 11, 42579 Heiligenhaus, Deutschland;;9;11;7;2,664
+MAN TGL;ME CU 90;17.03.2022;12:24:38;17.03.2022;12:25:26;Schopshofer Weg 11, 42579 Heiligenhaus, Deutschland;;Hasselbecker Str. 2-4, 42579 Heiligenhaus, Deutschland;;1;7;11;0,276
+MAN TGL;ME CU 90;17.03.2022;12:36:37;17.03.2022;12:53:30;Hasselbecker Str. 2-4, 42579 Heiligenhaus, Deutschland;;Burgfeld 2, 42551 Velbert, Deutschland;;17;11;20;10,262
+MAN TGL;ME CU 90;17.03.2022;13:13:09;17.03.2022;13:20:01;Burgfeld 2, 42551 Velbert, Deutschland;;Langenberger Str. 137, 42551 Velbert, Deutschland;;7;20;8;2,101
+MAN TGL;ME CU 90;17.03.2022;13:27:31;17.03.2022;13:32:24;Langenberger Str. 137, 42551 Velbert, Deutschland;;Nordstraße 27, 42551 Velbert, Deutschland;;5;8;16;2,284
+MAN TGL;ME CU 90;17.03.2022;13:48:46;17.03.2022;13:51:31;Nordstraße 27, 42551 Velbert, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;3;16;47;1,185
+MAN TGL;ME CU 90;17.03.2022;14:38:40;17.03.2022;14:47:31;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;9;47;943;2,015
+MAN TGL;ME CU 90;18.03.2022;06:30:10;18.03.2022;06:31:11;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;943;6;0,385
+MAN TGL;ME CU 90;18.03.2022;06:37:16;18.03.2022;07:24:37;Siemensstraße 5A, 42551 Velbert, Deutschland;;Heerdterbuschstraße 12, 41460 Neuss, Deutschland;;47;6;14;38,511
+MAN TGL;ME CU 90;18.03.2022;07:38:19;18.03.2022;08:15:49;Heerdterbuschstraße 12, 41460 Neuss, Deutschland;;Breite Str. 160, 41238 Mönchengladbach, Deutschland;;38;14;24;29,1
+MAN TGL;ME CU 90;18.03.2022;08:39:23;18.03.2022;09:04:09;Breite Str. 160, 41238 Mönchengladbach, Deutschland;;Greefsallee 49-50, 41747 Viersen, Deutschland;;25;24;22;11,903
+MAN TGL;ME CU 90;18.03.2022;09:25:49;18.03.2022;09:48:51;Greefsallee 49-50, 41747 Viersen, Deutschland;;Lenenweg 27, 47918 Tönisvorst, Deutschland;;23;22;8;19,555
+MAN TGL;ME CU 90;18.03.2022;09:57:16;18.03.2022;10:12:08;Lenenweg 27, 47918 Tönisvorst, Deutschland;;Hooghe Weg 16, 47906 Kempen, Deutschland;;15;8;13;10,024
+MAN TGL;ME CU 90;18.03.2022;10:25:26;18.03.2022;10:54:31;Hooghe Weg 16, 47906 Kempen, Deutschland;;Breuershofstraße 48, 47807 Krefeld, Deutschland;;29;13;13;21,917
+MAN TGL;ME CU 90;18.03.2022;11:07:21;18.03.2022;11:08:41;Breuershofstraße 48, 47807 Krefeld, Deutschland;;Kimplerstraße 334, 47807 Krefeld, Deutschland;;1;13;7;0,686
+MAN TGL;ME CU 90;18.03.2022;11:15:24;18.03.2022;11:32:43;Kimplerstraße 334, 47807 Krefeld, Deutschland;;Bruchfeld 90, 47809 Krefeld, Deutschland;;17;7;11;15,133
+MAN TGL;ME CU 90;18.03.2022;11:44:08;18.03.2022;11:51:31;Bruchfeld 90, 47809 Krefeld, Deutschland;;Römerstraße 17, 47809 Krefeld, Deutschland;;7;11;29;4,604
+MAN TGL;ME CU 90;18.03.2022;12:20:47;18.03.2022;12:42:12;Römerstraße 17, 47809 Krefeld, Deutschland;;9R3C+M2 Duisburg, Deutschland;;21;29;30;16,291
+MAN TGL;ME CU 90;18.03.2022;13:12:25;18.03.2022;13:47:02;9R3C+M2 Duisburg, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;35;30;5318;26,824
+MAN TGL;ME CU 90;22.03.2022;06:25:28;22.03.2022;06:26:32;Haberstraße 3-5, 42551 Velbert, Deutschland;;Industriestraße 60, 42551 Velbert, Deutschland;;1;5318;19;0,514
+MAN TGL;ME CU 90;22.03.2022;06:45:41;22.03.2022;06:46:21;Industriestraße 60, 42551 Velbert, Deutschland;;Borsigstraße 15, 42551 Velbert, Deutschland;;1;19;4;0,228
+MAN TGL;ME CU 90;22.03.2022;06:50:31;22.03.2022;07:30:15;Borsigstraße 15, 42551 Velbert, Deutschland;;Hansastraße 13, 40764 Langenfeld (Rheinland), Deutschland;;40;4;11;41,024
+MAN TGL;ME CU 90;22.03.2022;07:41:38;22.03.2022;08:14:10;Hansastraße 13, 40764 Langenfeld (Rheinland), Deutschland;;Hansekai 3, 50735 Köln, Deutschland;;33;11;8;31,833
+MAN TGL;ME CU 90;22.03.2022;08:22:08;22.03.2022;08:24:11;Hansekai 3, 50735 Köln, Deutschland;;Hansekai 9, 50735 Köln, Deutschland;;2;8;12;0,207
+MAN TGL;ME CU 90;22.03.2022;08:35:43;22.03.2022;09:21:06;Hansekai 9, 50735 Köln, Deutschland;;Reutherstraße 34, 53773 Hennef (Sieg), Deutschland;;45;12;12;40,555
+MAN TGL;ME CU 90;22.03.2022;09:33:07;22.03.2022;10:26:13;Reutherstraße 34, 53773 Hennef (Sieg), Deutschland;;Gerberstraße 37, 51789 Lindlar, Deutschland;;53;12;9;46,47
+MAN TGL;ME CU 90;22.03.2022;10:34:53;22.03.2022;11:09:35;Gerberstraße 37, 51789 Lindlar, Deutschland;;An d. Zinkhütte 12, 51469 Bergisch Gladbach, Deutschland;;35;9;11;33,013
+MAN TGL;ME CU 90;22.03.2022;11:20:53;22.03.2022;11:57:41;An d. Zinkhütte 12, 51469 Bergisch Gladbach, Deutschland;;Rastanlage Ohligser Heide West, A3, 42697 Solingen, Deutschland;;37;11;49;36,001
+MAN TGL;ME CU 90;22.03.2022;12:46:58;22.03.2022;13:14:43;Rastanlage Ohligser Heide West, A3, 42697 Solingen, Deutschland;;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;28;49;34;30,398
+MAN TGL;ME CU 90;22.03.2022;13:48:33;22.03.2022;13:55:56;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;7;34;987;2,023
+MAN TGL;ME CU 90;23.03.2022;06:23:05;23.03.2022;06:24:08;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;987;6;0,443
+MAN TGL;ME CU 90;23.03.2022;06:30:29;23.03.2022;06:53:27;Siemensstraße 5A, 42551 Velbert, Deutschland;;Bornberg 105, 42109 Wuppertal, Deutschland;;23;6;15;19,983
+MAN TGL;ME CU 90;23.03.2022;07:08:18;23.03.2022;07:30:09;Bornberg 105, 42109 Wuppertal, Deutschland;;Dreherstraße 38, 42899 Remscheid, Deutschland;;22;15;9;22,638
+MAN TGL;ME CU 90;23.03.2022;07:38:45;23.03.2022;08:12:05;Dreherstraße 38, 42899 Remscheid, Deutschland;;Solinger Str. 30, 42349 Wuppertal, Deutschland;;33;9;29;14,039
+MAN TGL;ME CU 90;23.03.2022;08:40:58;23.03.2022;08:49:48;Solinger Str. 30, 42349 Wuppertal, Deutschland;;Wanderparkplatz Arboretum - Wuppertal, 42349 Wuppertal, Deutschland;;9;29;19;4,56
+MAN TGL;ME CU 90;23.03.2022;09:08:24;23.03.2022;09:19:17;Wanderparkplatz Arboretum - Wuppertal, 42349 Wuppertal, Deutschland;;Am Kiesberg 14, 42117 Wuppertal, Deutschland;;11;19;9;7,661
+MAN TGL;ME CU 90;23.03.2022;09:28:20;23.03.2022;09:40:22;Am Kiesberg 14, 42117 Wuppertal, Deutschland;;Deutscher Ring 91A, 42327 Wuppertal, Deutschland;;12;9;12;5,661
+MAN TGL;ME CU 90;23.03.2022;09:51:52;23.03.2022;09:56:03;Deutscher Ring 91A, 42327 Wuppertal, Deutschland;;Otto-Hausmann-Ring 201, 42115 Wuppertal, Deutschland;;4;12;9;1,543
+MAN TGL;ME CU 90;23.03.2022;10:05:23;23.03.2022;10:07:13;Otto-Hausmann-Ring 201, 42115 Wuppertal, Deutschland;;Benrather Str. 14, 42115 Wuppertal, Deutschland;;2;9;6;0,713
+MAN TGL;ME CU 90;23.03.2022;10:13:31;23.03.2022;10:29:32;Benrather Str. 14, 42115 Wuppertal, Deutschland;;Robert-Bosch-Straße 19, 42489 Wülfrath, Deutschland;;16;6;6;8,595
+MAN TGL;ME CU 90;23.03.2022;10:35:34;23.03.2022;10:45:11;Robert-Bosch-Straße 19, 42489 Wülfrath, Deutschland;;Alte Ratinger Landstraße 21, 42489 Wülfrath, Deutschland;;10;6;22;3,091
+MAN TGL;ME CU 90;23.03.2022;11:07:22;23.03.2022;11:24:33;Alte Ratinger Landstraße 21, 42489 Wülfrath, Deutschland;;Flurweg 25, 42579 Heiligenhaus, Deutschland;;17;22;18;9,361
+MAN TGL;ME CU 90;23.03.2022;11:42:45;23.03.2022;11:44:08;Flurweg 25, 42579 Heiligenhaus, Deutschland;;Dieselstraße 27, 42579 Heiligenhaus, Deutschland;;1;18;4;0,601
+MAN TGL;ME CU 90;23.03.2022;11:48:36;23.03.2022;12:01:29;Dieselstraße 27, 42579 Heiligenhaus, Deutschland;;Nordring 26, 42579 Heiligenhaus, Deutschland;;13;4;25;4,21
+MAN TGL;ME CU 90;23.03.2022;12:26:27;23.03.2022;12:31:33;Nordring 26, 42579 Heiligenhaus, Deutschland;;Schopshofer Weg 11, 42579 Heiligenhaus, Deutschland;;5;25;15;1,946
+MAN TGL;ME CU 90;23.03.2022;12:46:10;23.03.2022;13:00:38;Schopshofer Weg 11, 42579 Heiligenhaus, Deutschland;;Mettmanner Str. 82, 42549 Velbert, Deutschland;;14;15;15;7,851
+MAN TGL;ME CU 90;23.03.2022;13:15:50;23.03.2022;13:21:44;Mettmanner Str. 82, 42549 Velbert, Deutschland;;L427 137, 42551 Velbert, Deutschland;;6;15;17;1,502
+MAN TGL;ME CU 90;23.03.2022;13:38:55;23.03.2022;13:41:50;L427 137, 42551 Velbert, Deutschland;;Stahlstraße 21, 42551 Velbert, Deutschland;;3;17;6;1,622
+MAN TGL;ME CU 90;23.03.2022;13:48:03;23.03.2022;14:06:01;Stahlstraße 21, 42551 Velbert, Deutschland;;Kaiserstraße 23, 42549 Velbert, Deutschland;;18;6;14;4,94
+MAN TGL;ME CU 90;23.03.2022;14:19:52;23.03.2022;14:24:50;Kaiserstraße 23, 42549 Velbert, Deutschland;;L426 180, 42549 Velbert, Deutschland;;5;14;52;0,994
+MAN TGL;ME CU 90;23.03.2022;15:16:50;23.03.2022;15:33:09;L426 180, 42549 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;16;52;903;5,123
+MAN TGL;ME CU 90;24.03.2022;06:36:11;24.03.2022;08:17:10;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Auf dem Flabig 5, 52355 Düren, Deutschland;;101;903;41;114,608
+MAN TGL;ME CU 90;24.03.2022;08:58:30;24.03.2022;09:10:56;Auf dem Flabig 5, 52355 Düren, Deutschland;;RCMG+JH Düren, Deutschland;;12;41;19;8,578
+MAN TGL;ME CU 90;24.03.2022;09:29:45;24.03.2022;09:59:06;RCMG+JH Düren, Deutschland;;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;29;19;8;36,04
+MAN TGL;ME CU 90;24.03.2022;10:07:32;24.03.2022;10:46:06;Dieselstraße 9A, 50374 Erftstadt, Deutschland;;A59, 51107 Köln, Deutschland;;39;8;3;40,755
+MAN TGL;ME CU 90;24.03.2022;10:49:15;24.03.2022;10:59:14;A59, 51107 Köln, Deutschland;;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;10;3;8;9,601
+MAN TGL;ME CU 90;24.03.2022;11:06:56;24.03.2022;11:09:02;Camp-Spich-Straße 17B, 53842 Troisdorf, Deutschland;Reusch;Belgische Allee 70, 53842 Troisdorf, Deutschland;;2;8;22;0,654
+MAN TGL;ME CU 90;24.03.2022;11:31:07;24.03.2022;11:43:22;Belgische Allee 70, 53842 Troisdorf, Deutschland;;V3XM+7P Köln, Deutschland;;12;22;32;8,698
+MAN TGL;ME CU 90;24.03.2022;12:15:13;24.03.2022;12:32:55;V3XM+7P Köln, Deutschland;;Hansekai 7, 50735 Köln, Deutschland;;18;32;18;16,024
+MAN TGL;ME CU 90;24.03.2022;12:50:27;24.03.2022;13:26:24;Hansekai 7, 50735 Köln, Deutschland;;Lise-Meitner-Straße 4, 40764 Langenfeld (Rheinland), Deutschland;;36;18;9;33,387
+MAN TGL;ME CU 90;24.03.2022;13:35:20;24.03.2022;14:17:22;Lise-Meitner-Straße 4, 40764 Langenfeld (Rheinland), Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;42;9;23;38,688
+MAN TGL;ME CU 90;24.03.2022;14:40:20;24.03.2022;14:45:16;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;5;23;;0,38
+Mercedes-Benz Atego;ME CU 217;14.03.2022;06:05:45;14.03.2022;06:53:28;Haberstraße 8, 42551 Velbert, Deutschland;Zentrale;Beisenstraße 47, 45964 Gladbeck, Deutschland;;48;;8;33,917
+Mercedes-Benz Atego;ME CU 217;14.03.2022;07:01:09;14.03.2022;07:49:20;Beisenstraße 47, 45964 Gladbeck, Deutschland;;Industriestraße 1, 48712 Gescher, Deutschland;;48;8;10;47,55
+Mercedes-Benz Atego;ME CU 217;14.03.2022;07:58:54;14.03.2022;08:19:02;Industriestraße 1, 48712 Gescher, Deutschland;;Borsigstraße 52, 48703 Stadtlohn, Deutschland;;20;10;7;18,419
+Mercedes-Benz Atego;ME CU 217;14.03.2022;08:26:24;14.03.2022;08:31:00;Borsigstraße 52, 48703 Stadtlohn, Deutschland;;Hölderlinstraße 51, 48703 Stadtlohn, Deutschland;;5;7;5;2,633
+Mercedes-Benz Atego;ME CU 217;14.03.2022;08:35:46;14.03.2022;09:43:54;Hölderlinstraße 51, 48703 Stadtlohn, Deutschland;;Fuggerstraße 15, 48165 Münster, Deutschland;;68;5;14;63,552
+Mercedes-Benz Atego;ME CU 217;14.03.2022;09:57:25;14.03.2022;10:34:21;Fuggerstraße 15, 48165 Münster, Deutschland;;Im Sande 7, 49549 Ladbergen, Deutschland;;37;14;12;40,812
+Mercedes-Benz Atego;ME CU 217;14.03.2022;10:45:52;14.03.2022;11:08:25;Im Sande 7, 49549 Ladbergen, Deutschland;;Am Rohrbusch 32, 48161 Münster, Deutschland;;23;12;4;29,146
+Mercedes-Benz Atego;ME CU 217;14.03.2022;11:12:18;14.03.2022;11:24:54;Am Rohrbusch 32, 48161 Münster, Deutschland;;RHRP+2M Senden, Deutschland;;13;4;42;12,206
+Mercedes-Benz Atego;ME CU 217;14.03.2022;12:07:19;14.03.2022;12:22:46;RHRP+2M Senden, Deutschland;;K21 33, 48317 Drensteinfurt, Deutschland;;15;42;5;15,19
+Mercedes-Benz Atego;ME CU 217;14.03.2022;12:28:11;14.03.2022;14:06:03;K21 33, 48317 Drensteinfurt, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;98;5;9;105,857
+Mercedes-Benz Atego;ME CU 217;14.03.2022;14:15:25;14.03.2022;14:18:28;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;3;9;10;2,03
+Mercedes-Benz Atego;ME CU 217;14.03.2022;14:28:20;14.03.2022;14:36:57;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;9;10;2374;2,246
+Mercedes-Benz Atego;ME CU 217;16.03.2022;06:11:25;16.03.2022;06:12:22;Haberstraße 8, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;2374;5;0,439
+Mercedes-Benz Atego;ME CU 217;16.03.2022;06:17:07;16.03.2022;06:52:16;Siemensstraße 5A, 42551 Velbert, Deutschland;;Solinger Str. 8, 45481 Mülheim an der Ruhr, Deutschland;;35;5;8;36,331
+Mercedes-Benz Atego;ME CU 217;16.03.2022;06:59:51;16.03.2022;07:17:11;Solinger Str. 8, 45481 Mülheim an der Ruhr, Deutschland;;Zinkhüttenstraße 14, 45473 Mülheim an der Ruhr, Deutschland;;17;8;7;7,364
+Mercedes-Benz Atego;ME CU 217;16.03.2022;07:24:23;16.03.2022;08:15:17;Zinkhüttenstraße 14, 45473 Mülheim an der Ruhr, Deutschland;;Am Wiesenbusch 20, 45966 Gladbeck, Deutschland;;51;7;8;36,898
+Mercedes-Benz Atego;ME CU 217;16.03.2022;08:22:52;16.03.2022;08:56:22;Am Wiesenbusch 20, 45966 Gladbeck, Deutschland;;Ida-Noddack-Straße 14-18, 46569 Hünxe, Deutschland;;34;8;6;33,149
+Mercedes-Benz Atego;ME CU 217;16.03.2022;09:01:53;16.03.2022;09:18:23;Ida-Noddack-Straße 14-18, 46569 Hünxe, Deutschland;;Reeser Landstraße 64, 46483 Wesel, Deutschland;;16;6;13;10,506
+Mercedes-Benz Atego;ME CU 217;16.03.2022;09:31:17;16.03.2022;09:40:16;Reeser Landstraße 64, 46483 Wesel, Deutschland;;Güterstraße 5, 46499 Hamminkeln, Deutschland;;9;13;9;7,403
+Mercedes-Benz Atego;ME CU 217;16.03.2022;09:49:39;16.03.2022;10:15:41;Güterstraße 5, 46499 Hamminkeln, Deutschland;;Gendringer Str. 85, 46419 Isselburg, Deutschland;;26;9;6;23,828
+Mercedes-Benz Atego;ME CU 217;16.03.2022;10:21:24;16.03.2022;11:01:59;Gendringer Str. 85, 46419 Isselburg, Deutschland;;Wilhelm-Sinsteden-Straße 10, 47533 Kleve, Deutschland;;41;6;13;31,835
+Mercedes-Benz Atego;ME CU 217;16.03.2022;11:14:57;16.03.2022;11:39:14;Wilhelm-Sinsteden-Straße 10, 47533 Kleve, Deutschland;;Kalkar Baukamp, 47546 Kalkar, Deutschland;;24;13;51;17,659
+Mercedes-Benz Atego;ME CU 217;16.03.2022;12:30:38;16.03.2022;12:49:28;Kalkar Baukamp, 47546 Kalkar, Deutschland;;Birtener Ring 8, 46509 Xanten, Deutschland;;19;51;12;17,846
+Mercedes-Benz Atego;ME CU 217;16.03.2022;13:01:02;16.03.2022;14:18:40;Birtener Ring 8, 46509 Xanten, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;78;12;958;82,06
+Mercedes-Benz Atego;ME CU 217;17.03.2022;06:16:25;17.03.2022;06:17:24;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;958;4;0,464
+Mercedes-Benz Atego;ME CU 217;17.03.2022;06:21:45;17.03.2022;07:00:32;Siemensstraße 5A, 42551 Velbert, Deutschland;;an der, Ruhrorter Str. 45, 45478 Mülheim an der Ruhr, Deutschland;;39;4;6;36,778
+Mercedes-Benz Atego;ME CU 217;17.03.2022;07:06:13;17.03.2022;07:31:43;an der, Ruhrorter Str. 45, 45478 Mülheim an der Ruhr, Deutschland;;Essener Str. 259, 46242 Bottrop, Deutschland;;26;6;8;19,681
+Mercedes-Benz Atego;ME CU 217;17.03.2022;07:39:21;17.03.2022;07:56:36;Essener Str. 259, 46242 Bottrop, Deutschland;;Beisenstraße 47, 45964 Gladbeck, Deutschland;;17;8;15;11,05
+Mercedes-Benz Atego;ME CU 217;17.03.2022;08:11:29;17.03.2022;09:32:15;Beisenstraße 47, 45964 Gladbeck, Deutschland;;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;81;15;17;96,317
+Mercedes-Benz Atego;ME CU 217;17.03.2022;09:49:42;17.03.2022;09:50:46;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;Industriestraße 11, 48465 Schüttorf, Deutschland;;1;17;8;0,557
+Mercedes-Benz Atego;ME CU 217;17.03.2022;09:59:02;17.03.2022;10:48:08;Industriestraße 11, 48465 Schüttorf, Deutschland;;Im Sande 7, 49549 Ladbergen, Deutschland;;49;8;6;56,986
+Mercedes-Benz Atego;ME CU 217;17.03.2022;10:53:49;17.03.2022;10:57:57;Im Sande 7, 49549 Ladbergen, Deutschland;;Espenhof 1, 49549 Ladbergen, Deutschland;;4;6;7;2,241
+Mercedes-Benz Atego;ME CU 217;17.03.2022;11:04:29;17.03.2022;11:19:30;Espenhof 1, 49549 Ladbergen, Deutschland;;2JM2+2W Münster, Deutschland;;15;7;53;16,423
+Mercedes-Benz Atego;ME CU 217;17.03.2022;12:12:20;17.03.2022;12:33:37;2JM2+2W Münster, Deutschland;;Höltenweg 59, 48155 Münster, Deutschland;;21;53;8;23,498
+Mercedes-Benz Atego;ME CU 217;17.03.2022;12:42:02;17.03.2022;14:47:59;Höltenweg 59, 48155 Münster, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;126;8;931;121,938
+Mercedes-Benz Atego;ME CU 217;18.03.2022;06:18:35;18.03.2022;06:22:08;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Lieversfeld 4, 42551 Velbert, Deutschland;;4;931;9;1,503
+Mercedes-Benz Atego;ME CU 217;18.03.2022;06:30:48;18.03.2022;07:04:23;Lieversfeld 4, 42551 Velbert, Deutschland;;Alte Kölner Str. 3, 42897 Remscheid, Deutschland;;34;9;10;34,582
+Mercedes-Benz Atego;ME CU 217;18.03.2022;07:13:55;18.03.2022;07:41:53;Alte Kölner Str. 3, 42897 Remscheid, Deutschland;;Solinger Str. 30, 42349 Wuppertal, Deutschland;;28;10;9;20,206
+Mercedes-Benz Atego;ME CU 217;18.03.2022;07:50:26;18.03.2022;08:05:55;Solinger Str. 30, 42349 Wuppertal, Deutschland;;Essener Str. 36, 42327 Wuppertal, Deutschland;;15;9;61;10,962
+Mercedes-Benz Atego;ME CU 217;18.03.2022;09:07:19;18.03.2022;09:35:29;Essener Str. 36, 42327 Wuppertal, Deutschland;;Hasselbecker Str. 12, 42579 Heiligenhaus, Deutschland;;28;61;6;24,935
+Mercedes-Benz Atego;ME CU 217;18.03.2022;09:41:38;18.03.2022;09:53:59;Hasselbecker Str. 12, 42579 Heiligenhaus, Deutschland;;Talstraße 73, 42551 Velbert, Deutschland;Servicecenter;12;6;18;12,558
+Mercedes-Benz Atego;ME CU 217;18.03.2022;10:11:42;18.03.2022;10:13:26;Talstraße 73, 42551 Velbert, Deutschland;Servicecenter;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;2;18;25;0,483
+Mercedes-Benz Atego;ME CU 217;18.03.2022;10:38:06;18.03.2022;10:44:14;Konrad-Zuse-Straße 7, 42551 Velbert, Deutschland;Servicecenter;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;6;25;120;2,29
+Mercedes-Benz Atego;ME CU 217;18.03.2022;12:44:10;18.03.2022;12:44:37;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;0;120;11;0,218
+Mercedes-Benz Atego;ME CU 217;18.03.2022;12:55:58;18.03.2022;13:00:40;Siemensstraße 5A, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;5;11;2460;0,578
+Mercedes-Benz Atego;ME CU 217;20.03.2022;06:00:58;20.03.2022;10:14:04;Haberstraße 3-5, 42551 Velbert, Deutschland;;Kopenhagener Str. 100, 97084 Würzburg, Deutschland;;253;2460;9;349,148
+Mercedes-Benz Atego;ME CU 217;20.03.2022;10:23:08;20.03.2022;12:47:29;Kopenhagener Str. 100, 97084 Würzburg, Deutschland;;Schollstraße 2, 85055 Ingolstadt, Deutschland;;144;9;10;197,883
+Mercedes-Benz Atego;ME CU 217;20.03.2022;12:57:16;20.03.2022;13:35:39;Schollstraße 2, 85055 Ingolstadt, Deutschland;;8JP5+WC Neufahrn bei Freising, Deutschland;;38;10;16;52,704
+Mercedes-Benz Atego;ME CU 217;20.03.2022;13:51:53;20.03.2022;14:13:27;8JP5+WC Neufahrn bei Freising, Deutschland;;FELDKIRCHEN A99, 85622 Vaterstetten, Deutschland;;22;16;13;29,067
+Mercedes-Benz Atego;ME CU 217;20.03.2022;14:26:23;20.03.2022;15:03:49;FELDKIRCHEN A99, 85622 Vaterstetten, Deutschland;;Wendling 12, 83737 Irschenberg, Deutschland;;37;13;32;46,08
+Mercedes-Benz Atego;ME CU 217;20.03.2022;15:35:56;20.03.2022;16:49:05;Wendling 12, 83737 Irschenberg, Deutschland;;Hochfügener Str. 135, 6264 Fügenberg, Österreich;;73;32;863;89,421
+Mercedes-Benz Atego;ME CU 217;21.03.2022;07:11:38;21.03.2022;07:20:55;Hochfügener Str. 135, 6264 Fügenberg, Österreich;;Gewerbeweg 19, 6263 Gagering, Österreich;;9;863;111;4,76
+Mercedes-Benz Atego;ME CU 217;21.03.2022;09:11:37;21.03.2022;10:18:43;Gewerbeweg 19, 6263 Gagering, Österreich;;A8 12, 83737 Irschenberg, Deutschland;;67;111;11;85,683
+Mercedes-Benz Atego;ME CU 217;21.03.2022;10:29:31;21.03.2022;13:12:02;A8 12, 83737 Irschenberg, Deutschland;;GPHC+33 Merklingen, Deutschland;;163;11;18;214,796
+Mercedes-Benz Atego;ME CU 217;21.03.2022;13:30:17;21.03.2022;13:44:57;GPHC+33 Merklingen, Deutschland;;JJ5J+6H Gruibingen, Deutschland;;15;18;4;15,524
+Mercedes-Benz Atego;ME CU 217;21.03.2022;13:48:58;21.03.2022;15:32:16;JJ5J+6H Gruibingen, Deutschland;;Simon-Hegele-Straße 1C, 76689 Karlsdorf-Neuthard, Deutschland;;103;4;49;130,419
+Mercedes-Benz Atego;ME CU 217;21.03.2022;16:20:49;21.03.2022;16:24:06;Simon-Hegele-Straße 1C, 76689 Karlsdorf-Neuthard, Deutschland;;Bruchsal 5, 76694 Forst, Deutschland;;3;49;9;2,797
+Mercedes-Benz Atego;ME CU 217;21.03.2022;16:32:39;21.03.2022;20:29:41;Bruchsal 5, 76694 Forst, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;237;9;741;325,349
+Mercedes-Benz Atego;ME CU 217;22.03.2022;08:50:48;22.03.2022;08:59:44;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Auf'm Angst 10, 42553 Velbert, Deutschland;;9;741;14;3,904
+Mercedes-Benz Atego;ME CU 217;22.03.2022;09:14:13;22.03.2022;09:20:13;Auf'm Angst 10, 42553 Velbert, Deutschland;;Langenberger Str. 88A, 42551 Velbert, Deutschland;;6;14;18;2,161
+Mercedes-Benz Atego;ME CU 217;22.03.2022;09:38:28;22.03.2022;09:57:13;Langenberger Str. 88A, 42551 Velbert, Deutschland;;Schöllersheider Str. 17, 40822 Mettmann, Deutschland;;19;18;7;16,66
+Mercedes-Benz Atego;ME CU 217;22.03.2022;10:04:06;22.03.2022;10:20:48;Schöllersheider Str. 17, 40822 Mettmann, Deutschland;;W-Wanderparkplatz Arboretum, 42349 Wuppertal, Deutschland;;17;7;8;12,262
+Mercedes-Benz Atego;ME CU 217;22.03.2022;10:29:15;22.03.2022;10:42:01;W-Wanderparkplatz Arboretum, 42349 Wuppertal, Deutschland;;Lange Str. 19, 42857 Remscheid, Deutschland;;13;8;10;10,762
+Mercedes-Benz Atego;ME CU 217;22.03.2022;10:52:30;22.03.2022;11:09:49;Lange Str. 19, 42857 Remscheid, Deutschland;;Wanderparkplatz Arboretum - Wuppertal, 42349 Wuppertal, Deutschland;;17;10;44;10,612
+Mercedes-Benz Atego;ME CU 217;22.03.2022;11:54:16;22.03.2022;12:13:02;Wanderparkplatz Arboretum - Wuppertal, 42349 Wuppertal, Deutschland;;Haberstraße 8-10, 42551 Velbert, Deutschland;Zentrale;19;44;1079;17,356
+Mercedes-Benz Atego;ME CU 217;23.03.2022;06:11:49;23.03.2022;06:12:44;Haberstraße 8-10, 42551 Velbert, Deutschland;Zentrale;Siemensstraße 5A, 42551 Velbert, Deutschland;;1;1079;5;0,373
+Mercedes-Benz Atego;ME CU 217;23.03.2022;06:17:49;23.03.2022;06:34:33;Siemensstraße 5A, 42551 Velbert, Deutschland;;Ruhrtalstraße 5, 58456 Witten, Deutschland;;17;5;28;11,221
+Mercedes-Benz Atego;ME CU 217;23.03.2022;07:02:29;23.03.2022;07:33:53;Ruhrtalstraße 5, 58456 Witten, Deutschland;;Ludwig-Krohne-Straße 5, 47058 Duisburg, Deutschland;;31;28;8;25,22
+Mercedes-Benz Atego;ME CU 217;23.03.2022;07:41:24;23.03.2022;08:08:51;Ludwig-Krohne-Straße 5, 47058 Duisburg, Deutschland;;Dieselstraße 17, 47228 Duisburg, Deutschland;;27;8;8;18,771
+Mercedes-Benz Atego;ME CU 217;23.03.2022;08:17:02;23.03.2022;09:23:27;Dieselstraße 17, 47228 Duisburg, Deutschland;;Weikenrott 9, 46499 Hamminkeln, Deutschland;;66;8;7;58,884
+Mercedes-Benz Atego;ME CU 217;23.03.2022;09:30:31;23.03.2022;09:35:27;Weikenrott 9, 46499 Hamminkeln, Deutschland;;Güterstraße 5, 46499 Hamminkeln, Deutschland;;5;7;8;2,043
+Mercedes-Benz Atego;ME CU 217;23.03.2022;09:43:03;23.03.2022;10:34:46;Güterstraße 5, 46499 Hamminkeln, Deutschland;;Hegebrockstraße 117, 48703 Stadtlohn, Deutschland;;52;8;10;52,077
+Mercedes-Benz Atego;ME CU 217;23.03.2022;10:45:11;23.03.2022;11:37:41;Hegebrockstraße 117, 48703 Stadtlohn, Deutschland;;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;52;10;6;64,583
+Mercedes-Benz Atego;ME CU 217;23.03.2022;11:43:40;23.03.2022;11:54:29;Niedersachsenstraße 2, 48465 Schüttorf, Deutschland;;Unnamed Road, 48455, 48455 Bad Bentheim, Deutschland;;11;6;43;10,111
+Mercedes-Benz Atego;ME CU 217;23.03.2022;12:37:52;23.03.2022;14:37:30;Unnamed Road, 48455, 48455 Bad Bentheim, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;120;43;934;141,707
+Mercedes-Benz Atego;ME CU 217;24.03.2022;06:11:31;24.03.2022;06:17:31;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;Heidestraße 71, 42549 Velbert, Deutschland;;6;934;4;3,022
+Mercedes-Benz Atego;ME CU 217;24.03.2022;06:21:38;24.03.2022;06:22:49;Heidestraße 71, 42549 Velbert, Deutschland;;Rosenkamp 13, 42549 Velbert, Deutschland;;1;4;6;0,395
+Mercedes-Benz Atego;ME CU 217;24.03.2022;06:28:48;24.03.2022;06:38:36;Rosenkamp 13, 42549 Velbert, Deutschland;;Stahlstraße 10, 42551 Velbert, Deutschland;;10;6;4;3,937
+Mercedes-Benz Atego;ME CU 217;24.03.2022;06:42:50;24.03.2022;06:44:20;Stahlstraße 10, 42551 Velbert, Deutschland;;Siemensstraße 15, 42551 Velbert, Deutschland;;2;4;9;0,584
+Mercedes-Benz Atego;ME CU 217;24.03.2022;06:52:51;24.03.2022;06:56:32;Siemensstraße 15, 42551 Velbert, Deutschland;;Eickheisterstraße 13, 42551 Velbert, Deutschland;;4;9;12;1,636
+Mercedes-Benz Atego;ME CU 217;24.03.2022;07:08:22;24.03.2022;07:12:11;Eickheisterstraße 13, 42551 Velbert, Deutschland;;Am Kostenberg 5-7, 42549 Velbert, Deutschland;;4;12;6;1,802
+Mercedes-Benz Atego;ME CU 217;24.03.2022;07:18:39;24.03.2022;07:25:30;Am Kostenberg 5-7, 42549 Velbert, Deutschland;;Ewald-Jochem-Straße 26B, 42553 Velbert, Deutschland;;7;6;16;3,511
+Mercedes-Benz Atego;ME CU 217;24.03.2022;07:41:24;24.03.2022;08:45:15;Ewald-Jochem-Straße 26B, 42553 Velbert, Deutschland;;Hocksteiner Weg 35, 41189 Mönchengladbach, Deutschland;;64;16;8;72,018
+Mercedes-Benz Atego;ME CU 217;24.03.2022;08:52:53;24.03.2022;08:56:05;Hocksteiner Weg 35, 41189 Mönchengladbach, Deutschland;;Nobelstraße 3-5, 41189 Mönchengladbach, Deutschland;;3;8;5;1,311
+Mercedes-Benz Atego;ME CU 217;24.03.2022;09:01:32;24.03.2022;09:35:26;Nobelstraße 3-5, 41189 Mönchengladbach, Deutschland;;Wevelinghoven 28, 41334 Nettetal, Deutschland;;34;5;5;30,767
+Mercedes-Benz Atego;ME CU 217;24.03.2022;09:40:03;24.03.2022;10:00:48;Wevelinghoven 28, 41334 Nettetal, Deutschland;;Unnamed Road, 41748 Viersen, Deutschland;;21;5;3;23,01
+Mercedes-Benz Atego;ME CU 217;24.03.2022;10:04:12;24.03.2022;10:18:29;Unnamed Road, 41748 Viersen, Deutschland;;Breuershofstraße 48, 47807 Krefeld, Deutschland;;14;3;7;17,168
+Mercedes-Benz Atego;ME CU 217;24.03.2022;10:25:15;24.03.2022;10:35:27;Breuershofstraße 48, 47807 Krefeld, Deutschland;;7HPM+4J Willich, Deutschland;;10;7;58;4,505
+Mercedes-Benz Atego;ME CU 217;24.03.2022;11:33:31;24.03.2022;11:49:42;7HPM+4J Willich, Deutschland;;Römerstraße 17, 47809 Krefeld, Deutschland;;16;58;16;10,114
+Mercedes-Benz Atego;ME CU 217;24.03.2022;12:06:07;24.03.2022;12:48:21;Römerstraße 17, 47809 Krefeld, Deutschland;;Siemensstraße 5A, 42551 Velbert, Deutschland;;42;16;5;41,805
+Mercedes-Benz Atego;ME CU 217;24.03.2022;12:53:44;24.03.2022;12:54:53;Siemensstraße 5A, 42551 Velbert, Deutschland;;Haberstraße 14, 42551 Velbert, Deutschland;Zentrale;1;5;;0,494

@@ -39,6 +39,7 @@
     "class-validator": "^0.14.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
+    "mupdf": "^1.27.0",
     "papaparse": "^5.5.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -46,7 +47,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.17"
+    "typeorm": "^0.3.17",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
