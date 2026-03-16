@@ -1,3 +1,6 @@
+# Supabase CLI temp files
+supabase/.temp/
+
 # Dependencies
 node_modules/
 npm-debug.log*
