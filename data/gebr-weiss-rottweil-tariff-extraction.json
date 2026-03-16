@@ -1,0 +1,2412 @@
+{
+  "meta": {
+    "title": "Nebenspesen / Maut-Tarif / LSVA / Großstadtzuschläge",
+    "service_type": "Stückgutversand Deutschland und International (Nebenspesen, Maut, LSVA, Großstadtzuschläge)",
+    "tariff_country": "DE",
+    "origin": "ab Aldingen / Einzugsgebiet Schwarzwald-Baar-Heuberg",
+    "valid_from": "01.01.2023",
+    "valid_until": null,
+    "carrier_name": "Gebrüder Weiss",
+    "carrier_address": "Zweigniederlassung Aldingen",
+    "customer_name": "MECU Metallhalbzeug",
+    "customer_address": "DE-78628 Rottweil"
+  },
+  "tariff": {
+    "zones": [],
+    "matrix": [],
+    "plz_zone_map": [],
+    "plz_lookup_rules": {
+      "priority": "exact_before_prefix",
+      "description": "When resolving a PLZ to a zone, first check for an exact full-length match, then fall back to the longest matching prefix."
+    }
+  },
+  "nebenkosten": {
+    "typed": {
+      "diesel_floater_pct": null,
+      "eu_mobility_surcharge_pct": null,
+      "maut_included": false,
+      "delivery_condition": null,
+      "oversize_note": "Nicht stapelfähige bzw. nicht belastbare Packstücke werden auf Basis Lademeter abgerechnet. Wenn keine Packstückmaße angegeben sind, erfolgt die Abrechnung stellplatzbezogen",
+      "min_weight_half_pallet_kg": null,
+      "min_weight_pallet_kg": null,
+      "min_weight_per_cbm_kg": null,
+      "min_weight_per_ldm_kg": null,
+      "min_weight_small_format_kg": null,
+      "min_weight_medium_format_kg": null,
+      "min_weight_large_format_kg": null,
+      "pallet_exchange_euro_flat": 2.5,
+      "pallet_exchange_euro_mesh": 10,
+      "return_pickup": null,
+      "transport_insurance": "Transportschadenversicherung gemäß Vereinbarung; Eindeckung durch Gebrüder Weiss möglich oder Sie erklären sich zum Verzichtskunden",
+      "hazmat_surcharge": "15% der Fracht, Minimum 15,00 EUR, Maximum 100,00 EUR",
+      "liability_surcharge": null,
+      "manual_order_fee_euro": 3.5,
+      "avis_neutralization_fee_euro": null,
+      "island_trade_fair_surcharge": "Flug-/Seehafenzuschlag, Inselzuschlag, Messeanlieferungen / Bergregionen: Bitte gesondert anfragen – Frachtpreise sind nicht im regulären Offert abgedeckt",
+      "payment_days": null,
+      "payment_terms": null,
+      "billing_cycle": null,
+      "legal_basis": null
+    },
+    "raw": [
+      {
+        "label": "Volumenberechnung",
+        "value": "Nicht stapelfähige bzw. nicht belastbare Packstücke werden auf Basis Lademeter abgerechnet. Wenn keine Packstückmaße angegeben sind, erfolgt die Abrechnung stellplatzbezogen"
+      },
+      {
+        "label": "Lademeterberechnung (Übergrößen)",
+        "value": "Abrechnung auf Basis Lademeter bei Packstücken > 1,0 Lademeter; Abrechnung auf Basis Lademeter bei Sendungen > 2,0 Lademeter"
+      },
+      {
+        "label": "Transportversicherung",
+        "value": "Transportschadenversicherung gemäß Vereinbarung; Eindeckung durch Gebrüder Weiss möglich oder Sie erklären sich zum Verzichtskunden"
+      },
+      {
+        "label": "Maut DE, AT, BE, CZ, SK, PL, SI, GB, HU",
+        "value": "Gem. jeweils gültiger Vereinbarung"
+      },
+      {
+        "label": "Schweizer LSVA",
+        "value": "Gem. jeweils gültiger Vereinbarung"
+      },
+      {
+        "label": "Treibstoffzuschlag",
+        "value": "Der Treibstoffzuschlag errechnet sich aufgrund der Dieselflexvereinbarung jeweils zum 1. Arbeitstag des Monats sowie am 15. Tag bzw. 1. Arbeitstag danach. Grundlage ist der bundesweite Dieselpreis auf www.clever-tanken.de/statistik2.asp"
+      },
+      {
+        "label": "Währungsausgleichszuschlag CZK",
+        "value": "Der Währungsausgleichszuschlag für Tschechische Kronen errechnet sich aufgrund des beigefügten Modells jeweils zum 1. Arbeitstag des Monats. Grundlage ist der Kurs auf www.oanda.com/lang/de/currency/converter/"
+      },
+      {
+        "label": "Rohstoffzuschlag Lademittel Holz",
+        "value": "Der Rohstoffzuschlag Lademittel Holz errechnet sich aufgrund des beigefügten Modells jeweils zum 1. Arbeitstag des Monats. Grundlage ist der Kurs auf https://www.euwid-holz.de/maerkte.html"
+      },
+      {
+        "label": "Energiekostenzuschlag",
+        "value": "Der Energiekostenzuschlag wird anhand beiliegendes Models berechnet und setzt sich aus dem Erdgas- und Strompreis zusammen. Grundlage ist der Durschnittspreis am 1. Arbeitstag des Monats unter https://www.destatis.de"
+      },
+      {
+        "label": "Lademitteltauschgebühr",
+        "value": "2,50 € pro EUP oder Deckel / 10,00 € pro GIX oder Rahmen"
+      },
+      {
+        "label": "Flug-/Seehafenzuschlag, Inselzuschlag, Messeanlieferungen / Bergregionen",
+        "value": "Bitte gesondert anfragen – Frachtpreise sind nicht im regulären Offert abgedeckt"
+      },
+      {
+        "label": "Gefahrgutzuschlag",
+        "value": "15% der Fracht; Minimum: 15,00 € / Maximum: 100,00 €"
+      },
+      {
+        "label": "Multicollizuschlag",
+        "value": "1,00 € ab dem 6. nicht unterfahrbaren Packstück"
+      },
+      {
+        "label": "Rechnungsversand postalisch",
+        "value": "3,50 € je Rechnung"
+      },
+      {
+        "label": "Manuelle Erfassung",
+        "value": "3,50 € je Sendung"
+      },
+      {
+        "label": "Längenzuschlag ab 2,41 m bis 4,0 m Länge",
+        "value": "Fracht + 50%"
+      },
+      {
+        "label": "Längenzuschlag ab 4,01 m bis 6,0 m Länge",
+        "value": "Fracht + 100%"
+      },
+      {
+        "label": "Längenzuschlag ab 6,01 m bis 7,0 m Länge",
+        "value": "lt. Absprache"
+      },
+      {
+        "label": "Sonderleistungen",
+        "value": "sofern erforderlich lt. Absprache"
+      },
+      {
+        "label": "Express-Sendungen Express 10",
+        "value": "55,00 € per Sendung"
+      },
+      {
+        "label": "Express-Sendungen Express 12",
+        "value": "45,00 € per Sendung"
+      },
+      {
+        "label": "Express-Sendungen Express 24",
+        "value": "25,00 € per Sendung"
+      },
+      {
+        "label": "Fixtermin",
+        "value": "25,00 € per Sendung"
+      },
+      {
+        "label": "Telefonisches / Elektronisches Avis",
+        "value": "8,00 € per Sendung (incl. Avis)"
+      },
+      {
+        "label": "Privatkunden-Zustellung",
+        "value": "8,00 € per Sendung"
+      },
+      {
+        "label": "Großstadtzuschläge",
+        "value": "Fracht + 10% - PLZ laut Anlage Großstadtzuschläge"
+      }
+    ]
+  },
+  "maut": {
+    "tables": [
+      {
+        "label": "Maut-Tarif Deutschland ab Aldingen bis 3000 kg ab Einzugsgebiet Schwarzwald-Baar-Heuberg",
+        "weight_limit_kg": 3000,
+        "minimum_eur": 2.6,
+        "distance_ranges": [
+          "1-100 km",
+          "101-200 km",
+          "201-300 km",
+          "301-400 km",
+          "401-500 km",
+          "501-600 km",
+          "601-700 km",
+          "701-800 km",
+          "801-900 km",
+          "901-1000 km"
+        ],
+        "matrix": [
+          {
+            "weight_from": 1,
+            "weight_to": 50,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 2.6,
+              "301-400 km": 2.6,
+              "401-500 km": 2.6,
+              "501-600 km": 2.63,
+              "601-700 km": 2.63,
+              "701-800 km": 2.63,
+              "801-900 km": 2.86,
+              "901-1000 km": 3.07
+            }
+          },
+          {
+            "weight_from": 51,
+            "weight_to": 100,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 2.6,
+              "301-400 km": 2.6,
+              "401-500 km": 2.6,
+              "501-600 km": 2.63,
+              "601-700 km": 2.63,
+              "701-800 km": 2.63,
+              "801-900 km": 2.69,
+              "901-1000 km": 3.07
+            }
+          },
+          {
+            "weight_from": 101,
+            "weight_to": 200,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 2.6,
+              "301-400 km": 2.6,
+              "401-500 km": 2.6,
+              "501-600 km": 2.63,
+              "601-700 km": 2.63,
+              "701-800 km": 2.63,
+              "801-900 km": 2.69,
+              "901-1000 km": 3.07
+            }
+          },
+          {
+            "weight_from": 201,
+            "weight_to": 300,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 2.6,
+              "301-400 km": 2.6,
+              "401-500 km": 2.85,
+              "501-600 km": 3.21,
+              "601-700 km": 3.63,
+              "701-800 km": 4.28,
+              "801-900 km": 4.88,
+              "901-1000 km": 6.15
+            }
+          },
+          {
+            "weight_from": 301,
+            "weight_to": 400,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 2.71,
+              "301-400 km": 3.39,
+              "401-500 km": 4.07,
+              "501-600 km": 5.01,
+              "601-700 km": 6.06,
+              "701-800 km": 7.13,
+              "801-900 km": 8.18,
+              "901-1000 km": 10.24
+            }
+          },
+          {
+            "weight_from": 401,
+            "weight_to": 500,
+            "prices": {
+              "1-100 km": 2.6,
+              "101-200 km": 2.6,
+              "201-300 km": 3.37,
+              "301-400 km": 4.34,
+              "401-500 km": 5.56,
+              "501-600 km": 6.98,
+              "601-700 km": 8.51,
+              "701-800 km": 9.96,
+              "801-900 km": 11.41,
+              "901-1000 km": 14.35
+            }
+          },
+          {
+            "weight_from": 501,
+            "weight_to": 600,
+            "prices": {
+              "1-100 km": 2.84,
+              "101-200 km": 2.84,
+              "201-300 km": 4.05,
+              "301-400 km": 5.29,
+              "401-500 km": 7.14,
+              "501-600 km": 8.98,
+              "601-700 km": 10.94,
+              "701-800 km": 12.83,
+              "801-900 km": 14.64,
+              "901-1000 km": 18.45
+            }
+          },
+          {
+            "weight_from": 601,
+            "weight_to": 700,
+            "prices": {
+              "1-100 km": 3.24,
+              "101-200 km": 3.24,
+              "201-300 km": 4.72,
+              "301-400 km": 6.29,
+              "401-500 km": 8.72,
+              "501-600 km": 11.02,
+              "601-700 km": 13.33,
+              "701-800 km": 15.66,
+              "801-900 km": 17.95,
+              "901-1000 km": 22.56
+            }
+          },
+          {
+            "weight_from": 701,
+            "weight_to": 800,
+            "prices": {
+              "1-100 km": 3.64,
+              "101-200 km": 3.64,
+              "201-300 km": 5.39,
+              "301-400 km": 7.45,
+              "401-500 km": 10.3,
+              "501-600 km": 12.99,
+              "601-700 km": 15.77,
+              "701-800 km": 18.5,
+              "801-900 km": 21.2,
+              "901-1000 km": 26.67
+            }
+          },
+          {
+            "weight_from": 801,
+            "weight_to": 900,
+            "prices": {
+              "1-100 km": 4.02,
+              "101-200 km": 4.02,
+              "201-300 km": 6.05,
+              "301-400 km": 8.6,
+              "401-500 km": 11.87,
+              "501-600 km": 15.01,
+              "601-700 km": 18.21,
+              "701-800 km": 21.35,
+              "801-900 km": 24.46,
+              "901-1000 km": 30.77
+            }
+          },
+          {
+            "weight_from": 901,
+            "weight_to": 1000,
+            "prices": {
+              "1-100 km": 4.42,
+              "101-200 km": 4.42,
+              "201-300 km": 6.74,
+              "301-400 km": 9.76,
+              "401-500 km": 13.47,
+              "501-600 km": 16.98,
+              "601-700 km": 20.64,
+              "701-800 km": 24.23,
+              "801-900 km": 27.72,
+              "901-1000 km": 34.87
+            }
+          },
+          {
+            "weight_from": 1001,
+            "weight_to": 1250,
+            "prices": {
+              "1-100 km": 4.82,
+              "101-200 km": 4.82,
+              "201-300 km": 7.4,
+              "301-400 km": 10.87,
+              "401-500 km": 15.04,
+              "501-600 km": 18.98,
+              "601-700 km": 23.05,
+              "701-800 km": 27,
+              "801-900 km": 30.99,
+              "901-1000 km": 38.97
+            }
+          },
+          {
+            "weight_from": 1251,
+            "weight_to": 1500,
+            "prices": {
+              "1-100 km": 5.49,
+              "101-200 km": 5.49,
+              "201-300 km": 8.58,
+              "301-400 km": 12.9,
+              "401-500 km": 17.83,
+              "501-600 km": 22.48,
+              "601-700 km": 27.32,
+              "701-800 km": 32.05,
+              "801-900 km": 36.68,
+              "901-1000 km": 46.15
+            }
+          },
+          {
+            "weight_from": 1501,
+            "weight_to": 2000,
+            "prices": {
+              "1-100 km": 6.48,
+              "101-200 km": 6.48,
+              "201-300 km": 10.26,
+              "301-400 km": 15.75,
+              "401-500 km": 21.79,
+              "501-600 km": 27.47,
+              "601-700 km": 33.38,
+              "701-800 km": 39.18,
+              "801-900 km": 44.84,
+              "901-1000 km": 56.38
+            }
+          },
+          {
+            "weight_from": 2001,
+            "weight_to": 2500,
+            "prices": {
+              "1-100 km": 7.95,
+              "101-200 km": 7.95,
+              "201-300 km": 12.77,
+              "301-400 km": 20.04,
+              "401-500 km": 27.73,
+              "501-600 km": 34.97,
+              "601-700 km": 42.48,
+              "701-800 km": 49.87,
+              "801-900 km": 57.05,
+              "901-1000 km": 71.79
+            }
+          },
+          {
+            "weight_from": 2501,
+            "weight_to": 3000,
+            "prices": {
+              "1-100 km": 9.91,
+              "101-200 km": 9.91,
+              "201-300 km": 16.12,
+              "301-400 km": 25.76,
+              "401-500 km": 35.64,
+              "501-600 km": 44.97,
+              "601-700 km": 54.6,
+              "701-800 km": 64.09,
+              "801-900 km": 73.39,
+              "901-1000 km": 92.27
+            }
+          },
+          {
+            "weight_from": 2501,
+            "weight_to": 3000,
+            "prices": {
+              "1-100 km": 11.85,
+              "101-200 km": 11.85,
+              "201-300 km": 19.48,
+              "301-400 km": 31.48,
+              "401-500 km": 43.55,
+              "501-600 km": 54.97,
+              "601-700 km": 66.75,
+              "701-800 km": 78.32,
+              "801-900 km": 89.68,
+              "901-1000 km": 112.8
+            }
+          }
+        ],
+        "plz_zone_map": [
+          {
+            "country_code": "DE",
+            "plz_prefix": "72",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "78",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "79",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "79",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "88",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "88",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "88",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "70",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "71",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "73",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "74",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "75",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "76",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "77",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "80",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "81",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "82",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "85",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "86",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "87",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "89",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "55",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "56",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "60",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "63",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "64",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "83",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "84",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "90",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "92",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "93",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "94",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "95",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "96",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "97",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "98",
+            "match_type": "prefix",
+            "zone": 3
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "34",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "35",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "36",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "50",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "51",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "53",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "54",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "57",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "40",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "41",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "42",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "43",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "44",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "45",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "46",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "47",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "48",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "52",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "58",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "59",
+            "match_type": "prefix",
+            "zone": 4
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "06",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "07",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "08",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "09",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "33",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "37",
+            "match_type": "prefix",
+            "zone": 5
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "01",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "04",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "29",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "30",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "31",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "32",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "38",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "39",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "49",
+            "match_type": "prefix",
+            "zone": 6
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "02",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "03",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "10",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "11",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "12",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "13",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "14",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "15",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "16",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "17",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "18",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "19",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "20",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "21",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "22",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "23",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "24",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "25",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "26",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "27",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "28",
+            "match_type": "prefix",
+            "zone": 7
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "16",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "17",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "18",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "19",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "23",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "24",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "DE",
+            "plz_prefix": "25",
+            "match_type": "prefix",
+            "zone": 8
+          },
+          {
+            "country_code": "AT",
+            "plz_prefix": "6",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "AT",
+            "plz_prefix": "7",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "AT",
+            "plz_prefix": "8",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "AT",
+            "plz_prefix": "9",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "ES",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "FR",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "PT",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 2
+          },
+          {
+            "country_code": "CH",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "IT",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 1
+          },
+          {
+            "country_code": "GR",
+            "plz_prefix": "0",
+            "match_type": "prefix",
+            "zone": 1
+          }
+        ]
+      },
+      {
+        "label": "Maut-Tarif Deutschland ab Aldingen ab 3001 kg ab Einzugsgebiet Schwarzwald-Baar-Heuberg",
+        "weight_limit_kg": null,
+        "minimum_eur": 2.3,
+        "distance_ranges": [
+          "1-100 km",
+          "101-200 km",
+          "201-300 km",
+          "301-400 km",
+          "401-500 km",
+          "501-600 km",
+          "601-700 km",
+          "701-800 km",
+          "801-900 km",
+          "901-1000 km"
+        ],
+        "matrix": [
+          {
+            "weight_from": 1,
+            "weight_to": 4000,
+            "prices": {
+              "1-100 km": 13.02,
+              "101-200 km": 13.02,
+              "201-300 km": 22.34,
+              "301-400 km": 35.64,
+              "401-500 km": 48.7,
+              "501-600 km": 60.96,
+              "601-700 km": 73.78,
+              "701-800 km": 86.5,
+              "801-900 km": 98.86,
+              "901-1000 km": 124.11
+            }
+          },
+          {
+            "weight_from": 4001,
+            "weight_to": 5000,
+            "prices": {
+              "1-100 km": 13.1,
+              "101-200 km": 13.1,
+              "201-300 km": 24.82,
+              "301-400 km": 39.59,
+              "401-500 km": 54.13,
+              "501-600 km": 67.73,
+              "601-700 km": 81.98,
+              "701-800 km": 96.11,
+              "801-900 km": 109.84,
+              "901-1000 km": 137.9
+            }
+          },
+          {
+            "weight_from": 5001,
+            "weight_to": 6000,
+            "prices": {
+              "1-100 km": 13.17,
+              "101-200 km": 13.17,
+              "201-300 km": 27.28,
+              "301-400 km": 43.55,
+              "401-500 km": 59.56,
+              "501-600 km": 74.5,
+              "601-700 km": 90.19,
+              "701-800 km": 105.71,
+              "801-900 km": 120.82,
+              "901-1000 km": 151.68
+            }
+          },
+          {
+            "weight_from": 6001,
+            "weight_to": 7000,
+            "prices": {
+              "1-100 km": 13.25,
+              "101-200 km": 13.25,
+              "201-300 km": 32.25,
+              "301-400 km": 51.46,
+              "401-500 km": 70.37,
+              "501-600 km": 88.04,
+              "601-700 km": 106.57,
+              "701-800 km": 124.94,
+              "801-900 km": 142.81,
+              "901-1000 km": 179.23
+            }
+          },
+          {
+            "weight_from": 7001,
+            "weight_to": 8000,
+            "prices": {
+              "1-100 km": 13.6,
+              "101-200 km": 13.6,
+              "201-300 km": 37.2,
+              "301-400 km": 59.36,
+              "401-500 km": 81.2,
+              "501-600 km": 101.58,
+              "601-700 km": 122.96,
+              "701-800 km": 144.16,
+              "801-900 km": 164.75,
+              "901-1000 km": 206.86
+            }
+          },
+          {
+            "weight_from": 8001,
+            "weight_to": 9000,
+            "prices": {
+              "1-100 km": 15.4,
+              "101-200 km": 15.4,
+              "201-300 km": 42.16,
+              "301-400 km": 67.29,
+              "401-500 km": 92.01,
+              "501-600 km": 115.12,
+              "601-700 km": 139.34,
+              "701-800 km": 163.38,
+              "801-900 km": 186.73,
+              "901-1000 km": 234.42
+            }
+          },
+          {
+            "weight_from": 9001,
+            "weight_to": 10000,
+            "prices": {
+              "1-100 km": 17.22,
+              "101-200 km": 17.22,
+              "201-300 km": 47.13,
+              "301-400 km": 75.21,
+              "401-500 km": 102.85,
+              "501-600 km": 128.68,
+              "601-700 km": 155.72,
+              "701-800 km": 182.6,
+              "801-900 km": 208.68,
+              "901-1000 km": 261.98
+            }
+          },
+          {
+            "weight_from": 10001,
+            "weight_to": 11000,
+            "prices": {
+              "1-100 km": 19.02,
+              "101-200 km": 19.02,
+              "201-300 km": 52.07,
+              "301-400 km": 83.11,
+              "401-500 km": 113.67,
+              "501-600 km": 142.21,
+              "601-700 km": 172.16,
+              "701-800 km": 201.82,
+              "801-900 km": 230.68,
+              "901-1000 km": 289.58
+            }
+          },
+          {
+            "weight_from": 11001,
+            "weight_to": 12000,
+            "prices": {
+              "1-100 km": 20.85,
+              "101-200 km": 20.85,
+              "201-300 km": 57.02,
+              "301-400 km": 91.04,
+              "401-500 km": 124.49,
+              "501-600 km": 155.75,
+              "601-700 km": 188.54,
+              "701-800 km": 221.05,
+              "801-900 km": 252.64,
+              "901-1000 km": 317.14
+            }
+          },
+          {
+            "weight_from": 12001,
+            "weight_to": 24000,
+            "prices": {
+              "1-100 km": 21.6,
+              "101-200 km": 21.6,
+              "201-300 km": 59.49,
+              "301-400 km": 95.12,
+              "401-500 km": 129.77,
+              "501-600 km": 162.5,
+              "601-700 km": 196.87,
+              "701-800 km": 230.56,
+              "801-900 km": 263.61,
+              "901-1000 km": 330.84
+            }
+          }
+        ],
+        "plz_zone_map": []
+      }
+    ]
+  },
+  "lsva": {
+    "currency": "CHF",
+    "valid_from": "01.07.2021",
+    "billing_unit_above_threshold": "per 100 kg",
+    "weight_threshold_kg": 500,
+    "zones": [
+      {
+        "zone_number": 1,
+        "plz_description": "CH-4133 Pratteln: 4000-4499"
+      },
+      {
+        "zone_number": 2,
+        "plz_description": "CH-9423 Altenrhein: 7000-7999, 8000-8269, 8300-8499, 8600-8999"
+      },
+      {
+        "zone_number": 3,
+        "plz_description": "CH-9423 Altenrhein: 4000-4999, 5000-5999, 6000-6499, 9000-9999"
+      },
+      {
+        "zone_number": 4,
+        "plz_description": "CH-9423 Altenrhein: 1000-1199, 1300-1899, 1900-2999, 3000-3899, 3700-3899, 7000-7499"
+      },
+      {
+        "zone_number": 5,
+        "plz_description": "CH-9423 Altenrhein: 1000-1299, 1800-1999, 1900-3999, 3900-3999, 6500-7999"
+      }
+    ],
+    "matrix": [
+      {
+        "band_label": "bis 30 kg",
+        "weight_from": 1,
+        "weight_to": 30,
+        "prices": {
+          "zone_1": 8.48,
+          "zone_2": 10.89,
+          "zone_3": 12.57,
+          "zone_4": 15.91,
+          "zone_5": 18.86
+        }
+      },
+      {
+        "band_label": "bis 50 kg",
+        "weight_from": 31,
+        "weight_to": 50,
+        "prices": {
+          "zone_1": 8.48,
+          "zone_2": 10.89,
+          "zone_3": 12.57,
+          "zone_4": 15.91,
+          "zone_5": 18.86
+        }
+      },
+      {
+        "band_label": "bis 100 kg",
+        "weight_from": 51,
+        "weight_to": 100,
+        "prices": {
+          "zone_1": 8.48,
+          "zone_2": 10.89,
+          "zone_3": 12.57,
+          "zone_4": 15.91,
+          "zone_5": 18.86
+        }
+      },
+      {
+        "band_label": "bis 200 kg",
+        "weight_from": 101,
+        "weight_to": 200,
+        "prices": {
+          "zone_1": 14.18,
+          "zone_2": 16.34,
+          "zone_3": 18.83,
+          "zone_4": 25.27,
+          "zone_5": 42.82
+        }
+      },
+      {
+        "band_label": "bis 300 kg",
+        "weight_from": 201,
+        "weight_to": 300,
+        "prices": {
+          "zone_1": 22,
+          "zone_2": 24,
+          "zone_3": 28.24,
+          "zone_4": 35.38,
+          "zone_5": 61.56
+        }
+      },
+      {
+        "band_label": "bis 400 kg",
+        "weight_from": 301,
+        "weight_to": 400,
+        "prices": {
+          "zone_1": 26.79,
+          "zone_2": 31.61,
+          "zone_3": 35.7,
+          "zone_4": 48.05,
+          "zone_5": 79.08
+        }
+      },
+      {
+        "band_label": "bis 500 kg",
+        "weight_from": 401,
+        "weight_to": 500,
+        "prices": {
+          "zone_1": 28.76,
+          "zone_2": 36.08,
+          "zone_3": 38.93,
+          "zone_4": 54.6,
+          "zone_5": 86.04
+        }
+      },
+      {
+        "band_label": "bis 1000 kg",
+        "weight_from": 501,
+        "weight_to": 1000,
+        "prices": {
+          "zone_1": 5.76,
+          "zone_2": 6.69,
+          "zone_3": 7.79,
+          "zone_4": 10.93,
+          "zone_5": 17.12
+        }
+      },
+      {
+        "band_label": "ab 1000 kg",
+        "weight_from": 1001,
+        "weight_to": 1500,
+        "prices": {
+          "zone_1": 4.48,
+          "zone_2": 5.33,
+          "zone_3": 6.34,
+          "zone_4": 8.18,
+          "zone_5": 14.64
+        }
+      },
+      {
+        "band_label": "ab 1500 kg",
+        "weight_from": 1501,
+        "weight_to": 2000,
+        "prices": {
+          "zone_1": 3.55,
+          "zone_2": 5.02,
+          "zone_3": 6.03,
+          "zone_4": 7.86,
+          "zone_5": 13.73
+        }
+      },
+      {
+        "band_label": "ab 2000 kg",
+        "weight_from": 2001,
+        "weight_to": 3000,
+        "prices": {
+          "zone_1": 3.26,
+          "zone_2": 4.81,
+          "zone_3": 5.84,
+          "zone_4": 7.59,
+          "zone_5": 13.2
+        }
+      },
+      {
+        "band_label": "ab 3000 kg",
+        "weight_from": 3001,
+        "weight_to": 4000,
+        "prices": {
+          "zone_1": 2.31,
+          "zone_2": 3.63,
+          "zone_3": 4.48,
+          "zone_4": 6.57,
+          "zone_5": 11.52
+        }
+      },
+      {
+        "band_label": "ab 4000 kg",
+        "weight_from": 4001,
+        "weight_to": 5000,
+        "prices": {
+          "zone_1": 1.93,
+          "zone_2": 3.22,
+          "zone_3": 4.07,
+          "zone_4": 5.55,
+          "zone_5": 10.47
+        }
+      },
+      {
+        "band_label": "ab 5000 kg",
+        "weight_from": 5001,
+        "weight_to": 7500,
+        "prices": {
+          "zone_1": 1.72,
+          "zone_2": 3.16,
+          "zone_3": 3.62,
+          "zone_4": 5.11,
+          "zone_5": 9.13
+        }
+      },
+      {
+        "band_label": "ab 7500 kg",
+        "weight_from": 7501,
+        "weight_to": 10000,
+        "prices": {
+          "zone_1": 1.56,
+          "zone_2": 2.51,
+          "zone_3": 3.42,
+          "zone_4": 4.81,
+          "zone_5": 6.72
+        }
+      },
+      {
+        "band_label": "ab 10000 kg",
+        "weight_from": 10001,
+        "weight_to": 15000,
+        "prices": {
+          "zone_1": 1.22,
+          "zone_2": 2.11,
+          "zone_3": 3.02,
+          "zone_4": 4.25,
+          "zone_5": 5.86
+        }
+      },
+      {
+        "band_label": "ab 15000 kg",
+        "weight_from": 15001,
+        "weight_to": 20000,
+        "prices": {
+          "zone_1": 0.87,
+          "zone_2": 1.62,
+          "zone_3": 2.24,
+          "zone_4": 3.16,
+          "zone_5": 4.44
+        }
+      },
+      {
+        "band_label": "ab 20000 kg",
+        "weight_from": 20001,
+        "weight_to": 24000,
+        "prices": {
+          "zone_1": 0.65,
+          "zone_2": 1.15,
+          "zone_3": 1.66,
+          "zone_4": 2.33,
+          "zone_5": 3.39
+        }
+      },
+      {
+        "band_label": "Max. 24000 KG",
+        "weight_from": 24001,
+        "weight_to": 24000,
+        "prices": {
+          "zone_1": 137.56,
+          "zone_2": 251.02,
+          "zone_3": 346.04,
+          "zone_4": 485.02,
+          "zone_5": 677.9
+        }
+      }
+    ],
+    "plz_zone_map": [
+      {
+        "country_code": "CH",
+        "plz_prefix": "40",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "41",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "42",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "43",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "44",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "70",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "71",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "72",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "73",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "74",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "75",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "76",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "77",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "78",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "79",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "80",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "81",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "82",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "83",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "84",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "85",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "86",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "87",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "88",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "89",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "86",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "40",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "41",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "42",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "43",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "44",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "45",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "46",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "47",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "48",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "49",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "50",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "51",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "52",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "53",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "54",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "55",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "56",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "57",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "58",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "59",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "60",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "61",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "62",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "63",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "64",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "90",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "91",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "92",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "93",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "94",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "95",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "96",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "97",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "98",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "99",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "10",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "11",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "12",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "13",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "14",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "15",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "16",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "17",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "18",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "19",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "20",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "21",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "22",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "23",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "24",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "25",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "26",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "27",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "28",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "29",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "30",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "31",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "32",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "33",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "34",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "35",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "36",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "37",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "38",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "65",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "66",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "67",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "68",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "country_code": "CH",
+        "plz_prefix": "69",
+        "match_type": "prefix",
+        "zone": 5
+      }
+    ]
+  },
+  "city_surcharges": {
+    "surcharge_pct": 10,
+    "surcharge_note": "Fracht + 10% - PLZ laut Anlage Großstadtzuschläge; Berechnung auf die Frachtkosten",
+    "cities": [
+      {
+        "city": "Berlin",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "10115",
+            "plz_to": "10999"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "12043",
+            "plz_to": "12689"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "12526",
+            "plz_to": "12629"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "13051",
+            "plz_to": "13629"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "14050",
+            "plz_to": "14109"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "14129",
+            "plz_to": "14979"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "15344",
+            "plz_to": "15834"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "16225",
+            "plz_to": "16767"
+          }
+        ]
+      },
+      {
+        "city": "Hamburg",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "20095",
+            "plz_to": "20539"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "21029",
+            "plz_to": "21635"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "22041",
+            "plz_to": "22299"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "22303",
+            "plz_to": "22459"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "22523",
+            "plz_to": "22889"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "22926",
+            "plz_to": "25499"
+          }
+        ]
+      },
+      {
+        "city": "Bremen",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "28195",
+            "plz_to": "28259"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "28277",
+            "plz_to": "28779"
+          }
+        ]
+      },
+      {
+        "city": "Hannover",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "30159",
+            "plz_to": "30459"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "30519",
+            "plz_to": "30669"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "30823",
+            "plz_to": "30989"
+          }
+        ]
+      },
+      {
+        "city": "Braunschweig",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "31224",
+            "plz_to": "31224"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "38100",
+            "plz_to": "38448"
+          }
+        ]
+      },
+      {
+        "city": "Köln",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "50667",
+            "plz_to": "50969"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "51063",
+            "plz_to": "51105"
+          }
+        ]
+      },
+      {
+        "city": "Frankfurt",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "60306",
+            "plz_to": "60389"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "60431",
+            "plz_to": "60599"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "61118",
+            "plz_to": "61449"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "63065",
+            "plz_to": "63075"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "63263",
+            "plz_to": "63263"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "65451",
+            "plz_to": "65936"
+          }
+        ]
+      },
+      {
+        "city": "LU/MA/HD",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "67059",
+            "plz_to": "67227"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "68159",
+            "plz_to": "68782"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "69115",
+            "plz_to": "69214"
+          }
+        ]
+      },
+      {
+        "city": "Karlsruhe",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "75015",
+            "plz_to": "75217"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "76131",
+            "plz_to": "76199"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "76227",
+            "plz_to": "76344"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "76351",
+            "plz_to": "76767"
+          }
+        ]
+      },
+      {
+        "city": "München",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "80331",
+            "plz_to": "80799"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "80801",
+            "plz_to": "80999"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "81241",
+            "plz_to": "81669"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "81671",
+            "plz_to": "81929"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "82008",
+            "plz_to": "82194"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "85221",
+            "plz_to": "85774"
+          }
+        ]
+      },
+      {
+        "city": "Nürnberg",
+        "plz_ranges": [
+          {
+            "country_code": "DE",
+            "plz_from": "90402",
+            "plz_to": "90766"
+          },
+          {
+            "country_code": "DE",
+            "plz_from": "91052",
+            "plz_to": "91058"
+          }
+        ]
+      }
+    ]
+  },
+  "confidence": 0.62,
+  "issues": [
+    "Maut PLZ zone mapping table headers are partially illegible due to image quality; zone-to-PLZ prefix mapping for Maut tables is approximated from visible column headers.",
+    "Some Maut table cells are difficult to read; a few values may be misread due to image compression.",
+    "The 'bis 3000 kg' Maut table has a duplicate last row (bis 3000 kg appears twice with different values); the second row (11.85 EUR etc.) likely refers to a different weight band but label is unclear.",
+    "LSVA table weight bands above 500 kg use 'per 100 kg' pricing; flat rates used below 500 kg threshold.",
+    "LSVA PLZ zone mapping is partially inferred from zone descriptions; exact CH PLZ ranges per zone are not fully explicit in the document.",
+    "Maut distance zone column headers partially use Grenze country codes (AT, CH, IT, GR, ES, FR, PT, BE, NL, GB, CZ, etc.) rather than km ranges for international zones; these are mapped as geographic border zones.",
+    "The document references a Treibstoffzuschlag (fuel surcharge) model based on www.clever-tanken.de but no fixed percentage is given; diesel_floater_pct set to null.",
+    "Länge surcharge percentages extracted from highlighted rows (50%, 100%) but exact thresholds may vary.",
+    "LSVA Max 24000 kg row represents a flat per-shipment cap rather than per-100-kg rate."
+  ]
+}

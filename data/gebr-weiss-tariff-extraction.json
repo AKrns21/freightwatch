@@ -1,0 +1,2299 @@
+{
+  "meta": {
+    "title": "ANGEBOT für Speditionsleistungen",
+    "service_type": "Stückgutversand Deutschland und Schweiz (ab Werk bis frei Haus)",
+    "origin": "Aldingen",
+    "valid_from": "01.01.2023",
+    "valid_until": "31.12.2023",
+    "carrier_name": "Gebrüder Weiss GmbH, Zweigniederlassung Aldingen",
+    "carrier_address": "Nagelsee 7, DE 78554 Aldingen",
+    "customer_name": "MECU Metallhalbzeug GmbH & Co. KG",
+    "customer_address": "Im Kapellenoesch 17, DE 78628 Rottweil"
+  },
+  "tariff": {
+    "zones": [
+      {
+        "zone_number": 1,
+        "label": "Zone 1",
+        "plz_description": "DE 75000-77999, DE 78000-78999"
+      },
+      {
+        "zone_number": 2,
+        "label": "Zone 2",
+        "plz_description": "DE 70000-70999, DE 72000-72999"
+      },
+      {
+        "zone_number": 3,
+        "label": "Zone 3",
+        "plz_description": "DE 71000-71999, DE 73000-73999, DE 75000-77999, DE 79000-79999"
+      },
+      {
+        "zone_number": 4,
+        "label": "Zone 4",
+        "plz_description": "DE 65000-65999, DE 66000-69999, DE 63000-63999, DE 64000-64999"
+      },
+      {
+        "zone_number": 5,
+        "label": "Zone 5",
+        "plz_description": "DE 54000-56999, DE 60000-61999, DE 63000-63999, DE 74000-74999, DE 80000-84999, DE 85000-87999, DE 90000-93999, DE 96000-96999"
+      },
+      {
+        "zone_number": 6,
+        "label": "Zone 6",
+        "plz_description": "DE 07000-08999, DE 50000-53999, DE 57000-57999, DE 58000-59999, DE 94000-95999, DE 97000-99999"
+      },
+      {
+        "zone_number": 7,
+        "label": "Zone 7",
+        "plz_description": "DE 01000-02999, DE 04000-04999, DE 06000-06999, DE 09000-09999, DE 12000-29999, DE 30000-33999, DE 37000-42999, DE 44000-49999"
+      },
+      {
+        "zone_number": 8,
+        "label": "Zone 8",
+        "plz_description": "DE 03000-03999, DE 10000-10999, DE 34000-36999"
+      }
+    ],
+    "matrix": [
+      {
+        "band_label": "bis 50,00 kg",
+        "weight_from": 1,
+        "weight_to": 50,
+        "prices": {
+          "zone_1": 19.1,
+          "zone_2": 19.62,
+          "zone_3": 22.22,
+          "zone_4": 23.84,
+          "zone_5": 24.63,
+          "zone_6": 25.14,
+          "zone_7": 26.53,
+          "zone_8": 28.82
+        }
+      },
+      {
+        "band_label": "bis 100,00 kg",
+        "weight_from": 51,
+        "weight_to": 100,
+        "prices": {
+          "zone_1": 25.06,
+          "zone_2": 28.72,
+          "zone_3": 32.71,
+          "zone_4": 35.71,
+          "zone_5": 37.88,
+          "zone_6": 38.95,
+          "zone_7": 41.09,
+          "zone_8": 43.02
+        }
+      },
+      {
+        "band_label": "bis 150,00 kg",
+        "weight_from": 101,
+        "weight_to": 150,
+        "prices": {
+          "zone_1": 36.99,
+          "zone_2": 38.88,
+          "zone_3": 43.96,
+          "zone_4": 47.62,
+          "zone_5": 50.39,
+          "zone_6": 51.83,
+          "zone_7": 53.34,
+          "zone_8": 54.39
+        }
+      },
+      {
+        "band_label": "bis 200,00 kg",
+        "weight_from": 151,
+        "weight_to": 200,
+        "prices": {
+          "zone_1": 39.71,
+          "zone_2": 46.83,
+          "zone_3": 54.65,
+          "zone_4": 60.33,
+          "zone_5": 64.66,
+          "zone_6": 66.79,
+          "zone_7": 69.35,
+          "zone_8": 71.07
+        }
+      },
+      {
+        "band_label": "bis 250,00 kg",
+        "weight_from": 201,
+        "weight_to": 250,
+        "prices": {
+          "zone_1": 50.89,
+          "zone_2": 59.61,
+          "zone_3": 69.18,
+          "zone_4": 76.22,
+          "zone_5": 81.49,
+          "zone_6": 84.12,
+          "zone_7": 87.23,
+          "zone_8": 89.36
+        }
+      },
+      {
+        "band_label": "bis 300,00 kg",
+        "weight_from": 251,
+        "weight_to": 300,
+        "prices": {
+          "zone_1": 56.17,
+          "zone_2": 67.22,
+          "zone_3": 79.29,
+          "zone_4": 88.21,
+          "zone_5": 94.86,
+          "zone_6": 98.21,
+          "zone_7": 102.11,
+          "zone_8": 104.8
+        }
+      },
+      {
+        "band_label": "bis 350,00 kg",
+        "weight_from": 301,
+        "weight_to": 350,
+        "prices": {
+          "zone_1": 66.73,
+          "zone_2": 79.13,
+          "zone_3": 92.73,
+          "zone_4": 102.73,
+          "zone_5": 110.23,
+          "zone_6": 114,
+          "zone_7": 118.41,
+          "zone_8": 121.41
+        }
+      },
+      {
+        "band_label": "bis 400,00 kg",
+        "weight_from": 351,
+        "weight_to": 400,
+        "prices": {
+          "zone_1": 71.73,
+          "zone_2": 86.02,
+          "zone_3": 101.71,
+          "zone_4": 113.23,
+          "zone_5": 121.91,
+          "zone_6": 126.22,
+          "zone_7": 131.34,
+          "zone_8": 134.79
+        }
+      },
+      {
+        "band_label": "bis 450,00 kg",
+        "weight_from": 401,
+        "weight_to": 450,
+        "prices": {
+          "zone_1": 81.65,
+          "zone_2": 97.25,
+          "zone_3": 114.28,
+          "zone_4": 126.86,
+          "zone_5": 136.29,
+          "zone_6": 141,
+          "zone_7": 146.52,
+          "zone_8": 150.31
+        }
+      },
+      {
+        "band_label": "bis 500,00 kg",
+        "weight_from": 451,
+        "weight_to": 500,
+        "prices": {
+          "zone_1": 86.5,
+          "zone_2": 103.73,
+          "zone_3": 122.58,
+          "zone_4": 136.19,
+          "zone_5": 146.83,
+          "zone_6": 152.06,
+          "zone_7": 158.23,
+          "zone_8": 162.29
+        }
+      },
+      {
+        "band_label": "bis 550,00 kg",
+        "weight_from": 501,
+        "weight_to": 550,
+        "prices": {
+          "zone_1": 95.68,
+          "zone_2": 113.86,
+          "zone_3": 133.79,
+          "zone_4": 148.44,
+          "zone_5": 159.44,
+          "zone_6": 164.96,
+          "zone_7": 171.42,
+          "zone_8": 175.81
+        }
+      },
+      {
+        "band_label": "bis 600,00 kg",
+        "weight_from": 551,
+        "weight_to": 600,
+        "prices": {
+          "zone_1": 99.73,
+          "zone_2": 119.21,
+          "zone_3": 140.59,
+          "zone_4": 156.28,
+          "zone_5": 168.07,
+          "zone_6": 173.95,
+          "zone_7": 180.9,
+          "zone_8": 185.63
+        }
+      },
+      {
+        "band_label": "bis 650,00 kg",
+        "weight_from": 601,
+        "weight_to": 650,
+        "prices": {
+          "zone_1": 109.16,
+          "zone_2": 129.82,
+          "zone_3": 152.52,
+          "zone_4": 169.19,
+          "zone_5": 181.66,
+          "zone_6": 187.9,
+          "zone_7": 195.28,
+          "zone_8": 200.27
+        }
+      },
+      {
+        "band_label": "bis 700,00 kg",
+        "weight_from": 651,
+        "weight_to": 700,
+        "prices": {
+          "zone_1": 113.09,
+          "zone_2": 134.91,
+          "zone_3": 158.8,
+          "zone_4": 176.45,
+          "zone_5": 189.5,
+          "zone_6": 196.1,
+          "zone_7": 203.87,
+          "zone_8": 204.03
+        }
+      },
+      {
+        "band_label": "bis 750,00 kg",
+        "weight_from": 701,
+        "weight_to": 750,
+        "prices": {
+          "zone_1": 118.63,
+          "zone_2": 141.56,
+          "zone_3": 166.59,
+          "zone_4": 184.96,
+          "zone_5": 198.74,
+          "zone_6": 205.68,
+          "zone_7": 213.79,
+          "zone_8": 219.01
+        }
+      },
+      {
+        "band_label": "bis 800,00 kg",
+        "weight_from": 751,
+        "weight_to": 800,
+        "prices": {
+          "zone_1": 122.58,
+          "zone_2": 146.39,
+          "zone_3": 172.43,
+          "zone_4": 191.59,
+          "zone_5": 205.95,
+          "zone_6": 212.86,
+          "zone_7": 221.57,
+          "zone_8": 227
+        }
+      },
+      {
+        "band_label": "bis 850,00 kg",
+        "weight_from": 801,
+        "weight_to": 850,
+        "prices": {
+          "zone_1": 130.24,
+          "zone_2": 154.88,
+          "zone_3": 181.91,
+          "zone_4": 201.7,
+          "zone_5": 216.54,
+          "zone_6": 224.07,
+          "zone_7": 232.82,
+          "zone_8": 238.44
+        }
+      },
+      {
+        "band_label": "bis 900,00 kg",
+        "weight_from": 851,
+        "weight_to": 900,
+        "prices": {
+          "zone_1": 135.14,
+          "zone_2": 160.87,
+          "zone_3": 189.03,
+          "zone_4": 209.71,
+          "zone_5": 225.22,
+          "zone_6": 232.96,
+          "zone_7": 242.13,
+          "zone_8": 247.97
+        }
+      },
+      {
+        "band_label": "bis 950,00 kg",
+        "weight_from": 901,
+        "weight_to": 950,
+        "prices": {
+          "zone_1": 142.51,
+          "zone_2": 168.96,
+          "zone_3": 197.88,
+          "zone_4": 219.14,
+          "zone_5": 235.03,
+          "zone_6": 243.02,
+          "zone_7": 252.39,
+          "zone_8": 258.44
+        }
+      },
+      {
+        "band_label": "bis 1 000,00 kg",
+        "weight_from": 951,
+        "weight_to": 1000,
+        "prices": {
+          "zone_1": 146.08,
+          "zone_2": 171.93,
+          "zone_3": 200.29,
+          "zone_4": 221.09,
+          "zone_5": 236.77,
+          "zone_6": 244.56,
+          "zone_7": 253.81,
+          "zone_8": 259.64
+        }
+      },
+      {
+        "band_label": "bis 1 250,00 kg",
+        "weight_from": 1001,
+        "weight_to": 1250,
+        "prices": {
+          "zone_1": 156.46,
+          "zone_2": 182.25,
+          "zone_3": 210.47,
+          "zone_4": 231.18,
+          "zone_5": 246.6,
+          "zone_6": 254.55,
+          "zone_7": 351.13,
+          "zone_8": 269.59
+        }
+      },
+      {
+        "band_label": "bis 1 500,00 kg",
+        "weight_from": 1251,
+        "weight_to": 1500,
+        "prices": {
+          "zone_1": 168.52,
+          "zone_2": 197.58,
+          "zone_3": 229.41,
+          "zone_4": 252.81,
+          "zone_5": 270.31,
+          "zone_6": 279.11,
+          "zone_7": 289.45,
+          "zone_8": 295.8
+        }
+      },
+      {
+        "band_label": "bis 1 750,00 kg",
+        "weight_from": 1501,
+        "weight_to": 1750,
+        "prices": {
+          "zone_1": 182.57,
+          "zone_2": 214.25,
+          "zone_3": 249.01,
+          "zone_4": 274.57,
+          "zone_5": 293.73,
+          "zone_6": 303.33,
+          "zone_7": 314.82,
+          "zone_8": 321.84
+        }
+      },
+      {
+        "band_label": "bis 2 000,00 kg",
+        "weight_from": 1751,
+        "weight_to": 2000,
+        "prices": {
+          "zone_1": 198.6,
+          "zone_2": 235.04,
+          "zone_3": 274.85,
+          "zone_4": 304.15,
+          "zone_5": 326.15,
+          "zone_6": 337.13,
+          "zone_7": 350.12,
+          "zone_8": 358.35
+        }
+      },
+      {
+        "band_label": "bis 2 250,00 kg",
+        "weight_from": 2001,
+        "weight_to": 2250,
+        "prices": {
+          "zone_1": 211.98,
+          "zone_2": 251.37,
+          "zone_3": 294.46,
+          "zone_4": 326.15,
+          "zone_5": 349.93,
+          "zone_6": 361.86,
+          "zone_7": 375.88,
+          "zone_8": 384.81
+        }
+      },
+      {
+        "band_label": "bis 2 500,00 kg",
+        "weight_from": 2251,
+        "weight_to": 2500,
+        "prices": {
+          "zone_1": 227.29,
+          "zone_2": 271.03,
+          "zone_3": 318.91,
+          "zone_4": 354.15,
+          "zone_5": 380.55,
+          "zone_6": 393.79,
+          "zone_7": 409.35,
+          "zone_8": 419.28
+        }
+      },
+      {
+        "band_label": "bis 2 750,00 kg",
+        "weight_from": 2501,
+        "weight_to": 2750,
+        "prices": {
+          "zone_1": 240.23,
+          "zone_2": 286.8,
+          "zone_3": 337.74,
+          "zone_4": 375.23,
+          "zone_5": 403.29,
+          "zone_6": 417.41,
+          "zone_7": 433.92,
+          "zone_8": 444.51
+        }
+      },
+      {
+        "band_label": "bis 3 000,00 kg",
+        "weight_from": 2751,
+        "weight_to": 3000,
+        "prices": {
+          "zone_1": 254.61,
+          "zone_2": 305.32,
+          "zone_3": 360.86,
+          "zone_4": 401.71,
+          "zone_5": 432.29,
+          "zone_6": 447.66,
+          "zone_7": 465.71,
+          "zone_8": 477.26
+        }
+      }
+    ],
+    "plz_zone_map": [
+      {
+        "plz_prefix": "01",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "02",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "03",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "04",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "06",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "07",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "08",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "09",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "10",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "12",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "13",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "14",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "15",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "16",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "17",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "18",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "19",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "20",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "21",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "22",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "23",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "24",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "25",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "26",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "27",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "28",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "29",
+        "match_type": "prefix",
+        "zone": 8
+      },
+      {
+        "plz_prefix": "30",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "31",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "32",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "33",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "34",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "35",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "36",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "37",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "38",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "39",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "40",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "41",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "42",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "44",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "45",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "46",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "47",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "48",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "49",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "50",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "51",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "52",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "53",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "54",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "55",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "56",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "57",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "58",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "59",
+        "match_type": "prefix",
+        "zone": 7
+      },
+      {
+        "plz_prefix": "60",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "61",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "63",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "64",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "65",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "66",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "67",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "68",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "69",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "70",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "71",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "72",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "73",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "74",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "75",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "76",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "77",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "78",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "plz_prefix": "79",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "80",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "81",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "82",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "83",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "84",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "85",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "86",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "87",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "plz_prefix": "88",
+        "match_type": "prefix",
+        "zone": 2
+      },
+      {
+        "plz_prefix": "89",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "plz_prefix": "90",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "91",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "92",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "93",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "94",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "95",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "96",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "plz_prefix": "97",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "98",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "plz_prefix": "99",
+        "match_type": "prefix",
+        "zone": 6
+      }
+    ],
+    "plz_lookup_rules": {
+      "priority": "exact_before_prefix",
+      "description": "When resolving a PLZ to a zone, first check for an exact 5-digit match, then fall back to the longest matching prefix. Zone assignments are based on PLZ ranges as published in the tariff zone table for Germany (DE)."
+    },
+    "switzerland": {
+      "zones": [
+        {
+          "zone_number": 1,
+          "label": "Zone 1",
+          "plz_description": "CH 8100-8599"
+        },
+        {
+          "zone_number": 2,
+          "label": "Zone 2",
+          "plz_description": "CH 8000-8099, CH 8600-9699"
+        },
+        {
+          "zone_number": 3,
+          "label": "Zone 3",
+          "plz_description": "CH 4000-4999, CH 6000-6499, CH 7000-7399"
+        },
+        {
+          "zone_number": 4,
+          "label": "Zone 4",
+          "plz_description": "CH 1700-1799, CH 2000-3299, CH 3500-3699, CH 6500-6999"
+        },
+        {
+          "zone_number": 5,
+          "label": "Zone 5",
+          "plz_description": "CH 1000-1699, CH 1800-1999, CH 3700-3999, CH 7400-7799"
+        }
+      ],
+      "matrix": [
+        {
+          "band_label": "bis 100,00 kg",
+          "weight_from": 1,
+          "weight_to": 100,
+          "prices": {
+            "zone_1": 75.87,
+            "zone_2": 75.87,
+            "zone_3": 80.91,
+            "zone_4": 87.65,
+            "zone_5": 109.58
+          }
+        },
+        {
+          "band_label": "bis 200,00 kg",
+          "weight_from": 101,
+          "weight_to": 200,
+          "prices": {
+            "zone_1": 99.44,
+            "zone_2": 107.89,
+            "zone_3": 121.36,
+            "zone_4": 131.48,
+            "zone_5": 177
+          }
+        },
+        {
+          "band_label": "bis 300,00 kg",
+          "weight_from": 201,
+          "weight_to": 300,
+          "prices": {
+            "zone_1": 123.05,
+            "zone_2": 131.48,
+            "zone_3": 141.6,
+            "zone_4": 155.07,
+            "zone_5": 252.85
+          }
+        },
+        {
+          "band_label": "bis 400,00 kg",
+          "weight_from": 301,
+          "weight_to": 400,
+          "prices": {
+            "zone_1": 146.66,
+            "zone_2": 155.07,
+            "zone_3": 165.2,
+            "zone_4": 178.68,
+            "zone_5": 294.99
+          }
+        },
+        {
+          "band_label": "bis 500,00 kg",
+          "weight_from": 401,
+          "weight_to": 500,
+          "prices": {
+            "zone_1": 170.25,
+            "zone_2": 178.68,
+            "zone_3": 188.78,
+            "zone_4": 202.27,
+            "zone_5": 328.7
+          }
+        },
+        {
+          "band_label": "bis 600,00 kg",
+          "weight_from": 501,
+          "weight_to": 600,
+          "prices": {
+            "zone_1": 193.86,
+            "zone_2": 202.27,
+            "zone_3": 212.39,
+            "zone_4": 225.87,
+            "zone_5": 345.56
+          }
+        },
+        {
+          "band_label": "bis 700,00 kg",
+          "weight_from": 601,
+          "weight_to": 700,
+          "prices": {
+            "zone_1": 217.45,
+            "zone_2": 225.87,
+            "zone_3": 235.99,
+            "zone_4": 249.48,
+            "zone_5": 387.69
+          }
+        },
+        {
+          "band_label": "bis 800,00 kg",
+          "weight_from": 701,
+          "weight_to": 800,
+          "prices": {
+            "zone_1": 241.04,
+            "zone_2": 249.48,
+            "zone_3": 259.59,
+            "zone_4": 273.06,
+            "zone_5": 438.26
+          }
+        },
+        {
+          "band_label": "bis 900,00 kg",
+          "weight_from": 801,
+          "weight_to": 900,
+          "prices": {
+            "zone_1": 264.65,
+            "zone_2": 273.06,
+            "zone_3": 283.19,
+            "zone_4": 296.66,
+            "zone_5": 471.97
+          }
+        },
+        {
+          "band_label": "bis 1 000,00 kg",
+          "weight_from": 901,
+          "weight_to": 1000,
+          "prices": {
+            "zone_1": 288.25,
+            "zone_2": 296.66,
+            "zone_3": 306.77,
+            "zone_4": 320.27,
+            "zone_5": 497.27
+          }
+        },
+        {
+          "band_label": "bis 1 100,00 kg",
+          "weight_from": 1001,
+          "weight_to": 1100,
+          "prices": {
+            "zone_1": 310.15,
+            "zone_2": 320.27,
+            "zone_3": 330.38,
+            "zone_4": 343.86,
+            "zone_5": 530.98
+          }
+        },
+        {
+          "band_label": "bis 1 200,00 kg",
+          "weight_from": 1101,
+          "weight_to": 1200,
+          "prices": {
+            "zone_1": 332.07,
+            "zone_2": 343.86,
+            "zone_3": 353.98,
+            "zone_4": 367.47,
+            "zone_5": 556.25
+          }
+        },
+        {
+          "band_label": "bis 1 300,00 kg",
+          "weight_from": 1201,
+          "weight_to": 1300,
+          "prices": {
+            "zone_1": 345.56,
+            "zone_2": 353.98,
+            "zone_3": 377.57,
+            "zone_4": 391.06,
+            "zone_5": 581.55
+          }
+        },
+        {
+          "band_label": "bis 1 400,00 kg",
+          "weight_from": 1301,
+          "weight_to": 1400,
+          "prices": {
+            "zone_1": 353.98,
+            "zone_2": 362.41,
+            "zone_3": 401.18,
+            "zone_4": 414.65,
+            "zone_5": 598.41
+          }
+        },
+        {
+          "band_label": "bis 1 500,00 kg",
+          "weight_from": 1401,
+          "weight_to": 1500,
+          "prices": {
+            "zone_1": 362.41,
+            "zone_2": 379.27,
+            "zone_3": 424.77,
+            "zone_4": 438.26,
+            "zone_5": 615.26
+          }
+        },
+        {
+          "band_label": "bis 1 600,00 kg",
+          "weight_from": 1501,
+          "weight_to": 1600,
+          "prices": {
+            "zone_1": 370.84,
+            "zone_2": 396.12,
+            "zone_3": 441.63,
+            "zone_4": 461.87,
+            "zone_5": 632.12
+          }
+        },
+        {
+          "band_label": "bis 1 700,00 kg",
+          "weight_from": 1601,
+          "weight_to": 1700,
+          "prices": {
+            "zone_1": 379.27,
+            "zone_2": 412.98,
+            "zone_3": 458.48,
+            "zone_4": 485.46,
+            "zone_5": 640.53
+          }
+        },
+        {
+          "band_label": "bis 1 800,00 kg",
+          "weight_from": 1701,
+          "weight_to": 1800,
+          "prices": {
+            "zone_1": 387.69,
+            "zone_2": 429.83,
+            "zone_3": 475.34,
+            "zone_4": 509.05,
+            "zone_5": 648.97
+          }
+        },
+        {
+          "band_label": "bis 1 900,00 kg",
+          "weight_from": 1801,
+          "weight_to": 1900,
+          "prices": {
+            "zone_1": 396.12,
+            "zone_2": 446.69,
+            "zone_3": 492.2,
+            "zone_4": 532.66,
+            "zone_5": 657.38
+          }
+        },
+        {
+          "band_label": "bis 2 000,00 kg",
+          "weight_from": 1901,
+          "weight_to": 2000,
+          "prices": {
+            "zone_1": 404.55,
+            "zone_2": 463.56,
+            "zone_3": 509.05,
+            "zone_4": 556.25,
+            "zone_5": 665.83
+          }
+        },
+        {
+          "band_label": "bis 2 100,00 kg",
+          "weight_from": 2001,
+          "weight_to": 2100,
+          "prices": {
+            "zone_1": 412.98,
+            "zone_2": 480.42,
+            "zone_3": 525.91,
+            "zone_4": 573.11,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 200,00 kg",
+          "weight_from": 2101,
+          "weight_to": 2200,
+          "prices": {
+            "zone_1": 421.41,
+            "zone_2": 497.27,
+            "zone_3": 542.76,
+            "zone_4": 589.96,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 300,00 kg",
+          "weight_from": 2201,
+          "weight_to": 2300,
+          "prices": {
+            "zone_1": 429.83,
+            "zone_2": 514.13,
+            "zone_3": 559.62,
+            "zone_4": 606.82,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 400,00 kg",
+          "weight_from": 2301,
+          "weight_to": 2400,
+          "prices": {
+            "zone_1": 438.26,
+            "zone_2": 530.98,
+            "zone_3": 576.47,
+            "zone_4": 623.67,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 500,00 kg",
+          "weight_from": 2401,
+          "weight_to": 2500,
+          "prices": {
+            "zone_1": 446.69,
+            "zone_2": 547.84,
+            "zone_3": 593.33,
+            "zone_4": 640.53,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 600,00 kg",
+          "weight_from": 2501,
+          "weight_to": 2600,
+          "prices": {
+            "zone_1": 455.12,
+            "zone_2": 556.25,
+            "zone_3": 610.19,
+            "zone_4": 657.38,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 700,00 kg",
+          "weight_from": 2601,
+          "weight_to": 2700,
+          "prices": {
+            "zone_1": 463.56,
+            "zone_2": 564.69,
+            "zone_3": 627.04,
+            "zone_4": 674.24,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 800,00 kg",
+          "weight_from": 2701,
+          "weight_to": 2800,
+          "prices": {
+            "zone_1": 471.97,
+            "zone_2": 573.11,
+            "zone_3": 643.9,
+            "zone_4": 691.1,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 2 900,00 kg",
+          "weight_from": 2801,
+          "weight_to": 2900,
+          "prices": {
+            "zone_1": 480.42,
+            "zone_2": 581.55,
+            "zone_3": 660.75,
+            "zone_4": 707.97,
+            "zone_5": null
+          }
+        },
+        {
+          "band_label": "bis 3 000,00 kg",
+          "weight_from": 2901,
+          "weight_to": 3000,
+          "prices": {
+            "zone_1": 488.83,
+            "zone_2": 589.96,
+            "zone_3": 670.89,
+            "zone_4": 724.82,
+            "zone_5": null
+          }
+        }
+      ],
+      "plz_zone_map": [
+        {
+          "plz_prefix": "10",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "11",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "12",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "13",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "14",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "15",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "16",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "17",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "18",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "19",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "20",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "21",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "22",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "23",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "24",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "25",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "26",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "27",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "28",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "29",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "30",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "31",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "32",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "33",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "34",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "35",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "36",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "37",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "38",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "39",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "40",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "41",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "42",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "43",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "44",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "45",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "46",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "47",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "48",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "49",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "50",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "51",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "52",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "53",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "54",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "55",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "56",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "57",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "58",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "59",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "60",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "61",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "62",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "63",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "64",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "65",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "66",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "67",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "68",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "69",
+          "match_type": "prefix",
+          "zone": 4
+        },
+        {
+          "plz_prefix": "70",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "71",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "72",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "73",
+          "match_type": "prefix",
+          "zone": 3
+        },
+        {
+          "plz_prefix": "74",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "75",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "76",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "77",
+          "match_type": "prefix",
+          "zone": 5
+        },
+        {
+          "plz_prefix": "80",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "81",
+          "match_type": "prefix",
+          "zone": 1
+        },
+        {
+          "plz_prefix": "82",
+          "match_type": "prefix",
+          "zone": 1
+        },
+        {
+          "plz_prefix": "83",
+          "match_type": "prefix",
+          "zone": 1
+        },
+        {
+          "plz_prefix": "84",
+          "match_type": "prefix",
+          "zone": 1
+        },
+        {
+          "plz_prefix": "85",
+          "match_type": "prefix",
+          "zone": 1
+        },
+        {
+          "plz_prefix": "86",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "87",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "88",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "89",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "90",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "91",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "92",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "93",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "94",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "95",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "96",
+          "match_type": "prefix",
+          "zone": 2
+        },
+        {
+          "plz_prefix": "97",
+          "match_type": "prefix",
+          "zone": 2
+        }
+      ],
+      "freight_calculation": {
+        "cbm_to_kg": 250,
+        "ldm_to_kg": 1250
+      },
+      "minimum_weights": {
+        "EUP_kg": 250,
+        "ENP_kg": 250,
+        "GIX_kg": 250
+      },
+      "fuel_surcharge_base": "1,20 Euro/Liter",
+      "condition": "unverzollt, unversichert"
+    }
+  },
+  "nebenkosten": {
+    "typed": {
+      "diesel_floater_pct": null,
+      "oversize_note": "Längenzuschlag ab 2,41 m bis 4,0 m: Fracht +50%; ab 4,01 m bis 6,0 m: Fracht +100%; ab 6,01 m bis 7,0 m: lt. Absprache",
+      "min_weight_half_pallet_kg": null,
+      "min_weight_pallet_kg": null,
+      "min_weight_per_cbm_kg": 150,
+      "min_weight_per_ldm_kg": 750,
+      "pallet_exchange_euro_flat": 2.5,
+      "pallet_exchange_euro_mesh": 10,
+      "return_pickup": null,
+      "transport_insurance": "Eindeckung durch Gebrüder Weiss möglich oder Verzichtskunde",
+      "liability_surcharge": null,
+      "manual_order_fee_euro": 3.5,
+      "avis_neutralization_fee_euro": 8,
+      "island_trade_fair_surcharge": "Flug-/Seehafenzuschlag, Inselzuschlag, Messeanlieferungen/Bergregionen: bitte gesondert anfragen",
+      "payment_days": null,
+      "billing_cycle": null,
+      "legal_basis": "ADSp 2017 / Logistik-AGB 2019"
+    },
+    "raw": [
+      {
+        "label": "Volumenberechnung",
+        "value": "Nicht stapelfähige bzw. nicht belastbare Packstücke werden auf Basis Lademeter abgerechnet. Wenn keine Packstückmaße angegeben sind, erfolgt die Abrechnung stellplatzbezogen"
+      },
+      {
+        "label": "Lademeterberechnung",
+        "value": "Abrechnung auf Basis Lademeter bei Packstücken > 1,0 Lademeter (Übergroßen); Abrechnung auf Basis Lademeter bei Sendungen > 2,0 Lademeter"
+      },
+      {
+        "label": "Frachtberechnung DE",
+        "value": "1 cbm = 150 kg; 1 ldm = 750 kg"
+      },
+      {
+        "label": "Mindestgewicht DE (ENP, EUP, EP1)",
+        "value": "150 kg"
+      },
+      {
+        "label": "Mindestgewicht DE (HPA)",
+        "value": "80 kg"
+      },
+      {
+        "label": "Mindestgewicht DE (GIX)",
+        "value": "200 kg"
+      },
+      {
+        "label": "Transportversicherung",
+        "value": "Eindeckung durch Gebrüder Weiss möglich oder Sie erklären sich zum Verzichtskunden"
+      },
+      {
+        "label": "Maut DE, AT, BE, CZ, SK, PL, SI, GB, HU",
+        "value": "Gem. jeweils gültiger Vereinbarung"
+      },
+      {
+        "label": "Schweizer LSVA",
+        "value": "Gem. jeweils gültiger Vereinbarung"
+      },
+      {
+        "label": "Treibstoffzuschlag",
+        "value": "Errechnet sich aufgrund der Dieselflexvereinbarung jeweils zum 1. Arbeitstag des Monats sowie am 15. Tag bzw. 1. Arbeitstag danach. Grundlage: bundesweiter Dieselpreis auf www.clever-tanken.de/statistik2.asp"
+      },
+      {
+        "label": "Treibstoffzuschlag Basis DE",
+        "value": "1,60 Euro/Liter"
+      },
+      {
+        "label": "Treibstoffzuschlag Basis CH",
+        "value": "1,20 Euro/Liter"
+      },
+      {
+        "label": "Währungsausgleichszuschlag CZK",
+        "value": "Errechnet sich aufgrund des beigefügten Modells jeweils zum 1. Arbeitstag des Monats. Grundlage: www.oanda.com/lang/de/currency/converter/"
+      },
+      {
+        "label": "Rohstoffzuschlag Lademittel Holz",
+        "value": "Errechnet sich aufgrund des beigefügten Modells jeweils zum 1. Arbeitstag des Monats. Grundlage: https://www.euwid-holz.de/maerkte.html"
+      },
+      {
+        "label": "Energiekostenzuschlag",
+        "value": "Wird anhand beiliegenden Modells berechnet und setzt sich aus dem Erdgas- und Strompreis zusammen. Grundlage: Durchschnittspreis am 1. Arbeitstag des Monats unter https://www.destatis.de"
+      },
+      {
+        "label": "Lademitteltauschgebühr EUP oder Deckel",
+        "value": "2,50 € pro EUP oder Deckel"
+      },
+      {
+        "label": "Lademitteltauschgebühr GIX oder Rahmen",
+        "value": "10,00 € pro GIX oder Rahmen"
+      },
+      {
+        "label": "Flug-/Seehafenzuschlag, Inselzuschlag, Messeanlieferungen/Bergregionen",
+        "value": "Bitte gesondert anfragen – Frachtpreise sind nicht im regulären Offert abgedeckt"
+      },
+      {
+        "label": "Gefahrgutzuschlag",
+        "value": "15% der Fracht; Minimum: 15,00 €; Maximum: 100,00 €"
+      },
+      {
+        "label": "Multicollizuschlag",
+        "value": "1,00 € ab dem 6. nicht unterfahrbaren Packstück"
+      },
+      {
+        "label": "Rechnungsversand postalisch",
+        "value": "3,50 € je Rechnung"
+      },
+      {
+        "label": "Manuelle Erfassung",
+        "value": "3,50 € je Sendung"
+      },
+      {
+        "label": "Längenzuschlag ab 2,41 m bis 4,0 m",
+        "value": "Fracht + 50%"
+      },
+      {
+        "label": "Längenzuschlag ab 4,01 m bis 6,0 m",
+        "value": "Fracht + 100%"
+      },
+      {
+        "label": "Längenzuschlag ab 6,01 m bis 7,0 m",
+        "value": "lt. Absprache"
+      },
+      {
+        "label": "Sonderleistungen",
+        "value": "sofern erforderlich lt. Absprache"
+      },
+      {
+        "label": "Express 10 (National)",
+        "value": "55,00 € per Sendung"
+      },
+      {
+        "label": "Express 12 (National)",
+        "value": "45,00 € per Sendung"
+      },
+      {
+        "label": "Express 24 (National)",
+        "value": "25,00 € per Sendung"
+      },
+      {
+        "label": "Fixtermin (National)",
+        "value": "25,00 € per Sendung"
+      },
+      {
+        "label": "Telefonisches / Elektronisches Avis (National)",
+        "value": "8,00 € per Sendung (incl. Avis)"
+      },
+      {
+        "label": "Privatkunden-Zustellung",
+        "value": "8,00 € per Sendung"
+      },
+      {
+        "label": "Großstadtzuschläge",
+        "value": "Fracht + 10% – PLZ laut Anlage Großstadtzuschläge"
+      },
+      {
+        "label": "GW pro.line 10 (International, nur Österreich)",
+        "value": "Fracht + 50%"
+      },
+      {
+        "label": "GW pro.line 12 (International, nur Österreich)",
+        "value": "Fracht + 30%"
+      },
+      {
+        "label": "GW pro.line 16 (International, nur Österreich)",
+        "value": "Fracht + 20%"
+      },
+      {
+        "label": "Hebebühnenzuschlag",
+        "value": "bis 1,5 to (frachtpflichtiges Gewicht) kostenlos; danach 45,00 € pro Zustellung"
+      },
+      {
+        "label": "Fixtermin für weitere europäische Länder",
+        "value": "25,00 € per Sendung (wenn möglich)"
+      },
+      {
+        "label": "Telefonisches / Elektronisches Avis (International)",
+        "value": "8,00 € per Sendung (incl. Avis)"
+      },
+      {
+        "label": "ITALIEN: IMO-Zuschlag für Sardinien und Sizilien",
+        "value": "1,50 € per 100 kg"
+      },
+      {
+        "label": "Einfuhrumsatzsteuer / Zölle / Verbrauchssteuer (Kaffee, Branntwein, Tabak)",
+        "value": "Gemäß Auslage"
+      },
+      {
+        "label": "Vorlageprovision",
+        "value": "4% der Eingangsabgaben"
+      },
+      {
+        "label": "Versandscheinabfertigung (T1 / T2 Dokument)",
+        "value": "55,00 € per Sendung"
+      },
+      {
+        "label": "Einfuhrverzollung Deutschland",
+        "value": "60,00 € inkl. 3 Zolltarifnummern per Sendung; 5,00 € je weitere Zolltarifnummer"
+      },
+      {
+        "label": "EUR1 oder ATR",
+        "value": "45,00 € per Sendung"
+      },
+      {
+        "label": "Ausfuhrbegleitdokument (ABD) (=AE)",
+        "value": "45,00 € incl. 3 Zolltarifnummern per Sendung; 5,00 € je weitere Zolltarifnummer"
+      },
+      {
+        "label": "Währungsausgleichszuschlag CHF",
+        "value": "Errechnet sich aufgrund des beigefügten Modells jeweils zum 1. Arbeitstag des Monats. Grundlage: www.oanda.com/lang/de/currency/converter/"
+      },
+      {
+        "label": "Einfuhrverzollung Schweiz (nur bei Frankatur DDP und DDT)",
+        "value": "55,00 € incl. 3 Zolltarifnummern per Sendung; 5,00 € je weitere Zolltarifnummer"
+      },
+      {
+        "label": "E-Dec-Gebühr",
+        "value": "12,00 € per Sendung"
+      },
+      {
+        "label": "Zolltaxe Serbien",
+        "value": "6,97 € per Sendung (nur bei Frankatur DAP oder CPT)"
+      },
+      {
+        "label": "Einfuhrverzollung Großbritannien (nur bei Frankatur DDP und DDT)",
+        "value": "75,00 € incl. 3 Zolltarifnummern per Sendung; 5,00 € je weitere Zolltarifnummer"
+      },
+      {
+        "label": "Zollabfertigungsgebühr Großbritannien",
+        "value": "25,00 € per Sendung"
+      }
+    ]
+  },
+  "maut": null,
+  "transit_times": {
+    "note": "Laufzeiten sind Regellaufzeiten und beziehen sich auf Arbeitstage (MO-FR). Fixe Termine sind unbedingt gesondert abzusprechen. Exkl. Inseln. ** Laufzeiten bis/ab Zollterminal bzw. abhängig von dem notwendigen Zeitaufwand der Verzollung. Gültig ab 01.11.2022.",
+    "countries": [
+      {
+        "country": "Belgien",
+        "export_departures": "Täglich",
+        "export_transit": "2 – 3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "2 – 3 Tage"
+      },
+      {
+        "country": "Bosnien-Herzegowina",
+        "export_departures": "Mo / Do",
+        "export_transit": "6 Tage**",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Bulgarien",
+        "export_departures": "Täglich",
+        "export_transit": "5 – 6 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 6 Tage"
+      },
+      {
+        "country": "Dänemark",
+        "export_departures": "Täglich",
+        "export_transit": "4 – 6 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 6 Tage"
+      },
+      {
+        "country": "Deutschland",
+        "export_departures": "Täglich",
+        "export_transit": "1 – 3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "1 – 3 Tage"
+      },
+      {
+        "country": "Estland",
+        "export_departures": "Mo / Do",
+        "export_transit": "4 – 5 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 6 Tage"
+      },
+      {
+        "country": "Finnland",
+        "export_departures": "Mo / Mi / Do",
+        "export_transit": "6 – 9 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 7 Tage"
+      },
+      {
+        "country": "Frankreich",
+        "export_departures": "Täglich",
+        "export_transit": "2 – 4 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "3 – 5 Tage"
+      },
+      {
+        "country": "Griechenland",
+        "export_departures": "Do",
+        "export_transit": "6 – 9 Tage",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "7 – 10 Tage"
+      },
+      {
+        "country": "Grossbritannien",
+        "export_departures": "Mo / Do",
+        "export_transit": "4 – 7 Tage**",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 8 Tage**"
+      },
+      {
+        "country": "Irland",
+        "export_departures": "Mi",
+        "export_transit": "4 – 6 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 7 Tage"
+      },
+      {
+        "country": "Italien",
+        "export_departures": "Täglich",
+        "export_transit": "3 – 7 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "4 – 8 Tage"
+      },
+      {
+        "country": "Kroatien",
+        "export_departures": "Täglich",
+        "export_transit": "4 – 5 Tage",
+        "import_departures": "Fr",
+        "import_transit": "4 – 5 Tage"
+      },
+      {
+        "country": "Lettland",
+        "export_departures": "Mo / Do",
+        "export_transit": "4 – 5 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Lichtenstein",
+        "export_departures": "Täglich",
+        "export_transit": "2 – 3 Tage**",
+        "import_departures": "Täglich",
+        "import_transit": "3 – 4 Tage**"
+      },
+      {
+        "country": "Litauen",
+        "export_departures": "Mo / Do",
+        "export_transit": "3 – 4 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "5 – 6 Tage"
+      },
+      {
+        "country": "Luxemburg",
+        "export_departures": "Täglich",
+        "export_transit": "3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "3 Tage"
+      },
+      {
+        "country": "Mazedonien",
+        "export_departures": "Täglich",
+        "export_transit": "6 – 7 Tage**",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Montenegro",
+        "export_departures": "Täglich",
+        "export_transit": "6 – 7 Tage**",
+        "import_departures": "Fr",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Niederlande",
+        "export_departures": "Täglich",
+        "export_transit": "3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "3 Tage"
+      },
+      {
+        "country": "Norwegen",
+        "export_departures": "Mo / Mi / Do",
+        "export_transit": "5 – 10 Tage**",
+        "import_departures": "Wöchentlich",
+        "import_transit": "6 – 11 Tage**"
+      },
+      {
+        "country": "Österreich",
+        "export_departures": "Täglich",
+        "export_transit": "1 – 3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "2 – 3 Tage"
+      },
+      {
+        "country": "Polen",
+        "export_departures": "Täglich",
+        "export_transit": "3 – 4 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "4 – 5 Tage"
+      },
+      {
+        "country": "Portugal",
+        "export_departures": "Mo / Do",
+        "export_transit": "6 – 9 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Rumänien",
+        "export_departures": "Täglich",
+        "export_transit": "5 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "6 Tage"
+      },
+      {
+        "country": "Russland",
+        "export_departures": "Auf Anfrage",
+        "export_transit": "Auf Anfrage",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Schweden",
+        "export_departures": "Täglich",
+        "export_transit": "5 – 8 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "6 – 9 Tage"
+      },
+      {
+        "country": "Schweiz",
+        "export_departures": "Täglich",
+        "export_transit": "1 – 3 Tage**",
+        "import_departures": "Täglich",
+        "import_transit": "1 – 3 Tage**"
+      },
+      {
+        "country": "Serbien",
+        "export_departures": "Mo / Do",
+        "export_transit": "4 – 6 Tage**",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Slowakei",
+        "export_departures": "Täglich",
+        "export_transit": "3 – 4 Tage",
+        "import_departures": "Di / Fr",
+        "import_transit": "4 – 5 Tage"
+      },
+      {
+        "country": "Slowenien",
+        "export_departures": "Täglich",
+        "export_transit": "3 Tage",
+        "import_departures": "Di / Fr",
+        "import_transit": "3 – 4 Tage"
+      },
+      {
+        "country": "Spanien",
+        "export_departures": "Do",
+        "export_transit": "4 – 8 Tage",
+        "import_departures": "Wöchentlich",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Tschechische Republik",
+        "export_departures": "Täglich",
+        "export_transit": "3 Tage",
+        "import_departures": "Täglich",
+        "import_transit": "3 – 4 Tage"
+      },
+      {
+        "country": "Türkei",
+        "export_departures": "Do",
+        "export_transit": "4 Tage**",
+        "import_departures": "Fr",
+        "import_transit": "6 Tage**"
+      },
+      {
+        "country": "Ukraine",
+        "export_departures": "Auf Anfrage",
+        "export_transit": "Auf Anfrage",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      },
+      {
+        "country": "Ungarn",
+        "export_departures": "Täglich",
+        "export_transit": "3 Tage",
+        "import_departures": "Di / Fr",
+        "import_transit": "3 – 4 Tage"
+      },
+      {
+        "country": "Weiss-Russland",
+        "export_departures": "Auf Anfrage",
+        "export_transit": "Auf Anfrage",
+        "import_departures": "Auf Anfrage",
+        "import_transit": "Auf Anfrage"
+      }
+    ]
+  },
+  "confidence": 0.92,
+  "issues": [
+    "Zone 7 price for weight band 1000-1250 kg (351.13 EUR) appears anomalous – likely a data entry error in the source document (neighbouring zones show ~254-255 EUR range)",
+    "Switzerland Zone 5 has no prices listed above 2000 kg – these rows were set to null",
+    "The PLZ zone map for Switzerland was reconstructed from the printed ranges; individual 5-digit assignments were not provided so all entries use prefix match type",
+    "DE PLZ ranges 43000 (missing from table between 42999 and 44000) were not explicitly listed; assigned based on context to zone 7",
+    "Tariff ID codes (e.g. 1250/110/1/00172668/DE KG 8ZO and 4001/110/1/GWTUTALT/CH_05_ALD/P5812) captured in meta but not mapped to a separate field in the schema",
+    "Offer number 1/00172668 valid from 01.01.2023 to 31.12.2023; diesel floater percentage not explicitly stated as a single number – base diesel price used instead"
+  ]
+}

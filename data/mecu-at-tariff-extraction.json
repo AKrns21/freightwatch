@@ -1,0 +1,293 @@
+{
+  "meta": {
+    "title": "Speditionsentgelte",
+    "service_type": "Stückgutversand Österreich - Langgut bis 6 mtr.",
+    "tariff_country": "AT",
+    "origin": "ab Velbert",
+    "valid_from": "01.05.2023",
+    "valid_until": "31.07.2023",
+    "carrier_name": "Cosi Stahllogistik GmbH & Co. KG",
+    "carrier_address": "Verbandsstr. 101, 58093 Hagen",
+    "customer_name": "Mecu Metallhalbzeug GmbH & Co. KG",
+    "customer_address": "Haberstr. 14, 42551 Velbert"
+  },
+  "tariff": {
+    "zones": [
+      {
+        "zone_number": 1,
+        "label": "Zone 1",
+        "plz_description": "1, 2"
+      },
+      {
+        "zone_number": 3,
+        "label": "Zone 3",
+        "plz_description": "3"
+      },
+      {
+        "zone_number": 4,
+        "label": "Zone 4",
+        "plz_description": "4, 5"
+      },
+      {
+        "zone_number": 5,
+        "label": "Zone 5",
+        "plz_description": "6"
+      },
+      {
+        "zone_number": 6,
+        "label": "Zone 6",
+        "plz_description": "7, 8, 9"
+      }
+    ],
+    "matrix": [
+      {
+        "band_label": "bis 200 kg",
+        "weight_from": 1,
+        "weight_to": 200,
+        "prices": {
+          "zone_1": 216.5,
+          "zone_3": 216.5,
+          "zone_4": 216.5,
+          "zone_5": 226.5,
+          "zone_6": 216.5
+        }
+      },
+      {
+        "band_label": "bis 300 kg",
+        "weight_from": 201,
+        "weight_to": 300,
+        "prices": {
+          "zone_1": 260.2,
+          "zone_3": 247.2,
+          "zone_4": 228.6,
+          "zone_5": 265.7,
+          "zone_6": 247.2
+        }
+      },
+      {
+        "band_label": "bis 500 kg",
+        "weight_from": 301,
+        "weight_to": 500,
+        "prices": {
+          "zone_1": 324,
+          "zone_3": 294.3,
+          "zone_4": 272,
+          "zone_5": 331.4,
+          "zone_6": 312.9
+        }
+      },
+      {
+        "band_label": "bis 800 kg",
+        "weight_from": 501,
+        "weight_to": 800,
+        "prices": {
+          "zone_1": 377.3,
+          "zone_3": 345.7,
+          "zone_4": 317.9,
+          "zone_5": 392.1,
+          "zone_6": 373.6
+        }
+      },
+      {
+        "band_label": "bis 1.000 kg",
+        "weight_from": 801,
+        "weight_to": 1000,
+        "prices": {
+          "zone_1": 418.8,
+          "zone_3": 392.8,
+          "zone_4": 365,
+          "zone_5": 430,
+          "zone_6": 420.7
+        }
+      },
+      {
+        "band_label": "bis 1.500 kg",
+        "weight_from": 1001,
+        "weight_to": 1500,
+        "prices": {
+          "zone_1": 558.6,
+          "zone_3": 521.4,
+          "zone_4": 465.7,
+          "zone_5": 577.1,
+          "zone_6": 558.6
+        }
+      },
+      {
+        "band_label": "bis 2.000 kg",
+        "weight_from": 1501,
+        "weight_to": 2000,
+        "prices": {
+          "zone_1": 690.7,
+          "zone_3": 644.3,
+          "zone_4": 588.6,
+          "zone_5": 709.2,
+          "zone_6": 681.4
+        }
+      }
+    ],
+    "plz_zone_map": [
+      {
+        "country_code": "AT",
+        "plz_prefix": "1",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "2",
+        "match_type": "prefix",
+        "zone": 1
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "3",
+        "match_type": "prefix",
+        "zone": 3
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "4",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "5",
+        "match_type": "prefix",
+        "zone": 4
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "6",
+        "match_type": "prefix",
+        "zone": 5
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "7",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "8",
+        "match_type": "prefix",
+        "zone": 6
+      },
+      {
+        "country_code": "AT",
+        "plz_prefix": "9",
+        "match_type": "prefix",
+        "zone": 6
+      }
+    ],
+    "plz_lookup_rules": {
+      "priority": "exact_before_prefix",
+      "description": "When resolving a PLZ to a zone, first check for an exact full-length match, then fall back to the longest matching prefix."
+    }
+  },
+  "nebenkosten": {
+    "typed": {
+      "diesel_floater_pct": null,
+      "eu_mobility_surcharge_pct": 5,
+      "maut_included": true,
+      "delivery_condition": "frei Haus",
+      "oversize_note": "ab 2.001 kg - bitte Tagespreise erfragen!",
+      "min_weight_half_pallet_kg": null,
+      "min_weight_pallet_kg": 500,
+      "min_weight_per_cbm_kg": 300,
+      "min_weight_per_ldm_kg": 1650,
+      "pallet_exchange_euro_flat": null,
+      "pallet_exchange_euro_mesh": null,
+      "return_pickup": "nach Absprache",
+      "transport_insurance": "Verzichtskunde",
+      "liability_surcharge": null,
+      "manual_order_fee_euro": null,
+      "avis_neutralization_fee_euro": null,
+      "island_trade_fair_surcharge": "Fracht zzgl. Auslagen",
+      "payment_days": null,
+      "payment_terms": null,
+      "billing_cycle": null,
+      "legal_basis": "Allgemeine Deutsche Spediteurbedingungen 2017 - ADSp 2017"
+    },
+    "raw": [
+      {
+        "label": "inkl. Maut",
+        "value": null
+      },
+      {
+        "label": "EU Mobilitätszuschlag",
+        "value": "akt. 5 Prozent"
+      },
+      {
+        "label": "ab 2.001 kg",
+        "value": "bitte Tagespreise erfragen !"
+      },
+      {
+        "label": "zzgl. Dieselfloater",
+        "value": null
+      },
+      {
+        "label": "Mindestgewicht pro Palette (max. 80 cm x 120 cm)",
+        "value": "500 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Kubikmeter",
+        "value": "300 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Lademeter",
+        "value": "1.650 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Kleinformat (200 x 100 cm)",
+        "value": "300 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Mittelformat (250 x 125 cm)",
+        "value": "500 kg"
+      },
+      {
+        "label": "Mindestgewicht pro Großformat (300 x 150 cm)",
+        "value": "800 kg"
+      },
+      {
+        "label": "Kosten für Palettentausch",
+        "value": "kein Tausch möglich !"
+      },
+      {
+        "label": "Kosten für Gitterboxentausch",
+        "value": "kein Tausch möglich !"
+      },
+      {
+        "label": "Rückholungen bzw. Abholaufträge",
+        "value": "nach Absprache !"
+      },
+      {
+        "label": "Speditionsversicherung",
+        "value": "Verzichtskunde"
+      },
+      {
+        "label": "Messezustellung",
+        "value": "Fracht zzgl. Auslagen"
+      },
+      {
+        "label": "Alle genannten Entgelte verstehen sich exkl. Mehrwertsteuer. Der Versand erfolgt Frei-Haus, exkl. Freihafen- und Messezustellung.",
+        "value": null
+      },
+      {
+        "label": "Rechtsgrundlage",
+        "value": "Allgemeine Deutsche Spediteurbedingungen 2017 - ADSp 2017"
+      }
+    ]
+  },
+  "maut": null,
+  "confidence": 0.93,
+  "issues": [
+    "Zone numbering is non-contiguous: Zone 1, Zone 3, Zone 4, Zone 5, Zone 6 — Zone 2 is absent from the tariff sheet.",
+    "Diesel floater is mentioned as an additional charge but no percentage or flat rate value is provided.",
+    "EU Mobilitätszuschlag is described as 'aktuell 5 Prozent' suggesting it may vary; value captured as 5.0%.",
+    "Minimum weight formats differ per unit type (Palette, cbm, Lademeter, Kleinformat, Mittelformat, Großformat) — all captured in raw but only standard fields mapped in typed.",
+    "Pallet and Gitterbox exchange explicitly stated as not possible; mapped to null in typed numeric fields with note in raw."
+  ]
+}
