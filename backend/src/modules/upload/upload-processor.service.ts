@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { Job } from 'bull';
 import { Upload } from './entities/upload.entity';
+import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 import { CsvParserService } from '@/modules/parsing/csv-parser.service';
@@ -35,6 +36,8 @@ export class UploadProcessor {
   constructor(
     @InjectRepository(Upload)
     private readonly uploadRepository: Repository<Upload>,
+    @InjectRepository(Carrier)
+    private readonly carrierRepository: Repository<Carrier>,
     @InjectRepository(CarrierAlias)
     private readonly carrierAliasRepository: Repository<CarrierAlias>,
     @InjectRepository(Shipment)
@@ -194,7 +197,7 @@ export class UploadProcessor {
     if (upload.mime_type?.includes('csv') || upload.mime_type?.includes('excel')) {
       const shipments = await this.csvParserService.parseWithTemplate(upload, template);
 
-      await this.saveShipments(shipments, tenantId);
+      await this.saveShipments(shipments, tenantId, upload.id);
       await this.calculateBenchmarks(shipments);
     }
     // TODO: Add support for PDF and other formats
@@ -231,31 +234,30 @@ export class UploadProcessor {
       tempTemplate as ParsingTemplate
     );
 
-    await this.saveShipments(shipments, tenantId);
+    await this.saveShipments(shipments, tenantId, upload.id);
     await this.calculateBenchmarks(shipments);
   }
 
   /**
    * Save shipments to database with carrier mapping
    */
-  private async saveShipments(shipments: Shipment[], tenantId: string): Promise<void> {
+  private async saveShipments(
+    shipments: Shipment[],
+    tenantId: string,
+    uploadId?: string
+  ): Promise<void> {
     const processedShipments: Shipment[] = [];
 
     for (const shipment of shipments) {
       try {
-        // Map carrier name to carrier_id
-        const carrierName = (shipment as any).carrier_name;
+        // Carrier name is stored in source_data by the CSV parser
+        const carrierName = (shipment.source_data as Record<string, unknown>)
+          ?.carrier_name as string | undefined;
         if (carrierName && !shipment.carrier_id) {
-          const carrierId = await this.mapCarrierNameToId(carrierName, tenantId);
+          const carrierId = await this.mapCarrierNameToId(carrierName, tenantId, uploadId);
 
           if (carrierId) {
             shipment.carrier_id = carrierId;
-          } else {
-            this.logger.warn({
-              event: 'carrier_mapping_failed',
-              carrier_name: carrierName,
-              tenant_id: tenantId,
-            });
           }
         }
 
@@ -303,18 +305,83 @@ export class UploadProcessor {
   }
 
   /**
-   * Map carrier name to carrier ID using carrier_alias table
+   * Map carrier name to carrier ID using carrier_alias table.
+   *
+   * When no alias is found, a placeholder carrier is created so the shipment
+   * is never saved without a carrier_id. The user can resolve the placeholder
+   * via the UI and the parsing_issues entry will surface the warning.
    */
-  private async mapCarrierNameToId(carrierName: string, tenantId: string): Promise<string | null> {
+  private async mapCarrierNameToId(
+    carrierName: string,
+    tenantId: string,
+    uploadId?: string
+  ): Promise<string | null> {
     try {
+      // 1. Check existing alias (tenant-specific first, then global)
       const alias = await this.carrierAliasRepository.findOne({
         where: [
           { tenant_id: tenantId, alias_text: carrierName },
-          { tenant_id: IsNull(), alias_text: carrierName }, // Global fallback
+          { tenant_id: IsNull(), alias_text: carrierName },
         ],
       });
 
-      return alias?.carrier_id || null;
+      if (alias) {
+        return alias.carrier_id;
+      }
+
+      // 2. No alias found — create a placeholder carrier so carrier_id is never null
+      this.logger.warn({
+        event: 'carrier_not_found_creating_placeholder',
+        carrier_name: carrierName,
+        tenant_id: tenantId,
+        upload_id: uploadId,
+      });
+
+      // code_norm must be UNIQUE NOT NULL; use a namespaced slug to avoid collisions
+      const codeNorm = `PLACEHOLDER_${carrierName.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 40)}`;
+
+      // Re-use an existing placeholder with the same code_norm if one was already
+      // created by a previous import (idempotent across uploads)
+      let carrier = await this.carrierRepository.findOne({ where: { code_norm: codeNorm } });
+
+      if (!carrier) {
+        carrier = this.carrierRepository.create({
+          name: carrierName,
+          code_norm: codeNorm,
+          conversion_rules: {},
+        });
+        carrier = await this.carrierRepository.save(carrier);
+      }
+
+      // Register the raw name as a tenant-scoped alias so future rows resolve automatically
+      const newAlias = this.carrierAliasRepository.create({
+        tenant_id: tenantId,
+        alias_text: carrierName,
+        carrier_id: carrier.id,
+      });
+      await this.carrierAliasRepository.save(newAlias);
+
+      // Surface a warning in the upload record so the consultant can act on it
+      if (uploadId) {
+        const upload = await this.uploadRepository.findOne({ where: { id: uploadId } });
+        if (upload) {
+          const existingIssues = (upload.parsing_issues as unknown[]) ?? [];
+          await this.uploadRepository.update(uploadId, {
+            parsing_issues: [
+              ...existingIssues,
+              {
+                type: 'unknown_carrier',
+                message: `Carrier '${carrierName}' not found in registry — created as placeholder. Please verify.`,
+                carrier_name: carrierName,
+                placeholder_carrier_id: carrier.id,
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          });
+        }
+      }
+
+      return carrier.id;
     } catch (error) {
       this.logger.error({
         event: 'carrier_mapping_error',

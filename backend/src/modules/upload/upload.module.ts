@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { Upload } from './entities/upload.entity';
+import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 import { UploadService } from './upload.service';
@@ -13,7 +14,7 @@ import { TariffModule } from '@/modules/tariff/tariff.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Upload, CarrierAlias, Shipment]),
+    TypeOrmModule.forFeature([Upload, Carrier, CarrierAlias, Shipment]),
     BullModule.registerQueue({
       name: 'upload',
     }),
