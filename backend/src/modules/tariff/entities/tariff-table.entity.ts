@@ -33,6 +33,13 @@ export class TariffTable {
   @Column({ type: 'jsonb', nullable: true, comment: 'Parsing metadata: parsing_method, parsing_issues[]' })
   source_data: Record<string, unknown> | null;
 
+  /**
+   * Destination country codes for international lane routing (§5.4).
+   * Examples: ['DE'] = domestic, ['AT'] = DE→AT, ['GB'] = DE→UK, null = unspecified (treated as DE)
+   */
+  @Column({ type: 'text', array: true, nullable: true })
+  dest_country_codes?: string[] | null;
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -4,6 +4,7 @@ import { BullModule } from '@nestjs/bull';
 import { Upload } from './entities/upload.entity';
 import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
+import { RawExtraction } from './entities/raw-extraction.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 import { UploadService } from './upload.service';
 import { UploadController } from './upload.controller';
@@ -14,7 +15,7 @@ import { TariffModule } from '@/modules/tariff/tariff.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Upload, Carrier, CarrierAlias, Shipment]),
+    TypeOrmModule.forFeature([Upload, Carrier, CarrierAlias, Shipment, RawExtraction]),
     BullModule.registerQueue({
       name: 'upload',
     }),
