@@ -8,6 +8,7 @@ import { PdfVisionService } from './pdf-vision.service';
 import { InvoiceController } from './invoice.controller';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 import { ParsingModule } from '@/modules/parsing/parsing.module';
 
 /**
@@ -21,7 +22,7 @@ import { ParsingModule } from '@/modules/parsing/parsing.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, ParsingTemplate, Shipment]),
+    TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, ParsingTemplate, Shipment, Upload]),
     ParsingModule,
   ],
   providers: [InvoiceParserService, InvoiceMatcherService, PdfVisionService],

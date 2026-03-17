@@ -7,6 +7,7 @@ import { InvoiceLine } from './entities/invoice-line.entity';
 import { PdfVisionService, PdfExtractionResult } from './pdf-vision.service';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
 import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
+import { Upload } from '@/modules/upload/entities/upload.entity';
 
 /** Expected JSON shape returned by Claude for a scanned invoice */
 interface VisionInvoiceResponse {
@@ -106,6 +107,8 @@ export class InvoiceParserService {
     private readonly lineRepo: Repository<InvoiceLine>,
     @InjectRepository(ParsingTemplate)
     private readonly templateRepo: Repository<ParsingTemplate>,
+    @InjectRepository(Upload)
+    private readonly uploadRepo: Repository<Upload>,
     private readonly llmParser: LlmParserService,
     private readonly pdfVision: PdfVisionService,
   ) {
@@ -734,8 +737,25 @@ Rules:
       },
     });
 
-    // Create lines
+    // Validate and create lines
+    const invalidLines: Array<{ line_number: number | undefined; missing_fields: string[] }> = [];
+
     for (const lineData of parseResult.lines) {
+      const missingFields: string[] = [];
+      if (!lineData.weight_kg) missingFields.push('weight_kg');
+      if (!lineData.origin_zip && !lineData.dest_zip) missingFields.push('origin_zip', 'dest_zip');
+
+      if (missingFields.length > 0) {
+        invalidLines.push({ line_number: lineData.line_number, missing_fields: missingFields });
+        this.logger.warn({
+          event: 'invoice_line_validation_failed',
+          invoice_number: parseResult.header.invoice_number,
+          line_number: lineData.line_number,
+          missing_fields: missingFields,
+        });
+        continue;
+      }
+
       await this.lineRepo.save({
         tenant_id: tenantId,
         invoice_id: header.id,
@@ -759,6 +779,25 @@ Rules:
         currency: lineData.currency,
         match_status: 'unmatched',
       });
+    }
+
+    // Persist validation failures to upload.parsing_issues
+    if (invalidLines.length > 0 && uploadId) {
+      const upload = await this.uploadRepo.findOne({ where: { id: uploadId } });
+      if (upload) {
+        const existingIssues = (upload.parsing_issues as unknown[]) ?? [];
+        const newIssues = invalidLines.map((l) => ({
+          type: 'invoice_line_validation_error' as const,
+          invoice_number: parseResult.header.invoice_number,
+          line_number: l.line_number,
+          missing_fields: l.missing_fields,
+          message: `Line ${l.line_number ?? '?'} skipped: missing required fields [${l.missing_fields.join(', ')}]`,
+          timestamp: new Date().toISOString(),
+        }));
+        await this.uploadRepo.update(uploadId, {
+          parsing_issues: [...existingIssues, ...newIssues],
+        });
+      }
     }
 
     this.logger.log({
