@@ -5,6 +5,7 @@ import { Upload } from './entities/upload.entity';
 import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { RawExtraction } from './entities/raw-extraction.entity';
+import { ExtractionCorrection } from './entities/extraction-correction.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 import { UploadService } from './upload.service';
 import { UploadController } from './upload.controller';
@@ -15,7 +16,7 @@ import { TariffModule } from '@/modules/tariff/tariff.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Upload, Carrier, CarrierAlias, Shipment, RawExtraction]),
+    TypeOrmModule.forFeature([Upload, Carrier, CarrierAlias, Shipment, RawExtraction, ExtractionCorrection]),
     BullModule.registerQueue({
       name: 'upload',
     }),
