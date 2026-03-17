@@ -9,6 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { InvoiceHeader } from './invoice-header.entity';
+import { DisputeStatus } from './invoice-dispute-event.entity';
 
 /**
  * InvoiceLine Entity - Individual invoice line items
@@ -125,6 +126,17 @@ export class InvoiceLine {
     comment: 'Matching details, manual corrections, etc.',
   })
   meta: Record<string, unknown>;
+
+  /**
+   * Current dispute state. Transitions: null → flagged → disputed → accepted|rejected → resolved|closed
+   * The full audit trail is in invoice_dispute_event.
+   */
+  @Column({ type: 'text', nullable: true })
+  dispute_status: DisputeStatus | null;
+
+  /** Consultant's reason for flagging/disputing this line. */
+  @Column({ type: 'text', nullable: true })
+  dispute_note: string | null;
 
   @CreateDateColumn()
   created_at: Date;

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InvoiceHeader } from './entities/invoice-header.entity';
 import { InvoiceLine } from './entities/invoice-line.entity';
+import { InvoiceDisputeEvent } from './entities/invoice-dispute-event.entity';
 import { InvoiceParserService } from './invoice-parser.service';
 import { InvoiceMatcherService } from './invoice-matcher.service';
 import { PdfVisionService } from './pdf-vision.service';
@@ -22,7 +23,7 @@ import { ParsingModule } from '@/modules/parsing/parsing.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, ParsingTemplate, Shipment, Upload]),
+    TypeOrmModule.forFeature([InvoiceHeader, InvoiceLine, InvoiceDisputeEvent, ParsingTemplate, Shipment, Upload]),
     ParsingModule,
   ],
   providers: [InvoiceParserService, InvoiceMatcherService, PdfVisionService],
