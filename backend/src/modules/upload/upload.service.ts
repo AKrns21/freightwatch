@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Upload } from './entities/upload.entity';
+import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 interface UploadResult {
   upload: Upload;
@@ -21,6 +22,8 @@ export class UploadService {
   constructor(
     @InjectRepository(Upload)
     private readonly uploadRepository: Repository<Upload>,
+    @InjectRepository(Shipment)
+    private readonly shipmentRepository: Repository<Shipment>,
     @InjectQueue('upload')
     private readonly uploadQueue: Queue
   ) {}
@@ -320,16 +323,40 @@ export class UploadService {
       throw new Error(`Upload ${uploadId} not found`);
     }
 
-    // TODO: Implement proper quality metrics calculation
-    // This requires loading shipments and analyzing their completeness
-    this.logger.warn('getQualityMetrics not fully implemented');
+    const shipments = await this.shipmentRepository.find({
+      where: { upload_id: uploadId, tenant_id: tenantId },
+      select: ['id', 'completeness_score', 'missing_fields', 'data_quality_issues'],
+    });
+
+    const total_rows = shipments.length;
+
+    if (total_rows === 0) {
+      return {
+        completeness: upload.confidence || 0,
+        missing_fields: [],
+        data_issues: (upload.parsing_issues as unknown[]) || [],
+        total_rows: 0,
+        valid_rows: 0,
+      };
+    }
+
+    const completeness =
+      shipments.reduce((sum, s) => sum + (s.completeness_score || 0), 0) / total_rows;
+
+    const valid_rows = shipments.filter((s) => (s.completeness_score || 0) >= 0.7).length;
+
+    const missing_fields = [
+      ...new Set(shipments.flatMap((s) => (s.missing_fields as string[]) || [])),
+    ];
+
+    const data_issues = shipments.flatMap((s) => (s.data_quality_issues as unknown[]) || []);
 
     return {
-      completeness: upload.confidence || 0,
-      missing_fields: [],
-      data_issues: (upload.parsing_issues as unknown[]) || [],
-      total_rows: 0,
-      valid_rows: 0,
+      completeness,
+      missing_fields,
+      data_issues,
+      total_rows,
+      valid_rows,
     };
   }
 }
