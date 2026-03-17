@@ -9,6 +9,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { ReportModule } from './modules/report/report.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { FleetModule } from './modules/fleet/fleet.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
 @Module({
@@ -45,6 +46,9 @@ import { TenantInterceptor } from './modules/auth/tenant.interceptor';
 
     // Fleet / own delivery module (opt-in: activated when tour data is present)
     FleetModule,
+
+    // Auth module (User + Tenant entities, JWT)
+    AuthModule,
 
     // Redis/Bull queue module
     BullModule.forRoot({
