@@ -116,6 +116,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -211,6 +213,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -280,6 +284,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -332,6 +338,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR', // Tariff in EUR
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -384,6 +392,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -450,6 +460,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -489,6 +501,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -545,6 +559,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -600,6 +616,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -655,6 +673,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -716,6 +736,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -785,6 +807,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -836,6 +860,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -895,6 +921,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -955,6 +983,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -1027,6 +1057,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -1122,6 +1154,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };
@@ -1177,6 +1211,8 @@ describe('TariffEngineService', () => {
         currency: 'EUR',
         valid_from: new Date('2023-01-01'),
         valid_until: null,
+        confidence: null,
+        source_data: null,
         created_at: new Date(),
         rates: [],
       };

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { TariffTable } from './entities/tariff-table.entity';
+import { TariffRate } from './entities/tariff-rate.entity';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
 import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
 
@@ -53,6 +54,8 @@ export class TariffPdfParserService {
   constructor(
     @InjectRepository(TariffTable)
     private readonly tariffRepo: Repository<TariffTable>,
+    @InjectRepository(TariffRate)
+    private readonly tariffRateRepo: Repository<TariffRate>,
     @InjectRepository(ParsingTemplate)
     private readonly templateRepo: Repository<ParsingTemplate>,
     private readonly llmParser: LlmParserService
@@ -903,52 +906,66 @@ export class TariffPdfParserService {
       entry_count: parseResult.entries.length,
     });
 
-    let imported = 0;
-    let skipped = 0;
-
-    for (const entry of parseResult.entries) {
-      // Check if entry already exists
-      const existing = await this.tariffRepo.findOne({
-        where: {
-          tenant_id: tenantId,
-          carrier_id: parseResult.carrier_id,
-          lane_type: parseResult.lane_type,
-          weight_min: entry.weight_min,
-          weight_max: entry.weight_max,
-          valid_from: parseResult.valid_from,
-        } as any,
-      });
-
-      if (existing) {
-        skipped++;
-        continue;
-      }
-
-      // Create new tariff entry
-      await this.tariffRepo.save({
+    // Check if a tariff_table row already exists for this carrier + lane + valid_from
+    const existingTable = await this.tariffRepo.findOne({
+      where: {
         tenant_id: tenantId,
         carrier_id: parseResult.carrier_id,
         lane_type: parseResult.lane_type,
-        zone: entry.zone,
-        weight_min: entry.weight_min,
-        weight_max: entry.weight_max,
-        base_amount: entry.base_amount,
-        currency: entry.currency,
-        service_level: entry.service_level,
         valid_from: parseResult.valid_from,
-        valid_until: parseResult.valid_until,
-      });
+      },
+    });
 
+    if (existingTable) {
+      this.logger.log({
+        event: 'import_tariff_skipped',
+        carrier_id: parseResult.carrier_id,
+        tariff_table_id: existingTable.id,
+        reason: 'tariff table already exists for this carrier/lane/date',
+      });
+      return { imported: 0, skipped: parseResult.entries.length };
+    }
+
+    // Create one TariffTable header row with parsing metadata
+    const currency = parseResult.entries[0]?.currency ?? 'EUR';
+    const tariffTable = await this.tariffRepo.save({
+      tenant_id: tenantId,
+      carrier_id: parseResult.carrier_id,
+      name: `${parseResult.carrier_name} – ${parseResult.lane_type} (${parseResult.valid_from.toISOString().split('T')[0]})`,
+      lane_type: parseResult.lane_type,
+      currency,
+      valid_from: parseResult.valid_from,
+      valid_until: parseResult.valid_until ?? null,
+      confidence: parseResult.confidence,
+      source_data: {
+        parsing_method: parseResult.parsing_method,
+        parsing_issues: parseResult.issues,
+      },
+    });
+
+    // Save individual rate rows linked to the table
+    let imported = 0;
+    for (const entry of parseResult.entries) {
+      await this.tariffRateRepo.save({
+        tariff_table_id: tariffTable.id,
+        zone: entry.zone,
+        weight_from_kg: entry.weight_min,
+        weight_to_kg: entry.weight_max,
+        rate_per_shipment: entry.base_amount,
+        rate_per_kg: null,
+      });
       imported++;
     }
 
     this.logger.log({
       event: 'import_tariff_complete',
       carrier_id: parseResult.carrier_id,
+      tariff_table_id: tariffTable.id,
       imported,
-      skipped,
+      parsing_method: parseResult.parsing_method,
+      confidence: parseResult.confidence,
     });
 
-    return { imported, skipped };
+    return { imported, skipped: 0 };
   }
 }

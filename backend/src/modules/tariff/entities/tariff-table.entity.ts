@@ -27,6 +27,12 @@ export class TariffTable {
   @Column({ type: 'date', nullable: true })
   valid_until: Date | null;
 
+  @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true, comment: 'Parsing confidence (0.00–1.00)' })
+  confidence: number | null;
+
+  @Column({ type: 'jsonb', nullable: true, comment: 'Parsing metadata: parsing_method, parsing_issues[]' })
+  source_data: Record<string, unknown> | null;
+
   @CreateDateColumn()
   created_at: Date;
 
