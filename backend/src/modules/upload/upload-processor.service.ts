@@ -26,6 +26,9 @@ import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.ent
 interface ParseFileJobData {
   uploadId: string;
   tenantId: string;
+  sourceType?: string;
+  forceMappings?: Record<string, string>;
+  forceLlm?: boolean;
 }
 
 @Processor('upload')
@@ -51,12 +54,16 @@ export class UploadProcessor {
 
   @Process('parse-file')
   async handleParseFile(job: Job<ParseFileJobData>): Promise<void> {
-    const { uploadId, tenantId } = job.data;
+    const { uploadId, tenantId, sourceType } = job.data;
+
+    // Resolve effective sourceType: prefer job payload, fall back to upload.source_type
+    const effectiveSourceType = sourceType ?? null;
 
     this.logger.log({
       event: 'upload_processing_start',
       upload_id: uploadId,
       tenant_id: tenantId,
+      source_type: effectiveSourceType,
     });
 
     try {
@@ -66,6 +73,30 @@ export class UploadProcessor {
 
       if (!upload) {
         throw new Error(`Upload ${uploadId} not found`);
+      }
+
+      // Use source_type from job payload (preferred) or fall back to the stored value
+      const resolvedSourceType = effectiveSourceType ?? upload.source_type ?? 'fleet_log';
+
+      // Branch to specialized parsers based on source type
+      // invoice and rate_card CSVs are handled here; fleet_log (shipment list) uses the
+      // generic template + LLM heuristic below.
+      if (resolvedSourceType === 'invoice') {
+        this.logger.log({
+          event: 'invoice_csv_routing',
+          upload_id: uploadId,
+          message: 'Invoice CSV detected — routed to invoice template matching',
+        });
+        // Invoice CSVs fall through to the template matcher below which will pick
+        // up invoice-specific templates when they exist.
+      } else if (resolvedSourceType === 'rate_card') {
+        this.logger.log({
+          event: 'rate_card_csv_routing',
+          upload_id: uploadId,
+          message: 'Rate card CSV detected — routed to tariff template matching',
+        });
+        // Rate card CSVs fall through to the template matcher below which will pick
+        // up tariff-specific templates when they exist.
       }
 
       // Step 1: Try Template Matching

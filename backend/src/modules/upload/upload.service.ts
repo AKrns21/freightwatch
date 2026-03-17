@@ -88,6 +88,7 @@ export class UploadService {
         await this.uploadQueue.add('parse-csv', {
           uploadId: savedUpload.id,
           tenantId: savedUpload.tenant_id,
+          sourceType: savedUpload.source_type,
         });
 
         this.logger.log(`Enqueued CSV parsing job for upload ${savedUpload.id}`);
@@ -232,6 +233,7 @@ export class UploadService {
     await this.uploadQueue.add('parse-csv', {
       uploadId,
       tenantId,
+      sourceType: upload.source_type,
       forceMappings: mappings,
     });
 
@@ -300,6 +302,7 @@ export class UploadService {
     await this.uploadQueue.add('parse-csv', {
       uploadId,
       tenantId,
+      sourceType: upload.source_type,
       forceLlm: options.force_llm,
     });
 
