@@ -10,6 +10,7 @@ import { Upload, UploadStatus } from './entities/upload.entity';
 import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { DocumentClassifierService } from './document-classifier.service';
 
 interface UploadResult {
   upload: Upload;
@@ -31,13 +32,14 @@ export class UploadService {
     @InjectRepository(CarrierAlias)
     private readonly carrierAliasRepository: Repository<CarrierAlias>,
     @InjectQueue('upload')
-    private readonly uploadQueue: Queue
+    private readonly uploadQueue: Queue,
+    private readonly documentClassifier: DocumentClassifierService
   ) {}
 
   async uploadFile(
     file: Express.Multer.File,
     tenantId: string,
-    sourceType: string
+    sourceType?: string
   ): Promise<UploadResult> {
     const fileHash = this.calculateFileHash(file.buffer);
 
@@ -67,12 +69,25 @@ export class UploadService {
       await fs.mkdir(tenantDir, { recursive: true });
       await fs.writeFile(storagePath, file.buffer);
 
+      // Classify document type:
+      // User-provided sourceType → user override (step 4); otherwise run pipeline (steps 1-3).
+      const docType = sourceType
+        ? this.documentClassifier.sourceTypeToDocType(sourceType)
+        : await this.documentClassifier.classify(
+            file.originalname,
+            file.mimetype,
+            this.documentClassifier.isStructuredFile(file.originalname, file.mimetype)
+              ? undefined
+              : file.buffer.toString('utf-8', 0, 2000)
+          );
+
       const upload = this.uploadRepository.create({
         tenant_id: tenantId,
         filename: file.originalname,
         file_hash: fileHash,
         mime_type: file.mimetype,
-        source_type: sourceType,
+        source_type: sourceType ?? undefined,
+        doc_type: docType,
         storage_url: storagePath,
         status: UploadStatus.PENDING,
       });

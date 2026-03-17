@@ -10,7 +10,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 import { TenantId } from '@/modules/auth/tenant.decorator';
 import { UploadService } from './upload.service';
 
@@ -25,8 +25,9 @@ const ALLOWED_EXTENSIONS = ['.csv', '.xls', '.xlsx', '.pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 class UploadFileDto {
+  @IsOptional()
   @IsString()
-  sourceType!: string;
+  sourceType?: string;
 }
 
 @Controller('upload')
@@ -73,12 +74,8 @@ export class UploadController {
       throw new BadRequestException('No file provided');
     }
 
-    if (!uploadFileDto.sourceType) {
-      throw new BadRequestException('sourceType is required');
-    }
-
     const validSourceTypes = ['invoice', 'rate_card', 'fleet_log'];
-    if (!validSourceTypes.includes(uploadFileDto.sourceType)) {
+    if (uploadFileDto.sourceType && !validSourceTypes.includes(uploadFileDto.sourceType)) {
       throw new BadRequestException(
         `Invalid sourceType. Allowed values: ${validSourceTypes.join(', ')}`
       );

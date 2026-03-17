@@ -6,6 +6,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum DocType {
+  TARIFF = 'tariff',
+  INVOICE = 'invoice',
+  SHIPMENT_CSV = 'shipment_csv',
+  OTHER = 'other',
+}
+
 export enum UploadStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
@@ -38,6 +45,13 @@ export class Upload {
 
   @Column({ length: 50, nullable: true, comment: 'invoice, rate_card, fleet_log' })
   source_type: string;
+
+  @Column({
+    length: 50,
+    nullable: true,
+    comment: 'Auto-detected document type: tariff, invoice, shipment_csv, other',
+  })
+  doc_type: string;
 
   @Column({ type: 'timestamptz', default: () => 'now()' })
   received_at: Date;
@@ -127,6 +141,7 @@ export class Upload {
       file_hash: this.file_hash,
       mime_type: this.mime_type,
       source_type: this.source_type,
+      doc_type: this.doc_type,
       received_at: this.received_at,
       storage_url: this.storage_url,
       status: this.status,
