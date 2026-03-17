@@ -26,6 +26,12 @@ export class InvoiceController {
   /**
    * Parse invoice PDF
    * POST /invoices/parse
+   *
+   * Handles PDFs that contain multiple stapled invoices: each detected invoice
+   * is saved as its own invoice_header row with only its own lines attached.
+   *
+   * Response shape:
+   *   { success: true, data: { invoices: InvoiceHeader[], totalLines: number, parse_results: InvoiceParseResult[] } }
    */
   @Post('parse')
   async parse(
@@ -44,8 +50,8 @@ export class InvoiceController {
     // Decode base64 buffer
     const fileBuffer = Buffer.from(body.fileBuffer, 'base64');
 
-    // Parse invoice
-    const parseResult = await this.parserService.parseInvoicePdf(fileBuffer, {
+    // Parse — returns one result per detected invoice (1..n)
+    const parseResults = await this.parserService.parseInvoicePdfMulti(fileBuffer, {
       filename: body.filename,
       carrier_id: body.carrier_id,
       tenant_id: tenantId,
@@ -53,19 +59,20 @@ export class InvoiceController {
       project_id: body.project_id,
     });
 
-    // Import into database
-    const invoice = await this.parserService.importInvoice(
-      parseResult,
+    // Import — creates one invoice_header row per invoice with its own lines
+    const { headers, totalLines } = await this.parserService.importInvoices(
+      parseResults,
       tenantId,
       body.upload_id,
-      body.project_id
+      body.project_id,
     );
 
     return {
       success: true,
       data: {
-        invoice,
-        parse_result: parseResult,
+        invoices: headers,
+        totalLines,
+        parse_results: parseResults,
       },
     };
   }

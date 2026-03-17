@@ -115,9 +115,13 @@ export class InvoiceParserService {
   }
 
   /**
-   * Parse invoice PDF and extract header + lines
+   * Parse invoice PDF and return one result per detected invoice.
+   *
+   * For scanned (vision) PDFs that contain multiple stapled invoices this
+   * returns one InvoiceParseResult per invoice.  For all other paths (template,
+   * LLM text) a single-element array is returned so callers always get an array.
    */
-  async parseInvoicePdf(
+  async parseInvoicePdfMulti(
     fileBuffer: Buffer,
     context: {
       filename: string;
@@ -126,7 +130,7 @@ export class InvoiceParserService {
       upload_id?: string;
       project_id?: string;
     }
-  ): Promise<InvoiceParseResult> {
+  ): Promise<InvoiceParseResult[]> {
     this.logger.log({
       event: 'parse_invoice_pdf_start',
       filename: context.filename,
@@ -162,7 +166,7 @@ export class InvoiceParserService {
             line_count: result.lines.length,
           });
 
-          return result;
+          return [result];
         } catch (error) {
           this.logger.warn({
             event: 'parse_invoice_template_failed',
@@ -175,18 +179,19 @@ export class InvoiceParserService {
       }
     }
 
-    // Step 3: Vision path for scanned PDFs, LLM text path for unknown formats
+    // Step 3: Vision path for scanned PDFs — may return multiple invoices
     if (pdfContent.mode === 'vision') {
-      const result = await this.parseWithVision(pdfContent, context);
+      const results = await this.parseWithVision(pdfContent, context);
 
       this.logger.log({
         event: 'parse_invoice_vision_success',
         filename: context.filename,
-        line_count: result.lines.length,
-        confidence: result.confidence,
+        invoice_count: results.length,
+        total_lines: results.reduce((s, r) => s + r.lines.length, 0),
+        confidence: results[0]?.confidence,
       });
 
-      return result;
+      return results;
     }
 
     // Step 4: Text-based LLM fallback
@@ -203,7 +208,28 @@ export class InvoiceParserService {
       confidence: result.confidence,
     });
 
-    return result;
+    return [result];
+  }
+
+  /**
+   * Parse invoice PDF and extract header + lines.
+   *
+   * @deprecated Prefer parseInvoicePdfMulti() which correctly handles PDFs
+   * that contain multiple stapled invoices.  This method returns only the
+   * first detected invoice and is kept for backward compatibility.
+   */
+  async parseInvoicePdf(
+    fileBuffer: Buffer,
+    context: {
+      filename: string;
+      carrier_id?: string;
+      tenant_id: string;
+      upload_id?: string;
+      project_id?: string;
+    }
+  ): Promise<InvoiceParseResult> {
+    const results = await this.parseInvoicePdfMulti(fileBuffer, context);
+    return results[0];
   }
 
   /**
@@ -345,11 +371,8 @@ export class InvoiceParserService {
    *
    * All pages are sent in a single Claude message so the model has full
    * document context (header on first page, line items across remaining pages).
-   * Claude returns a JSON object; we map it to InvoiceParseResult.
-   *
-   * One PDF can contain multiple stapled invoices (e.g. the MECU sample).
-   * We flatten all invoices' lines into a single result – the caller is
-   * responsible for splitting them if needed.
+   * Claude returns a JSON object with an invoices[] array; we return one
+   * InvoiceParseResult per detected invoice so each gets its own DB header row.
    */
   private async parseWithVision(
     pdfContent: PdfExtractionResult,
@@ -360,7 +383,7 @@ export class InvoiceParserService {
       upload_id?: string;
       project_id?: string;
     }
-  ): Promise<InvoiceParseResult> {
+  ): Promise<InvoiceParseResult[]> {
     const pages = pdfContent.pages ?? [];
 
     this.logger.log({
@@ -468,12 +491,13 @@ Rules:
   }
 
   /**
-   * Parse Claude's JSON response into InvoiceParseResult.
-   * Takes the first invoice in the array as the primary result.
-   * If multiple invoices are present, their lines are all included and
-   * a warning is added to issues[].
+   * Parse Claude's JSON response into an array of InvoiceParseResult.
+   *
+   * Each invoice in the response becomes its own result with only its own
+   * lines attached.  This ensures the caller can create a separate
+   * invoice_header row per invoice and link the correct lines to it.
    */
-  private parseVisionResponse(raw: string, filename: string): InvoiceParseResult {
+  private parseVisionResponse(raw: string, filename: string): InvoiceParseResult[] {
     let parsed: VisionInvoiceResponse;
 
     try {
@@ -486,48 +510,45 @@ Rules:
         filename,
         raw_preview: raw.slice(0, 200),
       });
-      return {
-        header: {
-          invoice_number: 'PARSE_ERROR',
-          invoice_date: new Date(),
-          carrier_name: 'Unknown',
-          currency: 'EUR',
+      return [
+        {
+          header: {
+            invoice_number: 'PARSE_ERROR',
+            invoice_date: new Date(),
+            carrier_name: 'Unknown',
+            currency: 'EUR',
+          },
+          lines: [],
+          parsing_method: 'llm',
+          confidence: 0,
+          issues: ['Vision response could not be parsed as JSON'],
         },
-        lines: [],
-        parsing_method: 'llm',
-        confidence: 0,
-        issues: ['Vision response could not be parsed as JSON'],
-      };
+      ];
     }
 
     const invoices = parsed.invoices ?? [];
     if (invoices.length === 0) {
-      return {
-        header: {
-          invoice_number: 'NO_INVOICES_FOUND',
-          invoice_date: new Date(),
-          carrier_name: 'Unknown',
-          currency: 'EUR',
+      return [
+        {
+          header: {
+            invoice_number: 'NO_INVOICES_FOUND',
+            invoice_date: new Date(),
+            carrier_name: 'Unknown',
+            currency: 'EUR',
+          },
+          lines: [],
+          parsing_method: 'llm',
+          confidence: parsed.confidence ?? 0,
+          issues: ['No invoices found in vision response', ...(parsed.issues ?? [])],
         },
-        lines: [],
-        parsing_method: 'llm',
-        confidence: parsed.confidence ?? 0,
-        issues: ['No invoices found in vision response', ...(parsed.issues ?? [])],
-      };
+      ];
     }
 
-    const primary = invoices[0];
-    const issues = [...(parsed.issues ?? [])];
+    const globalIssues = parsed.issues ?? [];
 
-    if (invoices.length > 1) {
-      issues.push(
-        `PDF contains ${invoices.length} invoices; all lines included, headers from first invoice only`,
-      );
-    }
-
-    // Merge lines from all invoices
-    const allLines: InvoiceParseResult['lines'] = invoices.flatMap((inv) =>
-      (inv.lines ?? []).map((line, idx) => ({
+    // Build one InvoiceParseResult per invoice, each with only its own lines
+    return invoices.map((inv) => {
+      const lines: InvoiceParseResult['lines'] = (inv.lines ?? []).map((line, idx) => ({
         line_number: idx + 1,
         shipment_date: line.shipment_date ? new Date(line.shipment_date) : undefined,
         shipment_reference: line.shipment_reference ?? undefined,
@@ -542,24 +563,24 @@ Rules:
         base_amount: line.unit_price ?? undefined,
         line_total: line.line_total ?? undefined,
         currency: inv.currency ?? 'EUR',
-      }))
-    );
+      }));
 
-    return {
-      header: {
-        invoice_number: primary.invoice_number ?? 'UNKNOWN',
-        invoice_date: primary.invoice_date ? new Date(primary.invoice_date) : new Date(),
-        carrier_name: primary.carrier_name ?? 'Unknown',
-        customer_name: primary.customer_name ?? undefined,
-        customer_number: primary.customer_number ?? undefined,
-        total_amount: primary.total_net_amount ?? undefined,
-        currency: primary.currency ?? 'EUR',
-      },
-      lines: allLines,
-      parsing_method: 'llm',
-      confidence: parsed.confidence ?? 0.8,
-      issues,
-    };
+      return {
+        header: {
+          invoice_number: inv.invoice_number ?? 'UNKNOWN',
+          invoice_date: inv.invoice_date ? new Date(inv.invoice_date) : new Date(),
+          carrier_name: inv.carrier_name ?? 'Unknown',
+          customer_name: inv.customer_name ?? undefined,
+          customer_number: inv.customer_number ?? undefined,
+          total_amount: inv.total_net_amount ?? undefined,
+          currency: inv.currency ?? 'EUR',
+        },
+        lines,
+        parsing_method: 'llm' as const,
+        confidence: parsed.confidence ?? 0.8,
+        issues: [...globalIssues],
+      };
+    });
   }
 
   /**
@@ -725,5 +746,40 @@ Rules:
     });
 
     return header;
+  }
+
+  /**
+   * Import multiple parsed invoices into the database.
+   *
+   * Creates one invoice_header row per parse result and links each result's
+   * lines exclusively to that header.  This is the correct path for PDFs that
+   * contain multiple stapled invoices — every invoice gets its own header row
+   * so no lines are orphaned on the wrong header.
+   *
+   * @returns headers - all created InvoiceHeader entities (one per invoice)
+   * @returns totalLines - total number of line rows created across all invoices
+   */
+  async importInvoices(
+    parseResults: InvoiceParseResult[],
+    tenantId: string,
+    uploadId?: string,
+    projectId?: string
+  ): Promise<{ headers: InvoiceHeader[]; totalLines: number }> {
+    const headers: InvoiceHeader[] = [];
+    let totalLines = 0;
+
+    for (const result of parseResults) {
+      const header = await this.importInvoice(result, tenantId, uploadId, projectId);
+      headers.push(header);
+      totalLines += result.lines.length;
+    }
+
+    this.logger.log({
+      event: 'import_invoices_complete',
+      invoice_count: headers.length,
+      total_lines: totalLines,
+    });
+
+    return { headers, totalLines };
   }
 }
