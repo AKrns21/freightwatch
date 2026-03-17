@@ -46,6 +46,15 @@ export class InvoiceLine {
   @Column({ length: 100, nullable: true })
   shipment_reference: string;
 
+  @Column({ length: 50, nullable: true })
+  billing_type: string;
+
+  @Column({ length: 50, nullable: true })
+  tour_number: string;
+
+  @Column({ type: 'text', nullable: true })
+  referenz: string;
+
   @Column({ length: 10, nullable: true })
   origin_zip: string;
 

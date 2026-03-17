@@ -57,6 +57,9 @@ export interface InvoiceParseResult {
     line_number?: number;
     shipment_date?: Date;
     shipment_reference?: string;
+    billing_type?: string;
+    tour_number?: string;
+    referenz?: string;
     origin_zip?: string;
     origin_country?: string;
     dest_zip?: string;
@@ -528,6 +531,9 @@ Rules:
         line_number: idx + 1,
         shipment_date: line.shipment_date ? new Date(line.shipment_date) : undefined,
         shipment_reference: line.shipment_reference ?? undefined,
+        billing_type: line.billing_type ?? undefined,
+        tour_number: line.tour ?? undefined,
+        referenz: line.shipment_reference ?? undefined,
         origin_zip: line.origin_zip ?? undefined,
         origin_country: line.origin_country ?? 'DE',
         dest_zip: line.dest_zip ?? undefined,
@@ -692,6 +698,9 @@ Rules:
         line_number: lineData.line_number,
         shipment_date: lineData.shipment_date,
         shipment_reference: lineData.shipment_reference,
+        billing_type: lineData.billing_type,
+        tour_number: lineData.tour_number,
+        referenz: lineData.referenz,
         origin_zip: lineData.origin_zip,
         origin_country: lineData.origin_country || 'DE',
         dest_zip: lineData.dest_zip,
