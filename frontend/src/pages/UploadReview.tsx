@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import type { UploadReviewData, ApiResponse } from '../types';
+import type { UploadReviewData, ApiResponse, CarrierOption, ParsingIssue } from '../types';
 
 /**
  * UploadReviewPage - Review LLM Analysis & Mappings (Phase 7.2)
@@ -19,6 +19,9 @@ export const UploadReviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [carriers, setCarriers] = useState<CarrierOption[]>([]);
+  const [carrierSelections, setCarrierSelections] = useState<Record<string, string>>({});
+  const [resolving, setResolving] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (uploadId) {
@@ -30,15 +33,44 @@ export const UploadReviewPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get<ApiResponse<UploadReviewData>>(
-        `/api/uploads/${uploadId}/review`
-      );
-      setReviewData(response.data.data);
+      const [reviewResponse, carriersResponse] = await Promise.all([
+        api.get<ApiResponse<UploadReviewData>>(`/api/uploads/${uploadId}/review`),
+        api.get<ApiResponse<CarrierOption[]>>(`/api/uploads/${uploadId}/review/carriers`),
+      ]);
+      setReviewData(reviewResponse.data.data);
+      setCarriers(carriersResponse.data.data);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to load review data');
       console.error('Failed to load review data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResolveCarrier = async (carrierName: string) => {
+    const realCarrierId = carrierSelections[carrierName];
+    if (!realCarrierId) return;
+
+    setResolving((prev) => ({ ...prev, [carrierName]: true }));
+    try {
+      await api.post(`/api/uploads/${uploadId}/review/resolve-carrier`, {
+        carrier_name: carrierName,
+        real_carrier_id: realCarrierId,
+      });
+      // Remove resolved issue from local state
+      setReviewData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          parsing_issues: (prev.parsing_issues ?? []).filter(
+            (i: ParsingIssue) => !(i.type === 'unknown_carrier' && i.carrier_name === carrierName)
+          ),
+        };
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Failed to resolve carrier');
+    } finally {
+      setResolving((prev) => ({ ...prev, [carrierName]: false }));
     }
   };
 
@@ -131,6 +163,55 @@ export const UploadReviewPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Unmapped Carriers */}
+      {(reviewData.parsing_issues ?? []).filter((i: ParsingIssue) => i.type === 'unknown_carrier').length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-1 text-yellow-800">Unmapped Carriers</h2>
+          <p className="text-sm text-yellow-700 mb-4">
+            The following carrier names were not found in the registry. Assign each to a known
+            carrier to enable tariff benchmarking.
+          </p>
+          <div className="space-y-3">
+            {(reviewData.parsing_issues ?? [])
+              .filter((i: ParsingIssue) => i.type === 'unknown_carrier')
+              .map((issue: ParsingIssue) => (
+                <div
+                  key={issue.carrier_name}
+                  className="flex items-center gap-3 bg-white border border-yellow-200 rounded p-3"
+                >
+                  <span className="font-medium text-gray-900 w-48 shrink-0">
+                    {issue.carrier_name}
+                  </span>
+                  <select
+                    className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm"
+                    value={carrierSelections[issue.carrier_name!] ?? ''}
+                    onChange={(e) =>
+                      setCarrierSelections((prev) => ({
+                        ...prev,
+                        [issue.carrier_name!]: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">— Select carrier —</option>
+                    {carriers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => handleResolveCarrier(issue.carrier_name!)}
+                    disabled={!carrierSelections[issue.carrier_name!] || resolving[issue.carrier_name!]}
+                    className="bg-yellow-600 text-white px-4 py-1.5 rounded text-sm hover:bg-yellow-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {resolving[issue.carrier_name!] ? 'Saving…' : 'Resolve'}
+                  </button>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* LLM Analysis */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">

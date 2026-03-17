@@ -7,6 +7,8 @@ import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Upload, UploadStatus } from './entities/upload.entity';
+import { Carrier } from './entities/carrier.entity';
+import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 interface UploadResult {
@@ -24,6 +26,10 @@ export class UploadService {
     private readonly uploadRepository: Repository<Upload>,
     @InjectRepository(Shipment)
     private readonly shipmentRepository: Repository<Shipment>,
+    @InjectRepository(Carrier)
+    private readonly carrierRepository: Repository<Carrier>,
+    @InjectRepository(CarrierAlias)
+    private readonly carrierAliasRepository: Repository<CarrierAlias>,
     @InjectQueue('upload')
     private readonly uploadQueue: Queue
   ) {}
@@ -358,5 +364,80 @@ export class UploadService {
       total_rows,
       valid_rows,
     };
+  }
+
+  /**
+   * List non-placeholder carriers available for the tenant (for alias resolution dropdown)
+   */
+  async listCarriers(tenantId: string): Promise<Carrier[]> {
+    return this.carrierRepository
+      .createQueryBuilder('c')
+      .where(
+        "(c.tenant_id = :tenantId OR c.tenant_id IS NULL) AND c.code_norm NOT LIKE 'PLACEHOLDER_%'",
+        { tenantId }
+      )
+      .orderBy('c.name', 'ASC')
+      .getMany();
+  }
+
+  /**
+   * Resolve an unmapped carrier: create a real alias and re-assign affected shipments.
+   *
+   * Steps:
+   * 1. Find or create an alias mapping carrierName → realCarrierId
+   * 2. Re-point all shipments in the upload that currently hold the placeholder carrier
+   * 3. Remove the resolved unknown_carrier entry from upload.parsing_issues
+   */
+  async resolveCarrier(
+    uploadId: string,
+    tenantId: string,
+    carrierName: string,
+    realCarrierId: string
+  ): Promise<void> {
+    // 1. Find placeholder carrier (if any) so we can re-assign shipments
+    const placeholderCodeNorm = `PLACEHOLDER_${carrierName.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 40)}`;
+    const placeholder = await this.carrierRepository.findOne({
+      where: { code_norm: placeholderCodeNorm },
+    });
+
+    // 2. Upsert tenant-scoped alias carrierName → realCarrierId
+    const existing = await this.carrierAliasRepository.findOne({
+      where: { tenant_id: tenantId, alias_text: carrierName },
+    });
+    if (existing) {
+      await this.carrierAliasRepository.update(existing.id, { carrier_id: realCarrierId });
+    } else {
+      await this.carrierAliasRepository.save(
+        this.carrierAliasRepository.create({
+          tenant_id: tenantId,
+          alias_text: carrierName,
+          carrier_id: realCarrierId,
+        })
+      );
+    }
+
+    // 3. Re-assign shipments that reference the placeholder
+    if (placeholder) {
+      await this.shipmentRepository.update(
+        { upload_id: uploadId, tenant_id: tenantId, carrier_id: placeholder.id },
+        { carrier_id: realCarrierId }
+      );
+    }
+
+    // 4. Remove resolved entry from parsing_issues
+    const upload = await this.findById(uploadId, tenantId);
+    if (upload) {
+      const remaining = ((upload.parsing_issues as unknown[]) ?? []).filter(
+        (issue: any) => !(issue.type === 'unknown_carrier' && issue.carrier_name === carrierName)
+      );
+      await this.uploadRepository.update(uploadId, { parsing_issues: remaining });
+    }
+
+    this.logger.log({
+      event: 'carrier_resolved',
+      upload_id: uploadId,
+      carrier_name: carrierName,
+      real_carrier_id: realCarrierId,
+    });
   }
 }

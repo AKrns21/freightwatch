@@ -8,6 +8,7 @@ import {
   UseGuards,
   Req,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { TemplateService } from '@/modules/parsing/template.service';
@@ -261,6 +262,51 @@ export class UploadReviewController {
     return {
       success: true,
       data: quality,
+    };
+  }
+
+  /**
+   * List available (non-placeholder) carriers for alias resolution dropdown
+   * GET /uploads/:uploadId/review/carriers
+   */
+  @Get('carriers')
+  async listCarriers(@Param('uploadId') _uploadId: string, @Req() req: any) {
+    const tenantId = req.user.tenant_id;
+
+    const carriers = await this.uploadService.listCarriers(tenantId);
+
+    return {
+      success: true,
+      data: carriers.map((c) => ({ id: c.id, name: c.name, code_norm: c.code_norm })),
+    };
+  }
+
+  /**
+   * Resolve an unmapped carrier — create alias and re-assign shipments
+   * POST /uploads/:uploadId/review/resolve-carrier
+   */
+  @Post('resolve-carrier')
+  async resolveCarrier(
+    @Param('uploadId') uploadId: string,
+    @Body() body: { carrier_name: string; real_carrier_id: string },
+    @Req() req: any
+  ) {
+    const tenantId = req.user.tenant_id;
+
+    if (!body.carrier_name || !body.real_carrier_id) {
+      throw new BadRequestException('carrier_name and real_carrier_id are required');
+    }
+
+    await this.uploadService.resolveCarrier(
+      uploadId,
+      tenantId,
+      body.carrier_name,
+      body.real_carrier_id
+    );
+
+    return {
+      success: true,
+      message: `Carrier '${body.carrier_name}' resolved successfully`,
     };
   }
 }

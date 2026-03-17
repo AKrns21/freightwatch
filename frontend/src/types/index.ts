@@ -63,6 +63,26 @@ export interface UploadReviewData {
   }>;
   preview: Array<Record<string, any>>;
   quality_score: number;
+  parsing_issues?: ParsingIssue[];
+}
+
+export interface ParsingIssue {
+  type: string;
+  message: string;
+  timestamp: string;
+  carrier_name?: string;
+  placeholder_carrier_id?: string;
+  row?: number;
+  raw_data?: Record<string, any>;
+  invoice_number?: string;
+  line_number?: number;
+  missing_fields?: string[];
+}
+
+export interface CarrierOption {
+  id: string;
+  name: string;
+  code_norm: string;
 }
 
 // Report types
