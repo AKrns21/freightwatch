@@ -57,13 +57,13 @@ Repository/
    npm run start:dev
    ```
 
-The API will be available at `http://localhost:3000/api`
+The API will be available at `http://localhost:4000/api`
 
 ### Services
 
 - **PostgreSQL:** `localhost:5432`
 - **Redis:** `localhost:6379`
-- **API:** `http://localhost:3000/api`
+- **API:** `http://localhost:4000/api`
 
 ## Development
 

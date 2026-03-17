@@ -10,6 +10,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { IsString } from 'class-validator';
 import { TenantId } from '@/modules/auth/tenant.decorator';
 import { UploadService } from './upload.service';
 
@@ -24,6 +25,7 @@ const ALLOWED_EXTENSIONS = ['.csv', '.xls', '.xlsx', '.pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 class UploadFileDto {
+  @IsString()
   sourceType!: string;
 }
 

@@ -38,9 +38,35 @@ npm run start:dev        # Start backend dev server (port 3000)
 cd frontend
 npm install
 cp .env.example .env
-# Edit .env (set VITE_API_URL=http://localhost:3000)
+# Edit .env (set VITE_API_URL=http://localhost:4000)
 npm run dev             # Start frontend dev server (port 5173)
 ```
+
+### Supabase Database Connection
+
+**IMPORTANT:** The `postgres` superuser password cannot be set via the Supabase Dashboard for this project (known Supavisor bug on projects created 2026-03-16+). A dedicated `freightwatch_app` role was created instead.
+
+**Connection method:** Session Mode Pooler (Supavisor) — required because direct connections (`db.*.supabase.co:5432`) have IPv4 disabled.
+
+```
+Host:     aws-1-eu-west-1.pooler.supabase.com
+Port:     5432
+User:     freightwatch_app.jvucxzrsiqzcaojnpazu
+Database: postgres
+SSL:      required (DB_SSL=true in .env)
+```
+
+**If connection issues recur:**
+1. Do NOT reset the `postgres` password in the Dashboard — it doesn't propagate to Supavisor
+2. Use the Supabase Management API to manage the `freightwatch_app` role directly:
+   ```bash
+   RAW_TOKEN=$(security find-generic-password -s "Supabase CLI" -w)
+   ACCESS_TOKEN=$(echo "${RAW_TOKEN#go-keyring-base64:}" | base64 -d)
+   python3 -c "import json; print(json.dumps({'query': \"ALTER ROLE freightwatch_app WITH PASSWORD 'NewPassword'\"}))" | \
+     curl -s -X POST "https://api.supabase.com/v1/projects/jvucxzrsiqzcaojnpazu/database/query" \
+       -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d @-
+   ```
+3. The Supabase CLI (`supabase inspect db ...`) connects via `cli_login_` mechanism and always works
 
 ### Backend Development (run from `backend/` directory)
 - Start dev server: `npm run start:dev` (watches for changes)

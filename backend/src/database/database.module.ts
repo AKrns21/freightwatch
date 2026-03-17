@@ -55,8 +55,9 @@ import { DatabaseService } from './database.service';
         retryAttempts: 5,
         retryDelay: 3000,
 
-        // SSL configuration for production
+        // SSL configuration — required for Supabase Pooler (Supavisor)
         ssl:
+          configService.get<string>('DB_SSL', 'false') === 'true' ||
           configService.get<string>('NODE_ENV') === 'production'
             ? { rejectUnauthorized: false }
             : false,
