@@ -7,7 +7,7 @@ import { Upload } from './entities/upload.entity';
 import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
-import { CsvParserService } from '@/modules/parsing/csv-parser.service';
+import { CsvParserService, RowParseError } from '@/modules/parsing/csv-parser.service';
 import { TariffEngineService } from '@/modules/tariff/tariff-engine.service';
 import { UploadService } from './upload.service';
 import { TemplateMatcherService } from '@/modules/parsing/services/template-matcher.service';
@@ -86,18 +86,38 @@ export class UploadProcessor {
         });
 
         // Parse with template
-        await this.parseWithTemplate(upload, templateMatch.template, tenantId);
+        const { rowErrors: templateRowErrors, shipmentCount: templateShipmentCount } =
+          await this.parseWithTemplate(upload, templateMatch.template, tenantId);
+
+        // Determine status: all rows failed → 'failed'; some rows failed → 'needs_review'; none → 'parsed'
+        const templateStatus =
+          templateRowErrors.length === 0
+            ? 'parsed'
+            : templateShipmentCount === 0
+              ? 'failed'
+              : 'needs_review';
+
+        const templateIssues = templateRowErrors.map((e) => ({
+          type: 'row_parse_error' as const,
+          row: e.row,
+          message: e.error,
+          raw_data: e.raw_data,
+          timestamp: new Date().toISOString(),
+        }));
 
         await this.uploadRepository.update(uploadId, {
-          status: 'parsed',
+          status: templateStatus,
           parse_method: 'template',
           confidence: templateMatch.confidence,
+          ...(templateIssues.length > 0 && { parsing_issues: templateIssues }),
         });
 
         this.logger.log({
           event: 'upload_processing_complete',
           upload_id: uploadId,
           parse_method: 'template',
+          shipment_count: templateShipmentCount,
+          row_errors: templateRowErrors.length,
         });
 
         return;
@@ -156,7 +176,25 @@ export class UploadProcessor {
 
       // If LLM is confident enough, parse automatically
       if (!llmResult.needs_review && llmResult.confidence >= 0.7) {
-        await this.parseWithLlmMappings(upload, llmResult.column_mappings, tenantId);
+        const { rowErrors: llmRowErrors, shipmentCount: llmShipmentCount } =
+          await this.parseWithLlmMappings(upload, llmResult.column_mappings, tenantId);
+
+        if (llmRowErrors.length > 0) {
+          const llmStatus = llmShipmentCount === 0 ? 'failed' : 'needs_review';
+          const llmIssues = llmRowErrors.map((e) => ({
+            type: 'row_parse_error' as const,
+            row: e.row,
+            message: e.error,
+            raw_data: e.raw_data,
+            timestamp: new Date().toISOString(),
+          }));
+          // Merge with any existing LLM issues already stored
+          const existingIssues = (llmResult.issues as unknown[]) ?? [];
+          await this.uploadRepository.update(uploadId, {
+            status: llmStatus,
+            parsing_issues: [...existingIssues, ...llmIssues],
+          });
+        }
       }
     } catch (error) {
       this.logger.error({
@@ -180,13 +218,14 @@ export class UploadProcessor {
   }
 
   /**
-   * Parse file using a template
+   * Parse file using a template.
+   * Returns row-level errors and shipment count so the caller can decide the final upload status.
    */
   private async parseWithTemplate(
     upload: Upload,
     template: ParsingTemplate,
     tenantId: string
-  ): Promise<void> {
+  ): Promise<{ rowErrors: RowParseError[]; shipmentCount: number }> {
     this.logger.log({
       event: 'parsing_with_template',
       upload_id: upload.id,
@@ -195,22 +234,29 @@ export class UploadProcessor {
 
     // For CSV/Excel files
     if (upload.mime_type?.includes('csv') || upload.mime_type?.includes('excel')) {
-      const shipments = await this.csvParserService.parseWithTemplate(upload, template);
+      const { shipments, rowErrors } = await this.csvParserService.parseWithTemplate(
+        upload,
+        template
+      );
 
       await this.saveShipments(shipments, tenantId, upload.id);
       await this.calculateBenchmarks(shipments);
+
+      return { rowErrors, shipmentCount: shipments.length };
     }
     // TODO: Add support for PDF and other formats
+    return { rowErrors: [], shipmentCount: 0 };
   }
 
   /**
-   * Parse file using LLM-suggested mappings
+   * Parse file using LLM-suggested mappings.
+   * Returns row-level errors and shipment count so the caller can decide the final upload status.
    */
   private async parseWithLlmMappings(
     upload: Upload,
     mappings: any[],
     tenantId: string
-  ): Promise<void> {
+  ): Promise<{ rowErrors: RowParseError[]; shipmentCount: number }> {
     this.logger.log({
       event: 'parsing_with_llm_mappings',
       upload_id: upload.id,
@@ -229,13 +275,15 @@ export class UploadProcessor {
       }, {}),
     };
 
-    const shipments = await this.csvParserService.parseWithTemplate(
+    const { shipments, rowErrors } = await this.csvParserService.parseWithTemplate(
       upload,
       tempTemplate as ParsingTemplate
     );
 
     await this.saveShipments(shipments, tenantId, upload.id);
     await this.calculateBenchmarks(shipments);
+
+    return { rowErrors, shipmentCount: shipments.length };
   }
 
   /**

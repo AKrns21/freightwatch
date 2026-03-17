@@ -9,6 +9,12 @@ import { round } from '@/utils/round';
 import { Upload } from '@/modules/upload/entities/upload.entity';
 import { ParsingTemplate } from './entities/parsing-template.entity';
 
+export interface RowParseError {
+  row: number;
+  error: string;
+  raw_data?: any;
+}
+
 @Injectable()
 export class CsvParserService {
   private readonly logger = new Logger(CsvParserService.name);
@@ -338,7 +344,10 @@ export class CsvParserService {
   /**
    * Parse file using a parsing template (Phase 3 Refactoring)
    */
-  async parseWithTemplate(upload: Upload, template: ParsingTemplate): Promise<Shipment[]> {
+  async parseWithTemplate(
+    upload: Upload,
+    template: ParsingTemplate
+  ): Promise<{ shipments: Shipment[]; rowErrors: RowParseError[] }> {
     this.logger.log({
       event: 'parsing_with_template_start',
       upload_id: upload.id,
@@ -367,6 +376,7 @@ export class CsvParserService {
       }
 
       const shipments: Shipment[] = [];
+      const rowErrors: RowParseError[] = [];
       const mappings = template.mappings as Record<string, any>;
 
       for (const [index, row] of parseResult.data.entries()) {
@@ -380,6 +390,13 @@ export class CsvParserService {
 
           if (shipment) {
             shipments.push(shipment);
+          } else {
+            // mapRowWithTemplate returns null when date is missing/invalid
+            rowErrors.push({
+              row: index + 1,
+              error: 'Row skipped: missing or invalid date field',
+              raw_data: row,
+            });
           }
         } catch (error) {
           this.logger.error({
@@ -387,6 +404,11 @@ export class CsvParserService {
             upload_id: upload.id,
             row_index: index + 1,
             error: (error as Error).message,
+          });
+          rowErrors.push({
+            row: index + 1,
+            error: (error as Error).message,
+            raw_data: row,
           });
         }
       }
@@ -396,9 +418,10 @@ export class CsvParserService {
         upload_id: upload.id,
         template_id: template.id,
         shipment_count: shipments.length,
+        row_error_count: rowErrors.length,
       });
 
-      return shipments;
+      return { shipments, rowErrors };
     } catch (error) {
       this.logger.error({
         event: 'parsing_with_template_error',
@@ -412,7 +435,7 @@ export class CsvParserService {
   }
 
   /**
-   * Map CSV row to shipment using template mappings
+   * Map CSV row to shipment using template mappings (internal)
    */
   private async mapRowWithTemplate(
     row: Record<string, any>,
