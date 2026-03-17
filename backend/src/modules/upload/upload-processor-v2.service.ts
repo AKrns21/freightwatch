@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from 'bull';
-import { Upload } from './entities/upload.entity';
+import { Upload, UploadStatus } from './entities/upload.entity';
 import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
 import { TemplateMatcherService } from '@/modules/parsing/services/template-matcher.service';
 import { UploadService } from './upload.service';
@@ -64,7 +64,7 @@ export class UploadProcessorV2 {
 
       // Update status to processing
       await this.uploadRepo.update(uploadId, {
-        status: 'processing',
+        status: UploadStatus.PROCESSING,
       });
 
       // Load file content
@@ -90,7 +90,7 @@ export class UploadProcessorV2 {
         await this.parseWithTemplate(upload, templateMatch.template, fileBuffer, tenantId);
 
         await this.uploadRepo.update(uploadId, {
-          status: 'parsed',
+          status: UploadStatus.PARSED,
           parse_method: 'template',
           confidence: templateMatch.confidence,
         });
@@ -123,7 +123,7 @@ export class UploadProcessorV2 {
 
       // Save LLM analysis
       await this.uploadRepo.update(uploadId, {
-        status: llmResult.needs_review ? 'needs_review' : 'parsed',
+        status: llmResult.needs_review ? UploadStatus.NEEDS_REVIEW : UploadStatus.PARSED,
         parse_method: 'llm',
         confidence: llmResult.confidence,
         suggested_mappings: llmResult.column_mappings as any,
@@ -149,7 +149,7 @@ export class UploadProcessorV2 {
       });
 
       await this.uploadRepo.update(uploadId, {
-        status: 'error',
+        status: UploadStatus.ERROR,
         parse_errors: {
           message: err.message,
           stack: err.stack,

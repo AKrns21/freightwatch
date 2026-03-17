@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { Job } from 'bull';
-import { Upload } from './entities/upload.entity';
+import { Upload, UploadStatus } from './entities/upload.entity';
 import { Carrier } from './entities/carrier.entity';
 import { CarrierAlias } from './entities/carrier-alias.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
@@ -92,13 +92,13 @@ export class UploadProcessor {
           dataConfidence: templateDataConfidence,
         } = await this.parseWithTemplate(upload, templateMatch.template, tenantId);
 
-        // Determine status: all rows failed → 'failed'; some rows failed → 'needs_review'; none → 'parsed'
+        // Determine status: all rows failed → FAILED; some rows failed → PARTIAL_SUCCESS; none → PARSED
         const templateStatus =
           templateRowErrors.length === 0
-            ? 'parsed'
+            ? UploadStatus.PARSED
             : templateShipmentCount === 0
-              ? 'failed'
-              : 'needs_review';
+              ? UploadStatus.FAILED
+              : UploadStatus.PARTIAL_SUCCESS;
 
         const templateIssues = templateRowErrors.map((e) => ({
           type: 'row_parse_error' as const,
@@ -135,7 +135,7 @@ export class UploadProcessor {
         });
 
         await this.uploadRepository.update(uploadId, {
-          status: 'needs_manual_review',
+          status: UploadStatus.NEEDS_MANUAL_REVIEW,
           parse_method: 'manual',
           parsing_issues: [
             {
@@ -162,7 +162,7 @@ export class UploadProcessor {
       } as any);
 
       await this.uploadRepository.update(uploadId, {
-        status: llmResult.needs_review ? 'needs_review' : 'parsed',
+        status: llmResult.needs_review ? UploadStatus.NEEDS_REVIEW : UploadStatus.PARSED,
         parse_method: 'llm',
         confidence: llmResult.confidence,
         llm_analysis: llmResult as any,
@@ -183,7 +183,7 @@ export class UploadProcessor {
           await this.parseWithLlmMappings(upload, llmResult.column_mappings, tenantId);
 
         if (llmRowErrors.length > 0) {
-          const llmStatus = llmShipmentCount === 0 ? 'failed' : 'needs_review';
+          const llmStatus = llmShipmentCount === 0 ? UploadStatus.FAILED : UploadStatus.PARTIAL_SUCCESS;
           const llmIssues = llmRowErrors.map((e) => ({
             type: 'row_parse_error' as const,
             row: e.row,
@@ -208,7 +208,7 @@ export class UploadProcessor {
       });
 
       await this.uploadRepository.update(uploadId, {
-        status: 'error',
+        status: UploadStatus.ERROR,
         parse_errors: {
           message: (error as Error).message,
           stack: (error as Error).stack,

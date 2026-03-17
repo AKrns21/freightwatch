@@ -6,6 +6,19 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum UploadStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  PARSED = 'parsed',
+  PARTIAL_SUCCESS = 'partial_success',
+  NEEDS_REVIEW = 'needs_review',
+  NEEDS_MANUAL_REVIEW = 'needs_manual_review',
+  FAILED = 'failed',
+  ERROR = 'error',
+  REVIEWED = 'reviewed',
+  UNMATCHED = 'unmatched',
+}
+
 @Entity('upload')
 export class Upload {
   @PrimaryGeneratedColumn('uuid')
@@ -32,8 +45,12 @@ export class Upload {
   @Column({ type: 'text', nullable: true })
   storage_url: string;
 
-  @Column({ length: 50, default: 'pending', comment: 'pending, parsed, unmatched, failed' })
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: UploadStatus,
+    default: UploadStatus.PENDING,
+  })
+  status: UploadStatus;
 
   @Column({ type: 'jsonb', nullable: true })
   parse_errors: unknown;

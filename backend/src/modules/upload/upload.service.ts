@@ -6,7 +6,7 @@ import { Queue } from 'bull';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Upload } from './entities/upload.entity';
+import { Upload, UploadStatus } from './entities/upload.entity';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
 
 interface UploadResult {
@@ -68,7 +68,7 @@ export class UploadService {
         mime_type: file.mimetype,
         source_type: sourceType,
         storage_url: storagePath,
-        status: 'pending',
+        status: UploadStatus.PENDING,
       });
 
       const savedUpload = await this.uploadRepository.save(upload);
@@ -149,7 +149,7 @@ export class UploadService {
   async updateStatus(
     id: string,
     tenantId: string,
-    status: string,
+    status: UploadStatus,
     parseErrors?: any
   ): Promise<Upload | null> {
     const upload = await this.findById(id, tenantId);
@@ -219,7 +219,7 @@ export class UploadService {
     // Update suggested mappings
     await this.uploadRepository.update(uploadId, {
       suggested_mappings: mappings as any,
-      status: 'pending',
+      status: UploadStatus.PENDING,
     });
 
     // Re-queue for parsing
@@ -251,7 +251,7 @@ export class UploadService {
     }
 
     await this.uploadRepository.update(uploadId, {
-      status: 'reviewed',
+      status: UploadStatus.REVIEWED,
       meta: {
         ...(upload.meta as Record<string, unknown>),
         reviewed_by: userId,
@@ -282,7 +282,7 @@ export class UploadService {
 
     // Update status
     await this.uploadRepository.update(uploadId, {
-      status: 'pending',
+      status: UploadStatus.PENDING,
       meta: {
         ...(upload.meta as Record<string, unknown>),
         reprocess_reason: options.reason,
