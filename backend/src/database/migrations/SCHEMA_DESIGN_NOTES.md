@@ -127,7 +127,7 @@ vehicle:
   vehicle_type  = 'MAN TGL'
   plate_number  = 'ME CU 167'
 
-route_trip — Beispiel Tag 14.03.2022 (Tour 1):
+own_tour — Beispiel Tag 14.03.2022 (Tour 1):
   trip_date       = 2022-03-14
   departure_time  = 06:19
   return_time     = 14:56
@@ -135,7 +135,7 @@ route_trip — Beispiel Tag 14.03.2022 (Tour 1):
   stop_count      = ~18 (Stopps zwischen Zentrale→Zentrale)
   total_km        = Summe aller Legs
 
-route_stop — Erste Stopps dieser Tour:
+own_tour_stop — Erste Stopps dieser Tour:
   #1: Velbert → Wuppertal Bornberg, 20.4 km, 22 min
   #2: Wuppertal Bornberg → Wuppertal Hölker Feld, 12.3 km, 17 min
   #3: Wuppertal → Radevormwald, 20.1 km, 41 min
@@ -168,10 +168,11 @@ Die Rechnungszeile enthält sowohl Adress-Rohdaten (dest_address_raw) als auch
 extrahierte Felder (dest_zip). Das ist gewollt: die Rohdaten dienen als
 Audit-Trail und Fallback wenn die Extraktion versagt.
 
-### route_trip + route_stop statt flat table
+### own_tour + own_tour_stop statt flat table
 Die Telematik-CSV liefert Einzelfahrten. Für die Analyse "Kosten pro Zustellung"
-brauchen wir aber aggregierte Touren. Die Trip-Tabelle speichert die Aggregate,
+brauchen wir aber aggregierte Touren. Die Tour-Tabelle speichert die Aggregate,
 die Stop-Tabelle die Einzelfahrten. Die Aggregation passiert beim Import.
+(Vorher: route_trip / route_stop — umbenannt in Migration 006.)
 
 ### Kein service_catalog / service_alias mehr
 Die alte Normalisierung über service_catalog war Overengineering.
