@@ -49,6 +49,16 @@ export class InvoiceLine {
   @Column({ length: 50, nullable: true })
   billing_type: string;
 
+  /**
+   * Normalised line classification — derived from billing_type via carrier.billing_type_map.
+   * standard    : Weight-based LTL/Stückgut — full tariff benchmark
+   * vereinbarung: Flat tour/agreement price (e.g. LA 200) — matched against tariff_special_condition
+   * surcharge   : Diesel, toll, Avis, pallet exchange etc. — matched against tariff_nebenkosten / tariff_surcharge
+   * one_time    : Unstructured one-off positions — stored as-is, included in total cost only
+   */
+  @Column({ type: 'text', nullable: true })
+  line_type: 'standard' | 'vereinbarung' | 'surcharge' | 'one_time' | null;
+
   @Column({ length: 50, nullable: true })
   tour_number: string;
 

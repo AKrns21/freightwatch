@@ -47,6 +47,20 @@ export class Carrier {
   })
   conversion_rules: Record<string, unknown>;
 
+  /**
+   * Maps carrier-specific billing codes to normalised line_type values.
+   * Used to classify invoice_line.line_type during import.
+   * LLM fallback is used for codes not present in this map.
+   *
+   * Example: { "200": "vereinbarung", "201": "standard", "900": "surcharge" }
+   */
+  @Column({
+    type: 'jsonb',
+    default: {},
+    comment: 'Maps carrier billing codes (e.g. "200") to line_type ("vereinbarung" | "standard" | "surcharge" | "one_time")',
+  })
+  billing_type_map: Record<string, string>;
+
   @CreateDateColumn()
   created_at: Date;
 
