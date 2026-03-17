@@ -76,15 +76,18 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments, confidence } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(2);
+      expect(shipments).toHaveLength(2);
+      expect(confidence).toBeGreaterThan(0);
+      expect(confidence).toBeLessThanOrEqual(1);
 
-      const firstShipment = result[0];
+      const firstShipment = shipments[0];
       expect(firstShipment.tenant_id).toBe(mockTenantId);
       expect(firstShipment.upload_id).toBe(mockUploadId);
       expect(firstShipment.extraction_method).toBe('csv_direct');
-      expect(firstShipment.confidence_score).toBe(0.95);
+      // confidence_score is now calculated from field completeness, not hardcoded
+      expect(firstShipment.confidence_score).toBeGreaterThan(0);
       expect(firstShipment.date).toEqual(new Date(2024, 2, 1)); // March 1, 2024
       expect(firstShipment.origin_zip).toBe('10115');
       expect(firstShipment.dest_zip).toBe('80331');
@@ -100,11 +103,11 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(1);
+      expect(shipments).toHaveLength(1);
 
-      const shipment = result[0];
+      const shipment = shipments[0];
       expect(shipment.date).toEqual(new Date(2024, 2, 1)); // March 1, 2024
       expect(shipment.origin_zip).toBe('12345');
       expect(shipment.dest_zip).toBe('54321');
@@ -120,11 +123,11 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].weight_kg).toBe(12.5);
-      expect(result[0].actual_total_amount).toBe(34.9);
+      expect(shipments).toHaveLength(1);
+      expect(shipments[0].weight_kg).toBe(12.5);
+      expect(shipments[0].actual_total_amount).toBe(34.9);
     });
 
     it('should parse different date formats', async () => {
@@ -135,12 +138,12 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(3);
+      expect(shipments).toHaveLength(3);
 
       const expectedDate = new Date(2024, 2, 1); // March 1, 2024
-      result.forEach((shipment) => {
+      shipments.forEach((shipment) => {
         expect(shipment.date).toEqual(expectedDate);
       });
     });
@@ -155,14 +158,14 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(5);
-      expect(result[0].service_level).toBe('EXPRESS');
-      expect(result[1].service_level).toBe('EXPRESS'); // 24h -> EXPRESS
-      expect(result[2].service_level).toBe('ECONOMY');
-      expect(result[3].service_level).toBe('STANDARD');
-      expect(result[4].service_level).toBe('STANDARD'); // Unknown -> STANDARD
+      expect(shipments).toHaveLength(5);
+      expect(shipments[0].service_level).toBe('EXPRESS');
+      expect(shipments[1].service_level).toBe('EXPRESS'); // 24h -> EXPRESS
+      expect(shipments[2].service_level).toBe('ECONOMY');
+      expect(shipments[3].service_level).toBe('STANDARD');
+      expect(shipments[4].service_level).toBe('STANDARD'); // Unknown -> STANDARD
     });
 
     it('should handle cost strings with currency symbols and formatting', async () => {
@@ -173,12 +176,12 @@ describe('CsvParserService', () => {
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(3);
-      expect(result[0].actual_total_amount).toBe(1234.56);
-      expect(result[1].actual_total_amount).toBe(987.65);
-      expect(result[2].actual_total_amount).toBe(45.3);
+      expect(shipments).toHaveLength(3);
+      expect(shipments[0].actual_total_amount).toBe(1234.56);
+      expect(shipments[1].actual_total_amount).toBe(987.65);
+      expect(shipments[2].actual_total_amount).toBe(45.3);
     });
 
     it('should skip rows with invalid or missing dates', async () => {
@@ -190,11 +193,11 @@ invalid-date,20.00
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(2);
-      expect(result[0].actual_total_amount).toBe(10);
-      expect(result[1].actual_total_amount).toBe(40);
+      expect(shipments).toHaveLength(2);
+      expect(shipments[0].actual_total_amount).toBe(10);
+      expect(shipments[1].actual_total_amount).toBe(40);
     });
 
     it('should handle extended cost breakdown fields', async () => {
@@ -203,11 +206,11 @@ invalid-date,20.00
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(1);
+      expect(shipments).toHaveLength(1);
 
-      const shipment = result[0];
+      const shipment = shipments[0];
       expect(shipment.actual_base_amount).toBe(100);
       expect(shipment.diesel_amount).toBe(18.5);
       expect(shipment.toll_amount).toBe(5.25);
@@ -220,9 +223,10 @@ invalid-date,20.00
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments, confidence } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(0);
+      expect(shipments).toHaveLength(0);
+      expect(confidence).toBe(0);
     });
 
     it('should preserve original data in source_data field', async () => {
@@ -231,11 +235,11 @@ special_value,01.03.2024,10.00,additional_data`;
 
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
 
-      const result = await service.parse(mockFilePath, mockTenantId, mockUploadId);
+      const { shipments } = await service.parse(mockFilePath, mockTenantId, mockUploadId);
 
-      expect(result).toHaveLength(1);
+      expect(shipments).toHaveLength(1);
 
-      const shipment = result[0];
+      const shipment = shipments[0];
       expect(shipment.source_data).toEqual({
         custom_field: 'special_value',
         datum: '01.03.2024',
@@ -264,9 +268,9 @@ special_value,01.03.2024,10.00,additional_data`;
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
       shipmentRepository.create.mockImplementation((data) => data as Shipment);
 
-      const result = await service.parse('/test.csv', 'tenant', 'upload');
+      const { shipments } = await service.parse('/test.csv', 'tenant', 'upload');
 
-      expect(result).toHaveLength(0); // All dates should be invalid
+      expect(shipments).toHaveLength(0); // All dates should be invalid
     });
   });
 
@@ -281,13 +285,13 @@ special_value,01.03.2024,10.00,additional_data`;
       (fs.readFile as jest.Mock).mockResolvedValue(csvContent);
       shipmentRepository.create.mockImplementation((data) => data as Shipment);
 
-      const result = await service.parse('/test.csv', 'tenant', 'upload');
+      const { shipments } = await service.parse('/test.csv', 'tenant', 'upload');
 
-      expect(result).toHaveLength(4);
-      expect(result[0].weight_kg).toBeUndefined(); // negative weight not set
-      expect(result[1].weight_kg).toBeUndefined(); // invalid weight not set
-      expect(result[2].weight_kg).toBeUndefined(); // invalid weight not set
-      expect(result[3].weight_kg).toBe(15.5); // valid weight
+      expect(shipments).toHaveLength(4);
+      expect(shipments[0].weight_kg).toBeUndefined(); // negative weight not set
+      expect(shipments[1].weight_kg).toBeUndefined(); // invalid weight not set
+      expect(shipments[2].weight_kg).toBeUndefined(); // invalid weight not set
+      expect(shipments[3].weight_kg).toBe(15.5); // valid weight
     });
   });
 });

@@ -25,7 +25,11 @@ export class CsvParserService {
     private readonly serviceMapperService: ServiceMapperService
   ) {}
 
-  async parse(filePath: string, tenantId: string, uploadId: string): Promise<Shipment[]> {
+  async parse(
+    filePath: string,
+    tenantId: string,
+    uploadId: string
+  ): Promise<{ shipments: Shipment[]; confidence: number }> {
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
 
@@ -56,8 +60,15 @@ export class CsvParserService {
         }
       }
 
+      // Calculate upload-level confidence as the average completeness across all shipments
+      const confidence =
+        shipments.length > 0
+          ? shipments.reduce((sum, s) => sum + (s.completeness_score ?? 0), 0) / shipments.length /
+            100
+          : 0;
+
       this.logger.log(`Successfully parsed ${shipments.length} shipments from ${filePath}`);
-      return shipments;
+      return { shipments, confidence };
     } catch (error) {
       this.logger.error(
         `Failed to parse CSV file ${filePath}: ${(error as Error).message}`,
@@ -66,6 +77,7 @@ export class CsvParserService {
       throw error;
     }
   }
+
 
   private async mapRowToShipment(
     row: any,
@@ -80,7 +92,6 @@ export class CsvParserService {
       tenant_id: tenantId,
       upload_id: uploadId,
       extraction_method: 'csv_direct',
-      confidence_score: 0.95,
       source_data: row,
     });
 
@@ -199,6 +210,12 @@ export class CsvParserService {
     if (tollAmountValue !== null) {
       shipment.toll_amount = round(this.parseNumber(tollAmountValue));
     }
+
+    // Calculate completeness and set confidence_score from real field coverage
+    const { score, missingFields } = this.calculateCompleteness(shipment);
+    shipment.completeness_score = score;
+    shipment.missing_fields = missingFields;
+    shipment.confidence_score = score / 100;
 
     return shipment;
   }
@@ -347,7 +364,7 @@ export class CsvParserService {
   async parseWithTemplate(
     upload: Upload,
     template: ParsingTemplate
-  ): Promise<{ shipments: Shipment[]; rowErrors: RowParseError[] }> {
+  ): Promise<{ shipments: Shipment[]; rowErrors: RowParseError[]; confidence: number }> {
     this.logger.log({
       event: 'parsing_with_template_start',
       upload_id: upload.id,
@@ -413,15 +430,23 @@ export class CsvParserService {
         }
       }
 
+      // Calculate upload-level confidence as the average completeness across all shipments
+      const confidence =
+        shipments.length > 0
+          ? shipments.reduce((sum, s) => sum + (s.completeness_score ?? 0), 0) / shipments.length /
+            100
+          : 0;
+
       this.logger.log({
         event: 'parsing_with_template_complete',
         upload_id: upload.id,
         template_id: template.id,
         shipment_count: shipments.length,
         row_error_count: rowErrors.length,
+        confidence,
       });
 
-      return { shipments, rowErrors };
+      return { shipments, rowErrors, confidence };
     } catch (error) {
       this.logger.error({
         event: 'parsing_with_template_error',
@@ -451,7 +476,6 @@ export class CsvParserService {
       tenant_id: tenantId,
       upload_id: uploadId,
       extraction_method: 'template',
-      confidence_score: 0.95,
       source_data: row,
     });
 
@@ -542,10 +566,11 @@ export class CsvParserService {
       shipment.service_level = await this.serviceMapperService.normalize(serviceValue.toString());
     }
 
-    // Calculate completeness
+    // Calculate completeness and set confidence_score from real field coverage
     const { score, missingFields } = this.calculateCompleteness(shipment);
     shipment.completeness_score = score;
     shipment.missing_fields = missingFields;
+    shipment.confidence_score = score / 100;
 
     return shipment;
   }

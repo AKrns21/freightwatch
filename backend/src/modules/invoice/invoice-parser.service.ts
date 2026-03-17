@@ -325,9 +325,32 @@ export class InvoiceParserService {
       header,
       lines,
       parsing_method: 'template',
-      confidence: 0.95,
+      confidence: this.calculateInvoiceConfidence(lines),
       issues: [],
     };
+  }
+
+  /**
+   * Calculate confidence score for a parsed invoice result.
+   *
+   * Required fields per line: weight_kg, and at least one of origin_zip or
+   * dest_zip, plus a non-zero line_total or base_amount.
+   * Score = fraction of lines with all required fields present, clamped 0–1.
+   */
+  private calculateInvoiceConfidence(lines: InvoiceParseResult['lines']): number {
+    if (lines.length === 0) {
+      return 0;
+    }
+
+    const completeLines = lines.filter(
+      (line) =>
+        line.weight_kg != null &&
+        (line.origin_zip != null || line.dest_zip != null) &&
+        ((line.line_total != null && line.line_total !== 0) ||
+          (line.base_amount != null && line.base_amount !== 0))
+    ).length;
+
+    return Math.min(1.0, Math.max(0.0, completeLines / lines.length));
   }
 
   /**

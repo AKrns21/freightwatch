@@ -214,9 +214,41 @@ export class TariffPdfParserService {
       valid_until: metadata.valid_until,
       entries,
       parsing_method: 'template',
-      confidence: 0.95,
+      confidence: this.calculateTariffConfidence(entries, 'template'),
       issues: [],
     };
+  }
+
+  /**
+   * Calculate confidence score for a parsed tariff result.
+   *
+   * Required fields per entry: zone, weight_min, weight_max, base_amount.
+   * Template-parsed results start at a 0.95 baseline; LLM-parsed at 0.85
+   * (LLM can hallucinate).  The baseline is multiplied by the fraction of
+   * entries that have all required fields present, clamped to [0.0, 1.0].
+   */
+  private calculateTariffConfidence(
+    entries: TariffEntry[],
+    method: 'template' | 'llm'
+  ): number {
+    if (entries.length === 0) {
+      return 0;
+    }
+
+    // Template-parsed results start at 0.95 baseline; LLM-parsed at 0.85 (LLM can hallucinate)
+    const baseline = method === 'template' ? 0.95 : 0.85;
+
+    // Count entries that have all required fields: zone, weight range, and a positive price
+    const fullyComplete = entries.filter(
+      (entry) =>
+        entry.zone >= 0 &&
+        entry.weight_min != null &&
+        entry.weight_max != null &&
+        entry.base_amount > 0
+    ).length;
+
+    const fieldCoverage = fullyComplete / entries.length;
+    return Math.min(1.0, Math.max(0.0, baseline * fieldCoverage));
   }
 
   /**

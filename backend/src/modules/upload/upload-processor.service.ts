@@ -86,8 +86,11 @@ export class UploadProcessor {
         });
 
         // Parse with template
-        const { rowErrors: templateRowErrors, shipmentCount: templateShipmentCount } =
-          await this.parseWithTemplate(upload, templateMatch.template, tenantId);
+        const {
+          rowErrors: templateRowErrors,
+          shipmentCount: templateShipmentCount,
+          dataConfidence: templateDataConfidence,
+        } = await this.parseWithTemplate(upload, templateMatch.template, tenantId);
 
         // Determine status: all rows failed → 'failed'; some rows failed → 'needs_review'; none → 'parsed'
         const templateStatus =
@@ -108,7 +111,7 @@ export class UploadProcessor {
         await this.uploadRepository.update(uploadId, {
           status: templateStatus,
           parse_method: 'template',
-          confidence: templateMatch.confidence,
+          confidence: templateDataConfidence,
           ...(templateIssues.length > 0 && { parsing_issues: templateIssues }),
         });
 
@@ -225,7 +228,7 @@ export class UploadProcessor {
     upload: Upload,
     template: ParsingTemplate,
     tenantId: string
-  ): Promise<{ rowErrors: RowParseError[]; shipmentCount: number }> {
+  ): Promise<{ rowErrors: RowParseError[]; shipmentCount: number; dataConfidence: number }> {
     this.logger.log({
       event: 'parsing_with_template',
       upload_id: upload.id,
@@ -234,7 +237,7 @@ export class UploadProcessor {
 
     // For CSV/Excel files
     if (upload.mime_type?.includes('csv') || upload.mime_type?.includes('excel')) {
-      const { shipments, rowErrors } = await this.csvParserService.parseWithTemplate(
+      const { shipments, rowErrors, confidence } = await this.csvParserService.parseWithTemplate(
         upload,
         template
       );
@@ -242,10 +245,10 @@ export class UploadProcessor {
       await this.saveShipments(shipments, tenantId, upload.id);
       await this.calculateBenchmarks(shipments);
 
-      return { rowErrors, shipmentCount: shipments.length };
+      return { rowErrors, shipmentCount: shipments.length, dataConfidence: confidence };
     }
     // TODO: Add support for PDF and other formats
-    return { rowErrors: [], shipmentCount: 0 };
+    return { rowErrors: [], shipmentCount: 0, dataConfidence: 0 };
   }
 
   /**
