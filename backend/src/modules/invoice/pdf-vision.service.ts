@@ -28,8 +28,8 @@ export interface PdfExtractionResult {
 /** Minimum average characters per page to consider a PDF text-based (not a scan) */
 const MIN_AVG_CHARS_PER_PAGE = 50;
 
-/** Render scale factor – 2x matches Oxytec's fitz.Matrix(2, 2) for good OCR quality */
-const RENDER_SCALE = 2;
+/** Render scale factor – 3x → ~216 DPI (72 DPI base × 3), meets the ≥200 DPI requirement */
+const RENDER_SCALE = 3;
 
 /**
  * PdfVisionService
