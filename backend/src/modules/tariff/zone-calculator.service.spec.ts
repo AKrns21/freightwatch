@@ -287,12 +287,17 @@ describe('ZoneCalculatorService', () => {
         { country: 'DE', destZip: '78234', date: testDate },
       ];
 
+      // Prefix matching tries lengths 5→4→3→2 per zip, so 99999 needs 4 nulls
+      // before the mock is free for 78234's first prefix call
       tariffZoneMapRepository.findOne
-        .mockResolvedValueOnce({ zone: 1 } as TariffZoneMap)
-        .mockResolvedValueOnce(null) // Fails for 99999
-        .mockResolvedValueOnce({ zone: 4 } as TariffZoneMap);
+        .mockResolvedValueOnce({ zone: 1 } as TariffZoneMap) // 42349 (5-char prefix → hit)
+        .mockResolvedValueOnce(null)                          // 99999 prefix "99999"
+        .mockResolvedValueOnce(null)                          // 99999 prefix "9999"
+        .mockResolvedValueOnce(null)                          // 99999 prefix "999"
+        .mockResolvedValueOnce(null)                          // 99999 prefix "99"
+        .mockResolvedValueOnce({ zone: 4 } as TariffZoneMap); // 78234 (5-char prefix → hit)
 
-      tariffZoneMapRepository.find.mockResolvedValue([]); // No pattern matches
+      tariffZoneMapRepository.find.mockResolvedValue([]); // No pattern matches for 99999
 
       const results = await service.bulkCalculateZones(mockTenantId, mockCarrierId, requests);
 

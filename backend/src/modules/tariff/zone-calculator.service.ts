@@ -87,30 +87,26 @@ export class ZoneCalculatorService {
     for (let prefixLen = Math.min(5, destZip.length); prefixLen >= 2; prefixLen--) {
       const prefix = destZip.substring(0, prefixLen);
 
-      try {
-        const mapping = await this.tariffZoneMapRepository.findOne({
-          where: {
-            tenant_id: tenantId,
-            carrier_id: carrierId,
-            country: country,
-            plz_prefix: prefix,
-            prefix_len: prefixLen,
-            valid_from: LessThanOrEqual(date),
-            valid_until: Or(MoreThanOrEqual(date), IsNull()),
-          },
-          order: {
-            valid_from: 'DESC', // Get most recent mapping if multiple exist
-          },
-        });
+      const mapping = await this.tariffZoneMapRepository.findOne({
+        where: {
+          tenant_id: tenantId,
+          carrier_id: carrierId,
+          country: country,
+          plz_prefix: prefix,
+          prefix_len: prefixLen,
+          valid_from: LessThanOrEqual(date),
+          valid_until: Or(MoreThanOrEqual(date), IsNull()),
+        },
+        order: {
+          valid_from: 'DESC', // Get most recent mapping if multiple exist
+        },
+      });
 
-        if (mapping) {
-          this.logger.debug(
-            `Prefix match found: ${prefix} (length ${prefixLen}) -> zone ${mapping.zone}`
-          );
-          return mapping.zone;
-        }
-      } catch (error) {
-        this.logger.warn(`Error in prefix matching for ${prefix}: ${(error as Error).message}`);
+      if (mapping) {
+        this.logger.debug(
+          `Prefix match found: ${prefix} (length ${prefixLen}) -> zone ${mapping.zone}`
+        );
+        return mapping.zone;
       }
     }
 

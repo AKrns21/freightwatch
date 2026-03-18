@@ -58,25 +58,18 @@ export class FxService {
   }
 
   private async findDirectRate(fromCcy: string, toCcy: string, date: Date): Promise<number | null> {
-    try {
-      const fxRate = await this.fxRateRepository.findOne({
-        where: {
-          from_ccy: fromCcy,
-          to_ccy: toCcy,
-          rate_date: LessThanOrEqual(date),
-        },
-        order: {
-          rate_date: 'DESC',
-        },
-      });
+    const fxRate = await this.fxRateRepository.findOne({
+      where: {
+        from_ccy: fromCcy,
+        to_ccy: toCcy,
+        rate_date: LessThanOrEqual(date),
+      },
+      order: {
+        rate_date: 'DESC',
+      },
+    });
 
-      return fxRate ? Number(fxRate.rate) : null;
-    } catch (error) {
-      this.logger.warn(
-        `Error in direct rate lookup ${fromCcy}/${toCcy}: ${(error as Error).message}`
-      );
-      return null;
-    }
+    return fxRate ? Number(fxRate.rate) : null;
   }
 
   private async findInverseRate(
@@ -84,25 +77,18 @@ export class FxService {
     toCcy: string,
     date: Date
   ): Promise<number | null> {
-    try {
-      const fxRate = await this.fxRateRepository.findOne({
-        where: {
-          from_ccy: toCcy,
-          to_ccy: fromCcy,
-          rate_date: LessThanOrEqual(date),
-        },
-        order: {
-          rate_date: 'DESC',
-        },
-      });
+    const fxRate = await this.fxRateRepository.findOne({
+      where: {
+        from_ccy: toCcy,
+        to_ccy: fromCcy,
+        rate_date: LessThanOrEqual(date),
+      },
+      order: {
+        rate_date: 'DESC',
+      },
+    });
 
-      return fxRate ? Number(fxRate.rate) : null;
-    } catch (error) {
-      this.logger.warn(
-        `Error in inverse rate lookup ${toCcy}/${fromCcy}: ${(error as Error).message}`
-      );
-      return null;
-    }
+    return fxRate ? Number(fxRate.rate) : null;
   }
 
   async bulkGetRates(

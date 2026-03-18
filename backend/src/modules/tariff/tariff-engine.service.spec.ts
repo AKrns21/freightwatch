@@ -11,6 +11,7 @@ import { ShipmentBenchmark } from './entities/shipment-benchmark.entity';
 import { ZoneCalculatorService } from './zone-calculator.service';
 import { FxService } from './fx.service';
 import { Shipment } from '@/modules/parsing/entities/shipment.entity';
+import { Carrier } from '@/modules/upload/entities/carrier.entity';
 
 describe('TariffEngineService', () => {
   let service: TariffEngineService;
@@ -70,6 +71,12 @@ describe('TariffEngineService', () => {
           provide: getRepositoryToken(ShipmentBenchmark),
           useValue: {
             save: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Carrier),
+          useValue: {
+            findOne: jest.fn(),
           },
         },
         {
