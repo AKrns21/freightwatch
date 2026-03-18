@@ -12,6 +12,7 @@ import { UploadController } from './upload.controller';
 import { UploadReviewController } from './upload-review.controller';
 import { UploadProcessor } from './upload-processor.service';
 import { DocumentClassifierService } from './document-classifier.service';
+import { ExtractionValidatorService } from './extraction-validator.service';
 import { ParsingModule } from '@/modules/parsing/parsing.module';
 import { TariffModule } from '@/modules/tariff/tariff.module';
 
@@ -25,7 +26,7 @@ import { TariffModule } from '@/modules/tariff/tariff.module';
     TariffModule,
   ],
   controllers: [UploadController, UploadReviewController],
-  providers: [UploadService, UploadProcessor, DocumentClassifierService],
+  providers: [UploadService, UploadProcessor, DocumentClassifierService, ExtractionValidatorService],
   exports: [UploadService],
 })
 export class UploadModule {}

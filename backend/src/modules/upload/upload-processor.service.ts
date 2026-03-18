@@ -13,6 +13,7 @@ import { UploadService } from './upload.service';
 import { TemplateMatcherService } from '@/modules/parsing/services/template-matcher.service';
 import { LlmParserService } from '@/modules/parsing/services/llm-parser.service';
 import { ParsingTemplate } from '@/modules/parsing/entities/parsing-template.entity';
+import { ExtractionValidatorService } from './extraction-validator.service';
 
 /**
  * UploadProcessor - Phase 3 Refactored
@@ -49,7 +50,8 @@ export class UploadProcessor {
     private readonly tariffEngineService: TariffEngineService,
     private readonly uploadService: UploadService,
     private readonly templateMatcher: TemplateMatcherService,
-    private readonly llmParser: LlmParserService
+    private readonly llmParser: LlmParserService,
+    private readonly extractionValidator: ExtractionValidatorService
   ) {}
 
   @Process('parse-file')
@@ -273,10 +275,38 @@ export class UploadProcessor {
         template
       );
 
-      await this.saveShipments(shipments, tenantId, upload.id);
-      await this.calculateBenchmarks(shipments);
+      // Validate parsed shipments before DB import (dedup + reference checks)
+      const validationInputs = shipments.map((s, i) => ({
+        index: i,
+        reference_number: s.reference_number ?? null,
+      }));
+      const validationResult = await this.extractionValidator.validateShipments(
+        validationInputs,
+        tenantId
+      );
 
-      return { rowErrors, shipmentCount: shipments.length, dataConfidence: confidence };
+      const rejectedIndices = new Set(
+        validationResult.violations
+          .filter((v) => v.action === 'reject')
+          .map((v) => v.index)
+          .filter((idx): idx is number => idx != null)
+      );
+      const validShipments = shipments.filter((_, i) => !rejectedIndices.has(i));
+      const validationIssues = validationResult.violations.map((v) => ({
+        type: 'validation_error' as const,
+        rule: v.rule,
+        message: v.detail,
+        timestamp: new Date().toISOString(),
+      }));
+
+      await this.saveShipments(validShipments, tenantId, upload.id);
+      await this.calculateBenchmarks(validShipments);
+
+      return {
+        rowErrors: [...rowErrors, ...validationIssues.map((vi) => ({ row: 0, error: vi.message, raw_data: null }))],
+        shipmentCount: validShipments.length,
+        dataConfidence: confidence,
+      };
     }
     // TODO: Add support for PDF and other formats
     return { rowErrors: [], shipmentCount: 0, dataConfidence: 0 };
