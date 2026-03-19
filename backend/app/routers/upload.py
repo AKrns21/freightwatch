@@ -55,7 +55,7 @@ class UploadStatusResponse(BaseModel):
 
 
 class UploadListItemResponse(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
     id: UUID
     tenant_id: UUID
@@ -67,10 +67,7 @@ class UploadListItemResponse(BaseModel):
     status: str | None = None
     parse_method: str | None = None
     confidence: float | None = None
-    parsing_issues: list | None = None
     received_at: datetime | None = None
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -84,7 +81,7 @@ async def list_uploads(
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> list[UploadListItemResponse]:
     """List uploads for the current tenant, optionally filtered by project."""
-    q = select(Upload).order_by(Upload.created_at.desc())
+    q = select(Upload).order_by(Upload.received_at.desc())
     if project_id is not None:
         q = q.where(Upload.project_id == project_id)
     rows = (await db.execute(q)).scalars().all()
