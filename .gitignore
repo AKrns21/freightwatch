@@ -22,3 +22,6 @@ build/
 .pytest_cache/
 htmlcov/
 .coverage
+
+# Supabase CLI local state
+supabase/.temp/
