@@ -13,6 +13,8 @@ from app.middleware import (
     SecurityHeadersMiddleware,
     TenantContextMiddleware,
 )
+from app.routers import upload as upload_router
+from app.services.upload_processor_service import start_stale_watcher
 from app.utils.logger import get_logger, setup_logging
 
 logger = get_logger(__name__)
@@ -23,6 +25,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     setup_logging()
     await init_db()
+    start_stale_watcher()
     logger.info("freightwatch_started", version=settings.app_version, env=settings.app_env)
     yield
     await close_db()
@@ -68,6 +71,9 @@ else:
 
 # Security headers — must be outermost to cover all responses
 app.add_middleware(SecurityHeadersMiddleware, enabled=settings.security_headers_enabled)
+
+
+app.include_router(upload_router.router, prefix=settings.api_prefix)
 
 
 @app.get("/health", tags=["health"])
