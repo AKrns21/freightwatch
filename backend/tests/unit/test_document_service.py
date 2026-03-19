@@ -3,6 +3,8 @@
 No live API calls, no real files required.
 """
 
+from __future__ import annotations
+
 import hashlib
 import io
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -51,7 +53,7 @@ class TestHash:
 
 
 class TestDocumentTypeDetectorFilename:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.detector = DocumentTypeDetector()
 
     @pytest.mark.parametrize(
@@ -87,7 +89,7 @@ class TestDocumentTypeDetectorFilename:
 
 
 class TestDocumentTypeDetectorColumns:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.detector = DocumentTypeDetector()
 
     def test_shipment_columns_detected(self):
@@ -115,7 +117,7 @@ class TestDocumentTypeDetectorColumns:
 
 
 class TestDocumentTypeDetectorPipeline:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.detector = DocumentTypeDetector()
 
     @pytest.mark.asyncio
@@ -211,7 +213,7 @@ class TestDocumentTypeDetectorPipeline:
 class TestDocumentServiceSpreadsheets:
     """Test CSV/XLSX processing using in-memory bytes."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         from app.services.document_service import DocumentService
 
         self.svc = DocumentService()

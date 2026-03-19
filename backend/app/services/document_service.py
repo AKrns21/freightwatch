@@ -8,6 +8,8 @@ Usage:
     print(result.file_hash, result.mode, result.text)
 """
 
+from __future__ import annotations
+
 import io
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -15,13 +17,13 @@ from typing import Literal
 
 import fitz  # PyMuPDF
 import pandas as pd
+import structlog
 
 from app.services.vision_service import VisionService
 from app.utils.error_handler import handle_service_errors
 from app.utils.hash import sha256_bytes
-from app.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = structlog.get_logger(__name__)
 
 ExtractionMode = Literal["text", "vision", "xlsx", "csv", "image"]
 
@@ -73,6 +75,7 @@ class DocumentService:
     """Unified document processing service for FreightWatch."""
 
     def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
         self._vision = VisionService()
 
     # ── public API ──────────────────────────────────────────────────────────
@@ -358,3 +361,18 @@ class DocumentService:
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
         }.get(ext, "application/octet-stream")
+
+
+# ---------------------------------------------------------------------------
+# Singleton
+# ---------------------------------------------------------------------------
+
+_document_service: DocumentService | None = None
+
+
+def get_document_service() -> DocumentService:
+    """Return the module-level DocumentService singleton."""
+    global _document_service
+    if _document_service is None:
+        _document_service = DocumentService()
+    return _document_service

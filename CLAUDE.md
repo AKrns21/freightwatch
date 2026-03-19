@@ -304,6 +304,165 @@ async def db_session(engine):
 - **Logging:** structlog with `logger.info("event_name", key=value, ...)`
 - **Commits:** Conventional commits (`feat:`, `fix:`, `test:`, `docs:`)
 
+## Service & Test Patterns
+
+These patterns are shared with `~/Repos/oxytec_evaluator` and apply to all Python services in this repo.
+
+### Module Header
+
+Every service module starts with:
+```python
+"""Short description — what the service does.
+
+Port of backend_legacy/src/modules/.../foo.service.ts
+Issue: #XX
+
+Key features:
+- ...
+"""
+
+from __future__ import annotations
+```
+
+### Service Class Structure
+
+```python
+import structlog
+from dataclasses import dataclass
+from typing import Any
+
+logger = structlog.get_logger(__name__)
+
+
+@dataclass
+class FooResult:
+    """Result object — always a dataclass with to_dict()."""
+    value: int
+    method: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"value": self.value, "method": self.method}
+
+
+class FooService:
+    """One-line summary.
+
+    Longer description of what it does and why.
+
+    Example usage:
+        svc = FooService()
+        result = svc.calculate(...)
+    """
+
+    def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
+
+    def calculate(self, x: int) -> FooResult:
+        """Calculate something.
+
+        Args:
+            x: Input value.
+
+        Returns:
+            FooResult with value and method used.
+        """
+        self.logger.info("foo_calculation_started", x=x)
+        result = self._do_work(x)
+        self.logger.info("foo_calculation_completed", value=result.value)
+        return result
+
+    def _do_work(self, x: int) -> FooResult:
+        """Private helpers prefixed with _."""
+        ...
+
+
+# Singleton
+_foo_service: FooService | None = None
+
+
+def get_foo_service() -> FooService:
+    global _foo_service
+    if _foo_service is None:
+        _foo_service = FooService()
+    return _foo_service
+```
+
+### Enums for Categorical Values
+
+```python
+from enum import Enum
+
+class MatchType(str, Enum):
+    PREFIX = "prefix"
+    EXACT = "exact"
+    PATTERN = "pattern"
+```
+
+### Unit Test Structure
+
+```python
+"""Unit tests for FooService.
+
+Tests: <what is covered>
+"""
+
+import pytest
+from app.services.foo_service import FooService, FooResult
+
+
+class TestFooService:
+    """Test suite for FooService."""
+
+    def setup_method(self) -> None:
+        """Set up test fixtures."""
+        self.service = FooService()
+
+    def test_basic_case(self) -> None:
+        """One behaviour per test, descriptive name."""
+        result = self.service.calculate(5)
+        assert result.value == 5
+
+    # Group related tests with comments:
+    # ============================================================================
+    # EDGE CASES
+    # ============================================================================
+
+    def test_empty_input_raises(self) -> None:
+        with pytest.raises(ValueError, match="x is required"):
+            self.service.calculate(0)
+```
+
+**Rules:**
+- `class TestXxx` with `setup_method` — never bare functions at module level
+- One assertion per behaviour (multiple `assert` lines for one result are fine)
+- Descriptive names: `test_<what>_<condition>_<expected>`
+- Group with `# ===` comment blocks: OVERRIDE RULES, EDGE CASES, etc.
+- No DB in unit tests — mock async sessions with `unittest.mock.AsyncMock`
+
+### Async DB Services
+
+For services that need a DB session, inject it as a parameter (not via singleton):
+
+```python
+from sqlalchemy.ext.asyncio import AsyncSession
+
+class ZoneCalculatorService:
+    def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
+
+    async def calculate_zone(self, db: AsyncSession, ...) -> int:
+        ...
+```
+
+Unit tests mock the session:
+```python
+from unittest.mock import AsyncMock, MagicMock
+
+def setup_method(self) -> None:
+    self.service = ZoneCalculatorService()
+    self.db = AsyncMock(spec=AsyncSession)
+```
+
 ---
 
 **Last Updated:** 2026-03-19

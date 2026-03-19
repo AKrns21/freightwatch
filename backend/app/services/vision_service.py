@@ -3,17 +3,19 @@
 FreightWatch uses Claude only (no dual-model). Handles scanned PDFs and images.
 """
 
+from __future__ import annotations
+
 import asyncio
 import base64
 import time
 
 import anthropic
+import structlog
 
 from app.config import settings
 from app.utils.error_handler import handle_service_errors
-from app.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Prompt focused on freight document types (tariffs, invoices, shipment lists)
 _VISION_PROMPT = """\
@@ -35,6 +37,7 @@ class VisionService:
     """Single-model Claude vision extraction for freight documents."""
 
     def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
         self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
     @handle_service_errors("vision_extract_page")
@@ -129,3 +132,18 @@ class VisionService:
                 _, text = item  # type: ignore[misc]
                 out[pn] = text
         return out
+
+
+# ---------------------------------------------------------------------------
+# Singleton
+# ---------------------------------------------------------------------------
+
+_vision_service: VisionService | None = None
+
+
+def get_vision_service() -> VisionService:
+    """Return the module-level VisionService singleton."""
+    global _vision_service
+    if _vision_service is None:
+        _vision_service = VisionService()
+    return _vision_service

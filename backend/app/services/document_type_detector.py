@@ -7,16 +7,18 @@ Step 3: LLM fallback via Claude Haiku (only when steps 1+2 fail on PDFs/images).
 DocType values: 'tariff' | 'invoice' | 'shipment_csv' | 'other'
 """
 
+from __future__ import annotations
+
 import json
 import re
 from typing import Literal
 
 import anthropic
+import structlog
 
 from app.config import settings
-from app.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = structlog.get_logger(__name__)
 
 DocType = Literal["tariff", "invoice", "shipment_csv", "other"]
 
@@ -82,6 +84,7 @@ class DocumentTypeDetector:
     """Three-step document type detection pipeline."""
 
     def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
         self._client: anthropic.AsyncAnthropic | None = None
 
     # ── public API ─────────────────────────────────────────────────────────
@@ -203,3 +206,18 @@ class DocumentTypeDetector:
         if self._client is None:
             self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
         return self._client
+
+
+# ---------------------------------------------------------------------------
+# Singleton
+# ---------------------------------------------------------------------------
+
+_document_type_detector: DocumentTypeDetector | None = None
+
+
+def get_document_type_detector() -> DocumentTypeDetector:
+    """Return the module-level DocumentTypeDetector singleton."""
+    global _document_type_detector
+    if _document_type_detector is None:
+        _document_type_detector = DocumentTypeDetector()
+    return _document_type_detector

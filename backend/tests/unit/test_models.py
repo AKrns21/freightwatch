@@ -4,6 +4,8 @@ No database required — tests that models can be constructed and their
 attributes are accessible without errors.
 """
 
+from __future__ import annotations
+
 import uuid
 from datetime import date, datetime, timezone
 from decimal import Decimal

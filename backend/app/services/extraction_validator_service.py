@@ -20,6 +20,10 @@ import re
 from dataclasses import dataclass, field
 from typing import Literal
 
+import structlog
+
+logger = structlog.get_logger(__name__)
+
 # ---------------------------------------------------------------------------
 # Constants (identical to TypeScript originals)
 # ---------------------------------------------------------------------------
@@ -115,6 +119,9 @@ class ExtractionValidatorService:
     responsible for pre-fetching data needed for deduplication checks and
     passing it in directly (``existing_refs`` in ``validate_shipments``).
     """
+
+    def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
 
     # ------------------------------------------------------------------
     # Rule 1-3: Invoice validation
@@ -301,3 +308,18 @@ class ExtractionValidatorService:
             status=_derive_status(violations),
             violations=violations,
         )
+
+
+# ---------------------------------------------------------------------------
+# Singleton
+# ---------------------------------------------------------------------------
+
+_extraction_validator_service: ExtractionValidatorService | None = None
+
+
+def get_extraction_validator_service() -> ExtractionValidatorService:
+    """Return the module-level ExtractionValidatorService singleton."""
+    global _extraction_validator_service
+    if _extraction_validator_service is None:
+        _extraction_validator_service = ExtractionValidatorService()
+    return _extraction_validator_service

@@ -4,6 +4,8 @@ All tests run without a real DB or LLM API.
 Fixture data from data/*.json is used directly.
 """
 
+from __future__ import annotations
+
 import json
 from datetime import date
 from decimal import Decimal

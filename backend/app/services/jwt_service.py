@@ -4,19 +4,24 @@ Stateless JWT operations only — no database token storage in Phase 1.
 Tokens are validated by signature + expiration.
 """
 
+from __future__ import annotations
+
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
+import structlog
 
 from app.config import settings
-from app.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class JWTService:
     """Service for generating and validating JWT tokens."""
+
+    def __init__(self) -> None:
+        self.logger = structlog.get_logger(__name__)
 
     @staticmethod
     def generate_jwt_token(
@@ -93,3 +98,18 @@ class JWTService:
         except Exception as e:
             logger.error("jwt_decode_error", error=str(e), error_type=type(e).__name__)
             return None
+
+
+# ---------------------------------------------------------------------------
+# Singleton
+# ---------------------------------------------------------------------------
+
+_jwt_service: JWTService | None = None
+
+
+def get_jwt_service() -> JWTService:
+    """Return the module-level JWTService singleton."""
+    global _jwt_service
+    if _jwt_service is None:
+        _jwt_service = JWTService()
+    return _jwt_service
