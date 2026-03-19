@@ -15,7 +15,7 @@ from datetime import datetime
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 from sqlalchemy import delete, select
@@ -101,6 +101,7 @@ async def list_aliases(
 async def create_alias(
     carrier_id: UUID,
     body: CreateAliasRequest,
+    request: Request,
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> AliasResponse:
     """Create a new alias for a carrier (tenant-scoped)."""
@@ -110,7 +111,9 @@ async def create_alias(
     if carrier is None:
         raise HTTPException(status_code=404, detail="Carrier not found")
 
+    tenant_id = getattr(request.state, "tenant_id", None)
     alias = CarrierAlias(
+        tenant_id=tenant_id,
         carrier_id=carrier_id,
         alias_text=body.alias_text.strip(),
     )

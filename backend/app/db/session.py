@@ -122,7 +122,7 @@ async def get_tenant_db(tenant_id: str) -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             await session.execute(
-                text("SET LOCAL app.current_tenant = :tid"),
+                text("SELECT set_config('app.current_tenant', :tid, true)"),
                 {"tid": tenant_id},
             )
             yield session

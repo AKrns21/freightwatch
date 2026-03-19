@@ -154,7 +154,17 @@ async def _get_project_or_404(db: AsyncSession, project_id: UUID) -> Project:
 
 
 def _project_to_response(p: Project) -> ProjectResponse:
-    return ProjectResponse.model_validate(p)
+    return ProjectResponse(
+        id=p.id,
+        name=p.name,
+        customer_name=p.customer_name,
+        phase=p.phase,
+        status=p.status,
+        consultant_id=p.consultant_id,
+        project_metadata=p.project_metadata,
+        created_at=p.created_at,
+        updated_at=p.updated_at,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +194,9 @@ async def create_project(
     request: Request = None,  # type: ignore[assignment]
 ) -> ProjectResponse:
     """Create a new project."""
+    tenant_id = getattr(request.state, "tenant_id", None)
     project = Project(
+        tenant_id=tenant_id,
         name=body.name,
         customer_name=body.customer_name,
         phase=body.phase or "quick_check",

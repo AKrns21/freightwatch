@@ -11,7 +11,7 @@ from datetime import datetime
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from sqlalchemy import select
@@ -93,6 +93,7 @@ async def list_uploads(
 
 @router.post("", response_model=UploadResponse, status_code=202)
 async def create_upload(
+    request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile,
     project_id: UUID | None = Form(None),
@@ -143,7 +144,9 @@ async def create_upload(
     storage_path = storage_dir / f"{file_hash}{Path(file.filename or 'upload').suffix}"
     storage_path.write_bytes(content)
 
+    tenant_id_str = getattr(request.state, "tenant_id", None)
     upload = Upload(
+        tenant_id=tenant_id_str,
         filename=file.filename or "upload",
         file_hash=file_hash,
         mime_type=file.content_type,

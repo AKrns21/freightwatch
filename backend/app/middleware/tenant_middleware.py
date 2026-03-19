@@ -61,9 +61,10 @@ async def get_current_tenant_db(request: Request) -> AsyncGenerator[AsyncSession
 
     async with AsyncSessionLocal() as session:
         try:
-            # SET LOCAL resets automatically at transaction end — never use SET SESSION
+            # set_config(..., true) = transaction-local, resets at tx end
+            # (SET LOCAL doesn't support bind parameters in asyncpg)
             await session.execute(
-                text("SET LOCAL app.current_tenant = :tid"),
+                text("SELECT set_config('app.current_tenant', :tid, true)"),
                 {"tid": tenant_id},
             )
             yield session

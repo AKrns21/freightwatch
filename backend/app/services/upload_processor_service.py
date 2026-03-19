@@ -637,7 +637,7 @@ class _TenantSession:
         self._cm = AsyncSessionLocal()
         self._session = await self._cm.__aenter__()
         await self._session.execute(
-            text("SET LOCAL app.current_tenant = :tid"),
+            text("SELECT set_config('app.current_tenant', :tid, true)"),
             {"tid": str(self._tenant_id)},
         )
         return self._session
