@@ -16,7 +16,8 @@ dependencies = [
     "alembic>=1.14.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.6.0",
-    "python-jose[cryptography]>=3.3.0",
+    "PyJWT>=2.9.0",
+    "structlog>=24.0.0",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.12",
     "anthropic>=0.40.0",
@@ -32,6 +33,9 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.13.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
 
 [tool.ruff]
 line-length = 100

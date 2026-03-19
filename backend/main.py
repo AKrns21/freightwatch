@@ -1,12 +1,9 @@
-from fastapi import FastAPI
+"""Entry point — imports from app package.
 
-app = FastAPI(
-    title="FreightWatch API",
-    description="Freight cost analysis platform",
-    version="0.1.0",
-)
+Start with:
+    uvicorn main:app --reload --port 4000
+or:
+    uvicorn app.main:app --reload --port 4000
+"""
 
-
-@app.get("/health")
-async def health() -> dict:
-    return {"status": "ok"}
+from app.main import app  # noqa: F401
