@@ -550,9 +550,9 @@ class TemplateService:
         headers: list[str] = characteristics.get("headers", [])
         first_lines: list[str] = characteristics.get("firstLines", [])
 
-        # MIME type check (30%)
+        # MIME type check (30%) — use same substring logic as _is_mime_compatible
         allowed_mimes = detection.get("mime_types", [])
-        if mime_type and allowed_mimes and mime_type in allowed_mimes:
+        if mime_type and allowed_mimes and self._is_mime_compatible(template, mime_type):
             score += 0.3
             reasons.append("MIME type match")
 

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProjectsPage } from './pages/Projects';
 import { NewProjectPage } from './pages/NewProject';
 import { UploadReviewPage } from './pages/UploadReview';
+import { UploadDetailPage } from './pages/UploadDetail';
 import { ReportViewerPage } from './pages/ReportViewer';
 import { ProjectDetailPage } from './pages/ProjectDetail';
 import { LoginPage } from './pages/Login';
@@ -39,6 +40,7 @@ function App() {
 
           {/* Upload Review */}
           <Route path="/uploads/:uploadId/review" element={<RequireAuth><UploadReviewPage /></RequireAuth>} />
+          <Route path="/uploads/:uploadId/detail" element={<RequireAuth><UploadDetailPage /></RequireAuth>} />
 
           {/* Reports */}
           <Route

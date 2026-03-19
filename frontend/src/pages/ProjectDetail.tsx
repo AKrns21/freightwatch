@@ -159,12 +159,14 @@ export const ProjectDetailPage: React.FC = () => {
                         upload.status === 'parsed' ? 'bg-green-100 text-green-700' :
                         upload.status === 'failed' ? 'bg-red-100 text-red-700' :
                         upload.status === 'needs_review' ? 'bg-yellow-100 text-yellow-700' :
+                        upload.status === 'needs_manual_review' ? 'bg-orange-100 text-orange-700' :
+                        upload.status === 'partial_success' ? 'bg-blue-100 text-blue-700' :
                         'bg-gray-100 text-gray-600'
                       }`}>
                         {upload.status}
                       </span>
                     </td>
-                    <td className="py-3">
+                    <td className="py-3 flex gap-3">
                       {upload.status === 'needs_review' && (
                         <Link
                           to={`/uploads/${upload.id}/review`}
@@ -173,6 +175,12 @@ export const ProjectDetailPage: React.FC = () => {
                           Prüfen →
                         </Link>
                       )}
+                      <Link
+                        to={`/uploads/${upload.id}/detail`}
+                        className="text-gray-500 hover:text-gray-700 text-xs"
+                      >
+                        Detail →
+                      </Link>
                     </td>
                   </tr>
                 ))}

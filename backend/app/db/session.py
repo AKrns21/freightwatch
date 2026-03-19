@@ -46,9 +46,17 @@ def _fix_uvloop_dns() -> None:
 _fix_uvloop_dns()
 
 # SSL connect_args for Supabase pooler (Supavisor requires SSL)
+# statement_timeout: cancel any server-side statement after 20 s so Postgres
+#   backends don't outlive their asyncpg connection (prevents orphan row locks).
+# command_timeout: Python-side asyncio timeout; must be > statement_timeout so
+#   the server cancel arrives before asyncpg gives up.
 _connect_args: dict = {
-    "server_settings": {"jit": "off"},
-    "command_timeout": 120,
+    "server_settings": {
+        "jit": "off",
+        "statement_timeout": "20000",           # 20 s — cancel slow statements
+        "idle_in_transaction_session_timeout": "30000",  # 30 s — kill zombie backends holding locks
+    },
+    "command_timeout": 25,  # 25 s — Python-side (> statement_timeout)
 }
 if settings.db_ssl_required:
     _connect_args["ssl"] = "require"

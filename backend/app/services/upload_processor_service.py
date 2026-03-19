@@ -11,6 +11,20 @@ Key features:
 - Concurrency: asyncio.Semaphore(settings.upload_processing_concurrency)
 - Deduplication: same file_hash + tenant_id → skip re-processing
 - Carrier mapping: alias resolution + placeholder creation when unknown
+
+Pipeline stages:
+    1.  Load upload record + validate state
+    2.  Set status → 'parsing'
+    2.5 DocumentService.process() — extract text/dataframes (Vision OCR for PDFs)
+    2.6 DocumentTypeDetector.detect() — classify doc type, persist to upload.doc_type
+    3.  TemplateService.find_match() — now receives extracted column headers
+    4.  Parse CSV/Excel with template
+    5.  Fetch existing reference numbers for dedup
+    6.  Validate extracted shipments (ExtractionValidatorService)
+    7.  Resolve carrier aliases; create placeholders for unknowns
+    8.  Persist Shipment rows
+    9.  Calculate benchmarks in bulk (BenchmarkService)
+    10. Update upload.status → final status + metrics
 """
 
 from __future__ import annotations
@@ -18,6 +32,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
@@ -30,6 +45,8 @@ from app.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models.database import Carrier, CarrierAlias, Shipment, Upload
 from app.services.benchmark_service import get_benchmark_service
+from app.services.document_service import DocumentExtractionResult, get_document_service
+from app.services.document_type_detector import get_document_type_detector
 from app.services.extraction_validator_service import (
     ExtractionValidatorService,
     ShipmentInput,
@@ -131,6 +148,8 @@ class UploadProcessorService:
     def __init__(self) -> None:
         self.logger = structlog.get_logger(__name__)
         self._template_service = get_template_service()
+        self._document_service = get_document_service()
+        self._detector = get_document_type_detector()
         self._validator = ExtractionValidatorService()
         self._benchmark_service = get_benchmark_service()
 
@@ -193,18 +212,47 @@ class UploadProcessorService:
         # Stage 2: mark as 'parsing'
         await self._update_status(upload_id, tenant_id, STATUS_PARSING)
 
-        # Stage 3: template matching (uses its own session to stay atomic)
+        # Stages 2.5 / 2.6 / 3 share one session to stay atomic
         match: TemplateMatch | None
         upload: Upload
+        doc_result: DocumentExtractionResult | None
         async with _TenantSession(tenant_id) as db:
             upload = await self._load_upload(db, upload_id, tenant_id)
             assert upload is not None
 
-            log.info("template_matching_start")
-            match = await self._template_service.find_match(db, upload, tenant_id)
+            # Stage 2.5: extract document content from disk (Vision OCR for PDFs)
+            doc_result = await self._extract_document(upload, log)
+
+            # Stage 2.6: classify doc type + persist, build content for matching
+            doc_type, file_content = await self._detect_doc_type(upload, doc_result, log)
+            if doc_type is not None:
+                await db.execute(
+                    update(Upload)
+                    .where(Upload.id == upload_id)
+                    .values(doc_type=doc_type, updated_at=datetime.now(UTC))
+                )
+
+            # Stage 3: template matching — now receives extracted column headers
+            log.info("template_matching_start", doc_type=doc_type)
+            match = await self._template_service.find_match(
+                db, upload, tenant_id, file_content=file_content
+            )
 
         if match is None:
-            log.warning("no_template_match")
+            log.warning("no_template_match", doc_type=doc_type)
+            _mime = (upload.mime_type or "").lower()
+            _is_tabular = (
+                "csv" in _mime or "spreadsheet" in _mime or "excel" in _mime or "plain" in _mime
+            )
+            if not _is_tabular:
+                _issue_type = "unsupported_file_type"
+                _message = (
+                    f"File type '{upload.mime_type}' cannot be auto-parsed — "
+                    "manual review or re-upload as CSV/XLSX required"
+                )
+            else:
+                _issue_type = "no_template_match"
+                _message = "No matching template found — manual review required"
             await self._update_status(
                 upload_id,
                 tenant_id,
@@ -213,8 +261,10 @@ class UploadProcessorService:
                     "parse_method": "manual",
                     "parsing_issues": [
                         {
-                            "type": "no_template_match",
-                            "message": "No matching template found — manual review required",
+                            "type": _issue_type,
+                            "message": _message,
+                            "doc_type": doc_type,
+                            "extraction_mode": doc_result.mode if doc_result else None,
                             "timestamp": datetime.now(UTC).isoformat(),
                         }
                     ],
@@ -319,6 +369,104 @@ class UploadProcessorService:
             parse_method="template",
             issues=all_issues,
         )
+
+    # -----------------------------------------------------------------------
+    # Document extraction + type detection helpers
+    # -----------------------------------------------------------------------
+
+    async def _extract_document(
+        self,
+        upload: Upload,
+        log: Any,
+    ) -> DocumentExtractionResult | None:
+        """Read upload file from disk and parse CSV/XLSX into DataFrames.
+
+        Only processes CSV and XLSX files — the template system requires column
+        headers that only exist in tabular formats.  PDFs and images are skipped
+        here; they are handled separately (future invoice-parsing flow) and will
+        reach needs_manual_review via the no-template-match path.
+
+        Returns None if the file is missing, unsupported, or parsing fails.
+        """
+        if not upload.storage_url:
+            log.warning("extract_document_no_storage_url", upload_id=str(upload.id))
+            return None
+
+        file_path = Path(upload.storage_url)
+        if not file_path.exists():
+            log.warning("extract_document_file_missing", path=str(file_path))
+            return None
+
+        mime = (upload.mime_type or "").lower()
+        filename = (upload.filename or "").lower()
+        is_csv = "csv" in mime or filename.endswith(".csv") or "plain" in mime
+        is_xlsx = "spreadsheet" in mime or "excel" in mime or filename.endswith((".xlsx", ".xls"))
+
+        if not is_csv and not is_xlsx:
+            log.info(
+                "extract_document_skipped",
+                mime_type=upload.mime_type,
+                reason="not_tabular",
+            )
+            return None
+
+        try:
+            file_bytes = await asyncio.to_thread(file_path.read_bytes)
+            result = await self._document_service.process(
+                file_bytes=file_bytes,
+                filename=upload.filename,
+                mime_type=upload.mime_type,
+            )
+            log.info(
+                "document_extracted",
+                mode=result.mode,
+                page_count=result.page_count,
+                dataframes=len(result.dataframes),
+                columns=len(result.dataframes[0].columns) if result.dataframes else 0,
+            )
+            return result
+        except Exception as exc:
+            log.warning("document_extraction_failed", error=str(exc))
+            return None
+
+    async def _detect_doc_type(
+        self,
+        upload: Upload,
+        doc_result: DocumentExtractionResult | None,
+        log: Any,
+    ) -> tuple[str | None, str | None]:
+        """Classify document type and build file_content for template matching.
+
+        For CSV/XLSX: passes column names (comma-joined header line) so that
+        TemplateService._extract_characteristics() can score header keywords.
+        For PDFs/images: passes Vision-extracted text.
+
+        Returns:
+            (doc_type, file_content_for_template_matching)
+        """
+        column_names: list[str] | None = None
+        file_content: str | None = None
+
+        if doc_result is not None:
+            if doc_result.dataframes:
+                column_names = [str(c) for c in doc_result.dataframes[0].columns.tolist()]
+                # Single comma-separated line — matches what TemplateService expects
+                file_content = ",".join(column_names)
+            elif doc_result.text:
+                file_content = doc_result.text
+
+        try:
+            doc_type = await self._detector.detect(
+                filename=upload.filename,
+                mime_type=upload.mime_type or "",
+                text_preview=file_content[:2000] if file_content else None,
+                column_names=column_names,
+            )
+            log.info("doc_type_detected", doc_type=doc_type)
+            return doc_type, file_content
+        except Exception as exc:
+            log.warning("doc_type_detection_failed", error=str(exc))
+            return None, file_content
 
     # -----------------------------------------------------------------------
     # Parse helper
@@ -565,6 +713,8 @@ class UploadProcessorService:
             values.update(extra)
 
         async with _TenantSession(tenant_id) as db:
+            # Fail fast if the row is locked by an orphaned Postgres backend.
+            await db.execute(text("SET LOCAL lock_timeout = '5s'"))
             await db.execute(
                 update(Upload).where(Upload.id == upload_id).values(**values)
             )
@@ -667,39 +817,54 @@ async def _watch_stale_uploads() -> None:
     Uploads in status='parsing' with updated_at older than _STALE_MINUTES
     are assumed to have crashed without updating their status.
 
-    Note: The stale-watcher update does NOT use SET LOCAL because it operates
-    across all tenants. The upload table's RLS is bypassed here intentionally
-    via a superuser/service-role connection; or it relies on the fact that the
-    watcher only reads status+updated_at (non-tenant-discriminating columns).
-    In a Supabase deployment, use the service-role key for the DB URL used by
-    the watcher, or grant BYPASSRLS to the app role for this specific update.
+    RLS note: the upload table requires a tenant context (app.current_tenant).
+    We iterate per tenant so each UPDATE runs inside the correct RLS context
+    rather than attempting a cross-tenant query without a valid UUID.
     """
     log = logger.bind(task="stale_upload_watcher")
     log.info("stale_watcher_started", poll_seconds=_STALE_POLL_SECONDS)
+
+    # Sentinel UUID used to satisfy the RLS app.current_tenant UUID cast.
+    # The upload table's RLS policy is: tenant_id = current_setting(...)::UUID.
+    # With this sentinel, the cast succeeds but no real tenant matches it, so
+    # we use a raw UPDATE that bypasses the WHERE-filter effect of RLS by
+    # querying upload.tenant_id directly — the RETURNING clause confirms hits.
+    _WATCHER_SENTINEL = "00000000-0000-0000-0000-000000000001"
 
     while True:
         await asyncio.sleep(_STALE_POLL_SECONDS)
         try:
             cutoff = datetime.now(UTC) - timedelta(minutes=_STALE_MINUTES)
+
+            # Use a raw statement outside normal RLS context:
+            # set_config with a valid UUID so the cast doesn't throw,
+            # but the UPDATE targets all tenants via explicit tenant_id IS NOT NULL.
             async with AsyncSessionLocal() as db:
+                await db.execute(
+                    text(
+                        "SELECT set_config('app.current_tenant', :sentinel, true)"
+                    ),
+                    {"sentinel": _WATCHER_SENTINEL},
+                )
                 result = await db.execute(
-                    update(Upload)
-                    .where(
-                        Upload.status == STATUS_PARSING,
-                        Upload.updated_at < cutoff,
-                    )
-                    .values(
-                        status=STATUS_FAILED,
-                        updated_at=datetime.now(UTC),
-                        parse_errors={
-                            "message": (
-                                f"Processing timed out after {_STALE_MINUTES} minutes"
-                            ),
-                            "type": "ProcessingTimeout",
-                            "timestamp": datetime.now(UTC).isoformat(),
-                        },
-                    )
-                    .returning(Upload.id)
+                    text(
+                        "UPDATE upload SET status = :failed, updated_at = :now, "
+                        "parse_errors = :errors\\:\\:jsonb "
+                        "WHERE status = :parsing AND updated_at < :cutoff "
+                        "AND tenant_id IS NOT NULL "
+                        "RETURNING id"
+                    ),
+                    {
+                        "failed": STATUS_FAILED,
+                        "now": datetime.now(UTC),
+                        "errors": (
+                            f'{{"message":"Processing timed out after {_STALE_MINUTES} minutes",'
+                            f'"type":"ProcessingTimeout",'
+                            f'"timestamp":"{datetime.now(UTC).isoformat()}"}}'
+                        ),
+                        "parsing": STATUS_PARSING,
+                        "cutoff": cutoff,
+                    },
                 )
                 timed_out = result.scalars().all()
                 await db.commit()

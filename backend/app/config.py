@@ -65,6 +65,9 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     log_format: str = "json"
+    log_file: str = "logs/freightwatch.log"  # path relative to backend/ working dir
+    log_file_max_mb: int = 10               # rotate when file exceeds this size
+    log_file_backup_count: int = 7          # keep this many rotated files
 
     # Sentry (optional)
     sentry_enabled: bool = False

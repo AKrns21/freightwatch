@@ -208,12 +208,17 @@ Repository/
 
 **Upload Pipeline:**
 ```
-1. Upload file → Hash (SHA256)
-2. Check deduplication (file_hash + tenant_id)
-3. Save to storage → Create upload record (status='pending')
-4. FastAPI BackgroundTask: Parse → Map carriers → Save shipments
-5. Calculate benchmarks (asyncio.gather with semaphore, max 5 concurrent)
-6. Update status='parsed'
+1.  Upload file → Hash (SHA256)
+2.  Check deduplication (file_hash + tenant_id)
+3.  Save to storage → Create upload record (status='pending')
+4.  FastAPI BackgroundTask:
+    2.5  DocumentService.process() — extract text/DataFrames; Vision OCR for PDFs
+    2.6  DocumentTypeDetector.detect() — classify doc type, persist to upload.doc_type
+    3.   TemplateService.find_match() — score templates against extracted column headers
+    4.   Parse CSV/Excel with matching template
+5.  Validate + resolve carriers → Save shipments
+6.  Calculate benchmarks (asyncio.gather with semaphore, max 5 concurrent)
+7.  Update status='parsed' | 'partial_success' | 'needs_manual_review' | 'failed'
 ```
 
 **Tariff Calculation:**
@@ -241,7 +246,7 @@ Repository/
 - **diesel_floater**: Time-based diesel% (valid_from/until, basis='base'|'base_plus_toll')
 - **fx_rate**: Historical exchange rates (rate_date, from_ccy, to_ccy)
 - **shipment_benchmark**: Expected costs + delta + classification
-- **parsing_template**: LLM-powered parsing templates per carrier
+- **parsing_template**: Generic parsing templates — global (tenant_id IS NULL) or tenant-specific
 - **manual_mapping**: Human-reviewed carrier/service mappings
 - **consultant_note**: Quality issues and observations per project
 
@@ -276,6 +281,56 @@ async def db_session(engine):
 - Parsing coverage ≥90%
 - Tariff match rate ≥85%
 - Report generation <30s for 10k shipments
+
+## Parsing Templates
+
+### Rule: No carrier-specific global templates
+
+Global templates (`tenant_id IS NULL`) must **never** be written for a specific carrier or customer. There will be hundreds of different invoice formats — a per-carrier approach doesn't scale and creates maintenance debt.
+
+Instead, global templates are **language-level generics** that cover all carriers at once:
+
+| Template | Detection keyword | Covers |
+|---|---|---|
+| Sendungsliste – Deutsch (CSV) | `"datum"` | Any German carrier CSV |
+| Freight List – English (CSV) | `"date"` | Any English/international carrier CSV |
+| Sendungsliste – Deutsch (XLSX) | `"datum"` | Any German carrier XLSX |
+| Freight List – English (XLSX) | `"date"` | Any English/international XLSX |
+
+**Tenant-specific templates** (`tenant_id = <uuid>`) are the right place for carrier-specific mappings when a customer's carrier uses unusual column names. These are created via the Upload Review UI after a `needs_manual_review` upload.
+
+### How detection works
+
+`TemplateService.find_match()` scores templates against the uploaded file:
+- **MIME type match** (30%) — CSV vs XLSX vs PDF
+- **Header keywords** (50%) — substring match against CSV column names
+- **Filename pattern** (20%) — regex match against filename
+
+Threshold: **0.70 confidence** required to use a template automatically.
+
+A single `header_keywords` entry with substring matching gives 80% confidence (0.5 + 0.3 MIME) for any file whose column headers contain it. `"datum"` matches `Versanddatum`, `Lieferdatum`, `Rechnungsdatum`, etc. `"date"` matches `shipment_date`, `delivery_date`, `invoice_date`, etc.
+
+### How mappings work
+
+Template `mappings` use `{"keywords": [...]}` to try multiple column name variants per field:
+
+```python
+# ✅ GOOD: exhaustive keyword list, works across carriers
+"weight_kg": {"keywords": ["Gewicht", "Gewicht (kg)", "Gesamtgewicht", "weight_kg", "weight"]}
+
+# ❌ BAD: hardcoded to one carrier's column name
+"weight_kg": "GewichtKG_Stahl"
+```
+
+Fields not found by any keyword are silently skipped; the completeness score flags the gap.
+
+### Updating templates
+
+```bash
+# Edit app/scripts/seed_templates.py, then:
+cd backend && python -m app.scripts.seed_templates
+# Idempotent: existing templates are updated in-place, stale ones soft-deleted.
+```
 
 ## Common Pitfalls
 
@@ -463,4 +518,4 @@ def setup_method(self) -> None:
 ---
 
 **Last Updated:** 2026-03-19
-**Version:** 2.0 (Python/FastAPI migration — Phase 0)
+**Version:** 2.1 (Generic template approach + document extraction pipeline)

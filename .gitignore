@@ -25,3 +25,9 @@ htmlcov/
 
 # Supabase CLI local state
 supabase/.temp/
+
+# Log files
+backend/logs/
+
+# Uploaded files (user data, not code)
+backend/uploads/
