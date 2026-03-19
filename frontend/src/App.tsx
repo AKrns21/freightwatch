@@ -5,42 +5,49 @@ import { NewProjectPage } from './pages/NewProject';
 import { UploadReviewPage } from './pages/UploadReview';
 import { ReportViewerPage } from './pages/ReportViewer';
 import { ProjectDetailPage } from './pages/ProjectDetail';
+import { LoginPage } from './pages/Login';
+
+/**
+ * Simple auth guard — redirects to /login when no token is stored.
+ */
+const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 /**
  * Main App Component with React Router
- *
- * Routes:
- * - / → Projects list
- * - /projects → Projects list
- * - /projects/:projectId → Project details (TODO)
- * - /projects/:projectId/reports → Latest report
- * - /projects/:projectId/reports/:reportId → Specific report version
- * - /uploads/:uploadId/review → Upload review page
  */
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100">
         <Routes>
+          {/* Public */}
+          <Route path="/login" element={<LoginPage />} />
+
           {/* Default route redirects to projects */}
           <Route path="/" element={<Navigate to="/projects" replace />} />
 
-          {/* Projects */}
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/new" element={<NewProjectPage />} />
-          <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
+          {/* Protected routes */}
+          <Route path="/projects" element={<RequireAuth><ProjectsPage /></RequireAuth>} />
+          <Route path="/projects/new" element={<RequireAuth><NewProjectPage /></RequireAuth>} />
+          <Route path="/projects/:projectId" element={<RequireAuth><ProjectDetailPage /></RequireAuth>} />
 
           {/* Upload Review */}
-          <Route path="/uploads/:uploadId/review" element={<UploadReviewPage />} />
+          <Route path="/uploads/:uploadId/review" element={<RequireAuth><UploadReviewPage /></RequireAuth>} />
 
           {/* Reports */}
           <Route
             path="/projects/:projectId/reports"
-            element={<ReportViewerPage />}
+            element={<RequireAuth><ReportViewerPage /></RequireAuth>}
           />
           <Route
             path="/projects/:projectId/reports/:reportId"
-            element={<ReportViewerPage />}
+            element={<RequireAuth><ReportViewerPage /></RequireAuth>}
           />
 
           {/* 404 Fallback */}

@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
-    cors_allowed_methods: list[str] = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+    cors_allowed_methods: list[str] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     cors_allowed_headers: list[str] = [
         "Content-Type",
         "Authorization",
