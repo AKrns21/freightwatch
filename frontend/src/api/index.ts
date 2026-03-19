@@ -2,10 +2,10 @@ import axios from 'axios';
 
 /**
  * API client configuration
- * Base URL points to NestJS backend (default port 3000)
+ * Base URL points to FastAPI backend (default port 4000)
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000',
   headers: {
     'Content-Type': 'application/json',
   },

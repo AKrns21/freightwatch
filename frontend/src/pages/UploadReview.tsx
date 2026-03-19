@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import type { UploadReviewData, ApiResponse, CarrierOption, ParsingIssue } from '../types';
+import type { UploadReviewData, CarrierOption, ParsingIssue } from '../types';
 
 /**
  * UploadReviewPage - Review LLM Analysis & Mappings (Phase 7.2)
@@ -34,11 +34,11 @@ export const UploadReviewPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const [reviewResponse, carriersResponse] = await Promise.all([
-        api.get<ApiResponse<UploadReviewData>>(`/api/uploads/${uploadId}/review`),
-        api.get<ApiResponse<CarrierOption[]>>(`/api/uploads/${uploadId}/review/carriers`),
+        api.get<UploadReviewData>(`/api/uploads/${uploadId}/review`),
+        api.get<CarrierOption[]>(`/api/uploads/${uploadId}/review/carriers`),
       ]);
-      setReviewData(reviewResponse.data.data);
-      setCarriers(carriersResponse.data.data);
+      setReviewData(reviewResponse.data);
+      setCarriers(carriersResponse.data);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to load review data');
       console.error('Failed to load review data:', err);
@@ -54,16 +54,16 @@ export const UploadReviewPage: React.FC = () => {
     setResolving((prev) => ({ ...prev, [carrierName]: true }));
     try {
       await api.post(`/api/uploads/${uploadId}/review/resolve-carrier`, {
-        carrier_name: carrierName,
-        real_carrier_id: realCarrierId,
+        carrierName,
+        realCarrierId,
       });
       // Remove resolved issue from local state
       setReviewData((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
-          parsing_issues: (prev.parsing_issues ?? []).filter(
-            (i: ParsingIssue) => !(i.type === 'unknown_carrier' && i.carrier_name === carrierName)
+          parsingIssues: (prev.parsingIssues ?? []).filter(
+            (i: ParsingIssue) => !(i.type === 'unknown_carrier' && i.carrierName === carrierName)
           ),
         };
       });
@@ -80,11 +80,11 @@ export const UploadReviewPage: React.FC = () => {
     try {
       setSubmitting(true);
       await api.post(`/api/uploads/${uploadId}/review/accept`, {
-        mappings: reviewData.suggested_mappings,
-        save_as_template: false,
+        mappings: reviewData.suggestedMappings,
+        saveAsTemplate: false,
       });
       // Navigate back to project page
-      navigate(`/projects/${reviewData.upload.project_id}`);
+      navigate(`/projects/${reviewData.upload.projectId}`);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to accept mappings');
       console.error('Failed to accept mappings:', err);
@@ -102,7 +102,7 @@ export const UploadReviewPage: React.FC = () => {
         reason: 'Mappings incorrect',
       });
       // Navigate back to project page
-      navigate(`/projects/${reviewData.upload.project_id}`);
+      navigate(`/projects/${reviewData.upload.projectId}`);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to reject upload');
       console.error('Failed to reject upload:', err);
@@ -155,7 +155,7 @@ export const UploadReviewPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <span className="text-gray-600">Filename:</span>{' '}
-            <span className="font-medium">{reviewData.upload.original_filename}</span>
+            <span className="font-medium">{reviewData.upload.filename}</span>
           </div>
           <div>
             <span className="text-gray-600">Status:</span>{' '}
@@ -165,7 +165,7 @@ export const UploadReviewPage: React.FC = () => {
       </div>
 
       {/* Unmapped Carriers */}
-      {(reviewData.parsing_issues ?? []).filter((i: ParsingIssue) => i.type === 'unknown_carrier').length > 0 && (
+      {(reviewData.parsingIssues ?? []).filter((i: ParsingIssue) => i.type === 'unknown_carrier').length > 0 && (
         <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-1 text-yellow-800">Unmapped Carriers</h2>
           <p className="text-sm text-yellow-700 mb-4">
@@ -173,23 +173,23 @@ export const UploadReviewPage: React.FC = () => {
             carrier to enable tariff benchmarking.
           </p>
           <div className="space-y-3">
-            {(reviewData.parsing_issues ?? [])
+            {(reviewData.parsingIssues ?? [])
               .filter((i: ParsingIssue) => i.type === 'unknown_carrier')
               .map((issue: ParsingIssue) => (
                 <div
-                  key={issue.carrier_name}
+                  key={issue.carrierName}
                   className="flex items-center gap-3 bg-white border border-yellow-200 rounded p-3"
                 >
                   <span className="font-medium text-gray-900 w-48 shrink-0">
-                    {issue.carrier_name}
+                    {issue.carrierName}
                   </span>
                   <select
                     className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm"
-                    value={carrierSelections[issue.carrier_name!] ?? ''}
+                    value={carrierSelections[issue.carrierName!] ?? ''}
                     onChange={(e) =>
                       setCarrierSelections((prev) => ({
                         ...prev,
-                        [issue.carrier_name!]: e.target.value,
+                        [issue.carrierName!]: e.target.value,
                       }))
                     }
                   >
@@ -201,11 +201,11 @@ export const UploadReviewPage: React.FC = () => {
                     ))}
                   </select>
                   <button
-                    onClick={() => handleResolveCarrier(issue.carrier_name!)}
-                    disabled={!carrierSelections[issue.carrier_name!] || resolving[issue.carrier_name!]}
+                    onClick={() => handleResolveCarrier(issue.carrierName!)}
+                    disabled={!carrierSelections[issue.carrierName!] || resolving[issue.carrierName!]}
                     className="bg-yellow-600 text-white px-4 py-1.5 rounded text-sm hover:bg-yellow-700 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {resolving[issue.carrier_name!] ? 'Saving…' : 'Resolve'}
+                    {resolving[issue.carrierName!] ? 'Saving…' : 'Resolve'}
                   </button>
                 </div>
               ))}
@@ -219,21 +219,21 @@ export const UploadReviewPage: React.FC = () => {
         <div className="space-y-3">
           <div>
             <span className="font-medium text-gray-700">File Type:</span>{' '}
-            <span className="text-gray-900">{reviewData.llm_analysis.file_type}</span>
+            <span className="text-gray-900">{reviewData.llmAnalysis.fileType}</span>
           </div>
           <div>
             <span className="font-medium text-gray-700">Confidence:</span>{' '}
             <span className={`font-semibold ${
-              reviewData.llm_analysis.confidence >= 0.8 ? 'text-green-600' :
-              reviewData.llm_analysis.confidence >= 0.6 ? 'text-yellow-600' :
+              reviewData.llmAnalysis.confidence >= 0.8 ? 'text-green-600' :
+              reviewData.llmAnalysis.confidence >= 0.6 ? 'text-yellow-600' :
               'text-red-600'
             }`}>
-              {(reviewData.llm_analysis.confidence * 100).toFixed(0)}%
+              {(reviewData.llmAnalysis.confidence * 100).toFixed(0)}%
             </span>
           </div>
           <div>
             <span className="font-medium text-gray-700">Description:</span>{' '}
-            <span className="text-gray-900">{reviewData.llm_analysis.description}</span>
+            <span className="text-gray-900">{reviewData.llmAnalysis.description}</span>
           </div>
         </div>
       </div>
@@ -252,7 +252,7 @@ export const UploadReviewPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {reviewData.suggested_mappings.map((mapping, i) => (
+              {reviewData.suggestedMappings.map((mapping, i) => (
                 <tr key={i} className="border-b hover:bg-gray-50">
                   <td className="p-3 font-medium text-gray-900">{mapping.field}</td>
                   <td className="p-3 text-gray-700">{mapping.column}</td>
@@ -266,7 +266,7 @@ export const UploadReviewPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-3 text-gray-600 text-sm">
-                    {mapping.sample_values.slice(0, 3).join(', ')}
+                    {mapping.sampleValues.slice(0, 3).join(', ')}
                   </td>
                 </tr>
               ))}
@@ -324,7 +324,7 @@ export const UploadReviewPage: React.FC = () => {
           {submitting ? 'Processing...' : 'Reject'}
         </button>
         <button
-          onClick={() => navigate(`/projects/${reviewData.upload.project_id}`)}
+          onClick={() => navigate(`/projects/${reviewData.upload.projectId}`)}
           disabled={submitting}
           className="bg-gray-500 text-white px-6 py-3 rounded hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >

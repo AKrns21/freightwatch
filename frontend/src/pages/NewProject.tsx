@@ -8,7 +8,7 @@ export const NewProjectPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    customer: '',
+    customer_name: '',
     phase: 'quick_check',
   });
 
@@ -18,13 +18,10 @@ export const NewProjectPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await api.post('/api/projects', formData);
-      if (response.data.success) {
-        // Navigate to projects list
-        navigate('/projects');
-      }
+      await api.post('/api/projects', formData);
+      navigate('/projects');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create project');
+      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -69,8 +66,8 @@ export const NewProjectPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={formData.customer}
-                onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                value={formData.customer_name}
+                onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., ACME Corp"
               />
@@ -87,9 +84,8 @@ export const NewProjectPage: React.FC = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="quick_check">Quick Check</option>
-                <option value="phase_1">Phase 1 - Initial Analysis</option>
-                <option value="phase_2">Phase 2 - Deep Dive</option>
-                <option value="phase_3">Phase 3 - Implementation</option>
+                <option value="deep_dive">Deep Dive</option>
+                <option value="final">Final</option>
               </select>
             </div>
 

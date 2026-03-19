@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import type { Project, ApiResponse } from '../types';
+import type { Project } from '../types';
 
 /**
  * ProjectsPage - Project Overview (Phase 7.1)
@@ -24,8 +24,8 @@ export const ProjectsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get<ApiResponse<Project[]>>('/api/projects');
-      setProjects(response.data.data);
+      const response = await api.get<Project[]>('/api/projects');
+      setProjects(response.data);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to load projects');
       console.error('Failed to load projects:', err);
@@ -100,7 +100,7 @@ export const ProjectsPage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-2 text-gray-900">
                 {project.name}
               </h3>
-              <p className="text-gray-600 mb-4">{project.customer_name}</p>
+              <p className="text-gray-600 mb-4">{project.customerName}</p>
 
               <div className="flex justify-between text-sm">
                 <div>
@@ -127,7 +127,7 @@ export const ProjectsPage: React.FC = () => {
               </div>
 
               <div className="mt-4 text-xs text-gray-400">
-                Created {new Date(project.created_at).toLocaleDateString()}
+                Created {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '—'}
               </div>
             </Link>
           ))}

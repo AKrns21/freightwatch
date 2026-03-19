@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import type { Report, ApiResponse } from '../types';
+import type { Report } from '../types';
 
 /**
  * ReportViewerPage - Display Cost Analysis Report (Phase 7.3)
@@ -32,18 +32,12 @@ export const ReportViewerPage: React.FC = () => {
 
       let response;
       if (reportId) {
-        // Load specific report by ID
-        response = await api.get<ApiResponse<Report>>(
-          `/api/reports/${reportId}`
-        );
+        response = await api.get<Report>(`/api/reports/${reportId}`);
       } else {
-        // Load latest report for project
-        response = await api.get<ApiResponse<Report>>(
-          `/api/reports/latest?projectId=${projectId}`
-        );
+        response = await api.get<Report>(`/api/reports/latest?projectId=${projectId}`);
       }
 
-      setReport(response.data.data);
+      setReport(response.data);
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to load report');
       console.error('Failed to load report:', err);
@@ -85,8 +79,8 @@ export const ReportViewerPage: React.FC = () => {
     );
   }
 
-  const { data_snapshot } = report;
-  const statistics = data_snapshot.statistics;
+  const dataSnapshot = report.dataSnapshot;
+  const statistics = dataSnapshot?.statistics;
 
   return (
     <div className="container mx-auto p-6">
@@ -99,13 +93,13 @@ export const ReportViewerPage: React.FC = () => {
             </h1>
             <p className="text-gray-600">
               Version {report.version} • Generated{' '}
-              {new Date(report.generated_at).toLocaleDateString()} at{' '}
-              {new Date(report.generated_at).toLocaleTimeString()}
+              {report.generatedAt ? new Date(report.generatedAt).toLocaleDateString() : '—'} at{' '}
+              {report.generatedAt ? new Date(report.generatedAt).toLocaleTimeString() : '—'}
             </p>
-            {report.date_range_start && report.date_range_end && (
+            {report.dateRangeStart && report.dateRangeEnd && (
               <p className="text-gray-600">
-                Data Period: {new Date(report.date_range_start).toLocaleDateString()} -{' '}
-                {new Date(report.date_range_end).toLocaleDateString()}
+                Data Period: {new Date(report.dateRangeStart).toLocaleDateString()} -{' '}
+                {new Date(report.dateRangeEnd).toLocaleDateString()}
               </p>
             )}
           </div>
@@ -125,25 +119,25 @@ export const ReportViewerPage: React.FC = () => {
           <div className="bg-gray-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Total Shipments</div>
             <div className="text-2xl font-bold text-gray-900">
-              {statistics.total_shipments.toLocaleString()}
+              {statistics?.totalShipments.toLocaleString()}
             </div>
           </div>
           <div className="bg-gray-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Total Actual</div>
             <div className="text-2xl font-bold text-gray-900">
-              €{statistics.total_actual_cost.toLocaleString()}
+              €{statistics?.totalActualCost.toLocaleString()}
             </div>
           </div>
           <div className="bg-gray-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Total Expected</div>
             <div className="text-2xl font-bold text-gray-900">
-              €{statistics.total_expected_cost.toLocaleString()}
+              €{statistics?.totalExpectedCost.toLocaleString()}
             </div>
           </div>
           <div className="bg-green-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Savings Potential</div>
             <div className="text-2xl font-bold text-green-600">
-              €{statistics.total_savings_potential.toLocaleString()}
+              €{statistics?.totalSavingsPotential.toLocaleString()}
             </div>
           </div>
         </div>
@@ -153,25 +147,25 @@ export const ReportViewerPage: React.FC = () => {
           <div className="bg-blue-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Data Completeness</div>
             <div className="text-2xl font-bold text-blue-600">
-              {(report.data_completeness * 100).toFixed(0)}%
+              {report.dataCompleteness != null ? (report.dataCompleteness * 100).toFixed(0) : '—'}%
             </div>
           </div>
           <div className="bg-purple-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Overpay Rate</div>
             <div className="text-2xl font-bold text-purple-600">
-              {statistics.overpay_rate.toFixed(1)}%
+              {statistics?.overpayRate.toFixed(1)}%
             </div>
           </div>
           <div className="bg-yellow-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Benchmarked</div>
             <div className="text-2xl font-bold text-yellow-600">
-              {statistics.benchmarked_shipments.toLocaleString()}
+              {statistics?.benchmarkedShipments.toLocaleString()}
             </div>
           </div>
           <div className="bg-gray-50 p-4 rounded">
             <div className="text-gray-600 text-sm mb-1">Complete Data</div>
             <div className="text-2xl font-bold text-gray-900">
-              {statistics.complete_shipments.toLocaleString()}
+              {statistics?.completeShipments.toLocaleString()}
             </div>
           </div>
         </div>
@@ -194,35 +188,35 @@ export const ReportViewerPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {statistics.carriers.map((carrier, i) => (
+              {statistics?.carriers.map((carrier, i) => (
                 <tr key={i} className="border-b hover:bg-gray-50">
-                  <td className="p-3 font-medium text-gray-900">{carrier.carrier_name}</td>
+                  <td className="p-3 font-medium text-gray-900">{carrier.carrierName}</td>
                   <td className="text-right p-3 text-gray-700">
-                    {carrier.shipment_count.toLocaleString()}
+                    {carrier.shipmentCount.toLocaleString()}
                   </td>
                   <td className="text-right p-3 text-gray-700">
-                    €{carrier.total_actual_cost.toLocaleString()}
+                    €{carrier.totalActualCost.toLocaleString()}
                   </td>
                   <td className="text-right p-3 text-gray-700">
-                    €{carrier.total_expected_cost.toLocaleString()}
+                    €{carrier.totalExpectedCost.toLocaleString()}
                   </td>
                   <td
                     className={`text-right p-3 font-medium ${
-                      carrier.total_delta > 0 ? 'text-red-600' : 'text-green-600'
+                      carrier.totalDelta > 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    €{carrier.total_delta.toLocaleString()}
+                    €{carrier.totalDelta.toLocaleString()}
                   </td>
                   <td
                     className={`text-right p-3 font-medium ${
-                      carrier.avg_delta_pct > 0 ? 'text-red-600' : 'text-green-600'
+                      carrier.avgDeltaPct > 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    {carrier.avg_delta_pct > 0 ? '+' : ''}
-                    {carrier.avg_delta_pct.toFixed(1)}%
+                    {carrier.avgDeltaPct > 0 ? '+' : ''}
+                    {carrier.avgDeltaPct.toFixed(1)}%
                   </td>
                   <td className="text-right p-3 text-gray-700">
-                    {carrier.overpay_count}
+                    {carrier.overpayCount}
                   </td>
                 </tr>
               ))}
@@ -232,7 +226,7 @@ export const ReportViewerPage: React.FC = () => {
       </div>
 
       {/* Top Overpayments (Quick Wins) */}
-      {data_snapshot.top_overpays && data_snapshot.top_overpays.length > 0 && (
+      {dataSnapshot?.topOverpays && dataSnapshot.topOverpays.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">
             Top Overpayment Opportunities
@@ -251,26 +245,26 @@ export const ReportViewerPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {data_snapshot.top_overpays.map((overpay, i) => (
+                {dataSnapshot.topOverpays!.map((overpay, i) => (
                   <tr key={i} className="border-b hover:bg-gray-50">
                     <td className="p-3 text-gray-700">
                       {new Date(overpay.date).toLocaleDateString()}
                     </td>
                     <td className="p-3 text-gray-700">{overpay.carrier}</td>
                     <td className="p-3 text-gray-700">
-                      {overpay.origin_zip} → {overpay.dest_zip}
+                      {overpay.originZip} → {overpay.destZip}
                     </td>
                     <td className="text-right p-3 text-gray-700">
-                      €{overpay.actual_cost.toFixed(2)}
+                      €{overpay.actualCost.toFixed(2)}
                     </td>
                     <td className="text-right p-3 text-gray-700">
-                      €{overpay.expected_cost.toFixed(2)}
+                      €{overpay.expectedCost.toFixed(2)}
                     </td>
                     <td className="text-right p-3 font-medium text-red-600">
                       €{overpay.delta.toFixed(2)}
                     </td>
                     <td className="text-right p-3 font-medium text-red-600">
-                      +{overpay.delta_pct.toFixed(1)}%
+                      +{overpay.deltaPct.toFixed(1)}%
                     </td>
                   </tr>
                 ))}

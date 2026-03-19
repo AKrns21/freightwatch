@@ -1,15 +1,17 @@
 """Upload router — file ingestion endpoint.
 
-POST /api/uploads  → create upload record + enqueue background processing
-GET  /api/uploads/{upload_id} → poll status
+POST /api/uploads                → create upload record + enqueue background processing
+GET  /api/uploads                → list uploads (optional ?project_id=)
+GET  /api/uploads/{upload_id}    → poll status
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from sqlalchemy import select
@@ -52,15 +54,49 @@ class UploadStatusResponse(BaseModel):
     issues: list | None = None
 
 
+class UploadListItemResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: UUID
+    tenant_id: UUID
+    project_id: UUID | None = None
+    filename: str
+    file_hash: str
+    mime_type: str | None = None
+    source_type: str | None = None
+    status: str | None = None
+    parse_method: str | None = None
+    confidence: float | None = None
+    parsing_issues: list | None = None
+    received_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+@router.get("", response_model=list[UploadListItemResponse])
+async def list_uploads(
+    project_id: UUID | None = None,
+    db: AsyncSession = Depends(get_current_tenant_db),
+) -> list[UploadListItemResponse]:
+    """List uploads for the current tenant, optionally filtered by project."""
+    q = select(Upload).order_by(Upload.created_at.desc())
+    if project_id is not None:
+        q = q.where(Upload.project_id == project_id)
+    rows = (await db.execute(q)).scalars().all()
+    return [UploadListItemResponse.model_validate(u) for u in rows]
 
 
 @router.post("", response_model=UploadResponse, status_code=202)
 async def create_upload(
     background_tasks: BackgroundTasks,
     file: UploadFile,
+    project_id: UUID | None = Form(None),
+    source_type: str | None = Form(None),
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> UploadResponse:
     """Receive a file, create an upload record, and kick off background processing.
@@ -111,6 +147,8 @@ async def create_upload(
         filename=file.filename or "upload",
         file_hash=file_hash,
         mime_type=file.content_type,
+        source_type=source_type,
+        project_id=project_id,
         storage_url=str(storage_path),
         status="pending",
     )

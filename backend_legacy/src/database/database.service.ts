@@ -41,7 +41,7 @@ export class DatabaseService {
     try {
       // Use parameterized query to prevent SQL injection
       // Note: PostgreSQL SET requires special handling - we use format() function
-      await this.dataSource.query(`SELECT set_config('app.current_tenant', $1, true)`, [tenantId]);
+      await this.dataSource.query(`SELECT set_config('app.current_tenant', $1, false)`, [tenantId]);
 
       this.logger.debug(`Tenant context set to: ${tenantId}`);
     } catch (error) {

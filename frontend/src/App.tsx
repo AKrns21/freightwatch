@@ -4,6 +4,7 @@ import { ProjectsPage } from './pages/Projects';
 import { NewProjectPage } from './pages/NewProject';
 import { UploadReviewPage } from './pages/UploadReview';
 import { ReportViewerPage } from './pages/ReportViewer';
+import { ProjectDetailPage } from './pages/ProjectDetail';
 
 /**
  * Main App Component with React Router
@@ -27,6 +28,7 @@ function App() {
           {/* Projects */}
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/new" element={<NewProjectPage />} />
+          <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
 
           {/* Upload Review */}
           <Route path="/uploads/:uploadId/review" element={<UploadReviewPage />} />

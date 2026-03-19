@@ -1,100 +1,106 @@
 /**
- * Frontend types for FreightWatch MVP v3
- * These types match the backend DTOs and entities
+ * Frontend types for FreightWatch MVP
+ * Field names are camelCase to match FastAPI's alias_generator=to_camel output.
  */
 
 // Project types
 export interface Project {
   id: string;
-  tenant_id: string;
+  tenantId: string;
   name: string;
-  customer_name: string;
-  phase: 'quick_check' | 'deep_dive' | 'final';
-  status: 'draft' | 'in_progress' | 'review' | 'completed';
-  metadata?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
+  customerName: string | null;
+  phase: string | null;
+  status: string | null;
+  consultantId?: string | null;
+  metadata?: Record<string, any> | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface ProjectStats {
-  project_id: string;
-  name: string;
-  upload_count: number;
-  shipment_count: number;
-  avg_completeness: number;
-  note_count: number;
-  report_count: number;
-  phase: string;
-  status: string;
-  created_at: string;
+  projectId: string;
+  uploadCount: number;
+  shipmentCount: number;
+  noteCount: number;
+  reportCount: number;
 }
 
-// Upload types
+// Upload types — matches UploadListItemResponse from backend
 export interface Upload {
   id: string;
-  tenant_id: string;
-  project_id: string;
+  tenantId: string;
+  projectId: string | null;
   filename: string;
-  original_filename: string;
-  mime_type: string;
-  size_bytes: number;
-  file_hash: string;
-  storage_path: string;
-  status: 'pending' | 'parsing' | 'parsed' | 'failed' | 'needs_review';
-  parsing_strategy?: 'template' | 'llm' | 'manual';
-  llm_analysis?: Record<string, any>;
-  parse_error?: string;
-  uploaded_at: string;
+  fileHash: string;
+  mimeType: string | null;
+  sourceType: string | null;
+  status: string | null;
+  parseMethod: string | null;
+  confidence: number | null;
+  llmAnalysis?: Record<string, any> | null;
+  parseErrors?: Record<string, any> | null;
+  parsingIssues?: any[] | null;
+  receivedAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+// Response from POST /api/uploads
+export interface UploadCreatedResponse {
+  uploadId: string;
+  status: string;
+  filename: string;
+  fileHash: string;
 }
 
 export interface UploadReviewData {
   upload: Upload;
-  llm_analysis: {
-    file_type: string;
+  llmAnalysis: {
+    fileType: string;
     confidence: number;
     description: string;
-    structure_analysis: any;
+    structureAnalysis: any;
   };
-  suggested_mappings: Array<{
+  suggestedMappings: Array<{
     field: string;
     column: string;
     confidence: number;
-    sample_values: string[];
+    sampleValues: string[];
   }>;
   preview: Array<Record<string, any>>;
-  quality_score: number;
-  parsing_issues?: ParsingIssue[];
+  qualityScore: number;
+  parsingIssues?: ParsingIssue[];
 }
 
 export interface ParsingIssue {
   type: string;
   message: string;
   timestamp: string;
-  carrier_name?: string;
-  placeholder_carrier_id?: string;
+  carrierName?: string;
+  placeholderCarrierId?: string;
   row?: number;
-  raw_data?: Record<string, any>;
-  invoice_number?: string;
-  line_number?: number;
-  missing_fields?: string[];
+  rawData?: Record<string, any>;
+  invoiceNumber?: string;
+  lineNumber?: number;
+  missingFields?: string[];
 }
 
 export interface CarrierOption {
   id: string;
   name: string;
-  code_norm: string;
+  codeNorm: string;
 }
 
 // Report types
 export interface Report {
   id: string;
-  project_id: string;
+  projectId: string;
   version: number;
-  report_type: string;
-  title: string;
-  data_snapshot: {
+  reportType: string;
+  title: string | null;
+  dataSnapshot: {
     version: number;
-    generated_at: string;
+    generatedAt: string;
     project: {
       id: string;
       name: string;
@@ -102,73 +108,54 @@ export interface Report {
       status: string;
     };
     statistics: ProjectStatistics;
-    data_completeness: number;
-    top_overpays?: Array<{
-      shipment_id: string;
+    dataCompleteness: number;
+    topOverpays?: Array<{
+      shipmentId: string;
       date: string;
       carrier: string;
-      origin_zip: string;
-      dest_zip: string;
-      actual_cost: number;
-      expected_cost: number;
+      originZip: string;
+      destZip: string;
+      actualCost: number;
+      expectedCost: number;
       delta: number;
-      delta_pct: number;
+      deltaPct: number;
     }>;
   };
-  data_completeness: number;
-  shipment_count: number;
-  date_range_start?: string;
-  date_range_end?: string;
-  generated_by: string;
-  generated_at: string;
-  created_at: string;
-  notes?: string;
+  dataCompleteness: number | null;
+  shipmentCount: number | null;
+  dateRangeStart?: string | null;
+  dateRangeEnd?: string | null;
+  generatedBy: string | null;
+  generatedAt: string | null;
+  createdAt: string | null;
+  notes?: string | null;
 }
 
 export interface ProjectStatistics {
-  total_shipments: number;
-  parsed_shipments: number;
-  benchmarked_shipments: number;
-  complete_shipments: number;
-  partial_shipments: number;
-  missing_shipments: number;
-  data_completeness_avg: number;
-  total_actual_cost: number;
-  total_expected_cost: number;
-  total_savings_potential: number;
-  overpay_rate: number;
+  totalShipments: number;
+  parsedShipments: number;
+  benchmarkedShipments: number;
+  completeShipments: number;
+  partialShipments: number;
+  missingShipments: number;
+  dataCompletenessAvg: number;
+  totalActualCost: number;
+  totalExpectedCost: number;
+  totalSavingsPotential: number;
+  overpayRate: number;
   carriers: CarrierAggregation[];
 }
 
 export interface CarrierAggregation {
-  carrier_id: string;
-  carrier_name: string;
-  shipment_count: number;
-  total_actual_cost: number;
-  total_expected_cost: number;
-  total_delta: number;
-  avg_delta_pct: number;
-  overpay_count: number;
-  underpay_count: number;
-  market_count: number;
-  data_completeness_avg: number;
-}
-
-// API Response wrapper
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  meta?: {
-    timestamp: string;
-    tenant_id: string;
-  };
-}
-
-export interface ApiError {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    details?: any;
-  };
+  carrierId: string;
+  carrierName: string;
+  shipmentCount: number;
+  totalActualCost: number;
+  totalExpectedCost: number;
+  totalDelta: number;
+  avgDeltaPct: number;
+  overpayCount: number;
+  underpayCount: number;
+  marketCount: number;
+  dataCompletenessAvg: number;
 }
