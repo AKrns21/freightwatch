@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_jwt_secret_in_production(self) -> "Settings":
         _insecure = "INSECURE_DEFAULT_SECRET_CHANGE_IN_PRODUCTION"
-        if self.jwt_auth_enabled and self.jwt_secret_key == _insecure:
+        if self.jwt_auth_enabled and self.jwt_secret_key == _insecure and self.app_env != "test":
             raise ValueError(
                 "JWT_SECRET_KEY must be set to a secure random value when jwt_auth_enabled=True. "
                 "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""

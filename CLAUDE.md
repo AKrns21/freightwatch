@@ -13,7 +13,6 @@ FreightWatch is a multi-tenant B2B SaaS system for freight cost analysis. It par
 - **Database:** Supabase PostgreSQL (hosted) — schema unchanged from NestJS era
 - **Infrastructure:** Docker Compose (dev, PostgreSQL only — no Redis)
 
-**Legacy:** The previous NestJS/TypeScript backend lives in `backend_legacy/` as a reference implementation. Do not modify it; consult it when porting logic to Python.
 
 ## Quick Commands
 
@@ -186,7 +185,6 @@ Repository/
 │       ├── unit/                # Pure logic tests (no DB)
 │       ├── integration/         # DB tests (real Supabase or local PG)
 │       └── fixtures/mecu/       # Real customer test data
-├── backend_legacy/              # NestJS/TypeScript (reference only, do not modify)
 ├── frontend/                    # React + Vite Frontend
 │   ├── src/
 │   │   ├── components/
@@ -272,7 +270,7 @@ async def db_session(engine):
 
 **RLS Isolation (mandatory for every tenant-scoped table):**
 - Create data as tenant_1, switch to tenant_2, assert not visible
-- See `backend_legacy/test/` for reference test patterns
+- Test patterns follow the fixtures in `tests/integration/`
 
 **Key Metrics:**
 - Parsing coverage ≥90%
@@ -314,7 +312,6 @@ Every service module starts with:
 ```python
 """Short description — what the service does.
 
-Port of backend_legacy/src/modules/.../foo.service.ts
 Issue: #XX
 
 Key features:
