@@ -4,8 +4,8 @@
 > multiple **client companies** (Mittelstand). Each client is a tenant. The consultancy
 > configures the system; clients may optionally get read-only access to their reports.
 
-**Last revised:** 2026-03-17 (updated with clarifications)
-**Stack:** NestJS · TypeORM · PostgreSQL/Supabase · Redis/Bull · React 19 · Anthropic Claude
+**Last revised:** 2026-03-19 (updated for Python/FastAPI migration)
+**Stack:** FastAPI · SQLAlchemy 2.0 async · PostgreSQL/Supabase · React 19 · Anthropic Claude
 
 ---
 
@@ -509,8 +509,8 @@ backend/src/database/migrations/
 
 **Rules:**
 - Every migration is a plain SQL file, numbered sequentially, never edited after merge
-- TypeORM migration runner applies them in order: `npm run migration:run`
-- Rollback: `npm run migration:revert` (each migration must have a `down` equivalent)
+- Alembic applies them in order: `alembic upgrade head`
+- Rollback: `alembic downgrade -1` (each migration must have a `downgrade` equivalent)
 - New enum values: always add to existing enum type, never remove (backwards compat)
 - RLS: every new tenant-scoped table gets `ENABLE ROW LEVEL SECURITY` + policy in same migration
 
@@ -518,7 +518,7 @@ backend/src/database/migrations/
 
 ## 5. Analysis Modules
 
-Each module is an independent NestJS module. Modules read from core tables and write to their
+Each module is an independent FastAPI router. Modules read from core tables and write to their
 own result tables. They do not modify core data.
 
 ### 5.1 Module 1: Invoice Verification (Rechnungsprüfung)
@@ -1041,10 +1041,18 @@ Clarified items from initial design review are marked ✅. Remaining questions s
 
 ## 11. Technology Decision Notes
 
-### Why not Python for the backend?
-The existing codebase is NestJS/TypeScript with TypeORM and BullMQ — well-established for
-queue-based document processing. The Oxytec evaluator (Python/LangGraph) is a different domain.
-Switching would require rewriting 8+ modules. Keep TypeScript.
+### Why Python/FastAPI? (Migration from NestJS — March 2026)
+FreightWatch and the Oxytec evaluator share the same core capabilities: PDF/Vision OCR, LLM
+parsing, Supabase/PostgreSQL with RLS, deterministic business logic. Running two stacks
+(NestJS + Python) in parallel created duplicate infrastructure and split focus. The decision was
+made to consolidate on Python/FastAPI, which is already mature in the Oxytec codebase.
+
+**What changed:**
+- `backend/` (NestJS/TypeScript) archived as `backend_legacy/` — preserved as reference implementation
+- New `backend/` is Python/FastAPI + SQLAlchemy 2.0 async
+- Queue (BullMQ/Redis) replaced by FastAPI `BackgroundTasks` — adequate for batch file uploads
+- Supabase schema **unchanged** (15 migrations, RLS policies, all preserved)
+- Frontend (React/Vite) unchanged except response-shape alignment (camelCase via alias_generator)
 
 ### Why store raw JSON in PostgreSQL rather than S3 + separate analytics DB?
 For the scale expected (Mittelstand: <50k shipments/month), PostgreSQL with JSONB is sufficient
@@ -1053,7 +1061,8 @@ pattern without a separate store. Revisit if data exceeds 10M rows or queries ex
 
 ### Why not stream processing (Kafka, etc.)?
 Document ingestion is batch-oriented (user uploads a file, waits for parse result).
-BullMQ with Redis provides adequate queue semantics. Kafka would be over-engineering.
+FastAPI `BackgroundTasks` provides adequate async semantics for the expected volume
+(<50k invoices/month). Kafka or a dedicated queue would be over-engineering at this scale.
 
 ### LLM for parsing vs. deterministic rules
 - **Structured formats** (CSV, known Excel templates): always use deterministic parsers.

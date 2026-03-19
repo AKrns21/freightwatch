@@ -2,44 +2,40 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@docs/claude/architecture.md
-@docs/claude/database-patterns.md
-@docs/claude/business-logic.md
-@docs/claude/project-workflow.md
-@docs/claude/coding-standards.md
-@docs/claude/testing-standards.md
-
 ## Project Context
 
 FreightWatch is a multi-tenant B2B SaaS system for freight cost analysis. It parses invoices from carriers (CSV/Excel/PDF), calculates expected costs using tariff tables, and identifies overpayment opportunities. The system supports multiple currencies, countries, and carriers with strict tenant isolation via PostgreSQL Row Level Security (RLS).
 
 **Stack:**
-- **Backend:** NestJS + TypeScript + PostgreSQL 14+ + Redis + TypeORM + Bull (queues)
+- **Backend:** Python 3.11 + FastAPI + SQLAlchemy 2.0 async + Alembic
 - **Frontend:** React 19 + TypeScript + Vite + TailwindCSS + React Router
-- **LLM Integration:** Anthropic Claude 3.5 Sonnet (carrier/service detection)
-- **Infrastructure:** Docker Compose (dev), PostgreSQL 14, Redis 7
+- **LLM Integration:** Anthropic Claude (carrier/service detection, PDF Vision OCR)
+- **Database:** Supabase PostgreSQL (hosted) — schema unchanged from NestJS era
+- **Infrastructure:** Docker Compose (dev, PostgreSQL only — no Redis)
+
+**Legacy:** The previous NestJS/TypeScript backend lives in `backend_legacy/` as a reference implementation. Do not modify it; consult it when porting logic to Python.
 
 ## Quick Commands
 
 ### Initial Setup
 ```bash
-# 1. Start infrastructure (PostgreSQL + Redis)
+# 1. Start infrastructure (PostgreSQL only)
 docker compose up -d
 
 # 2. Backend setup
 cd backend
-npm install
-cp .env.example .env
-# Edit .env with your configuration
-npm run migration:run    # Run database migrations
-npm run start:dev        # Start backend dev server (port 3000)
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+cp .env.example .env             # Edit with your Supabase credentials
+alembic upgrade head             # Run database migrations
+uvicorn main:app --reload --port 4000   # Start backend dev server
 
 # 3. Frontend setup (in separate terminal)
 cd frontend
 npm install
-cp .env.example .env
-# Edit .env (set VITE_API_URL=http://localhost:4000)
-npm run dev             # Start frontend dev server (port 5173)
+cp .env.example .env             # Set VITE_API_URL=http://localhost:4000
+npm run dev                      # Start frontend dev server (port 5173)
 ```
 
 ### Supabase Database Connection
@@ -68,29 +64,28 @@ SSL:      required (DB_SSL=true in .env)
    ```
 3. The Supabase CLI (`supabase inspect db ...`) connects via `cli_login_` mechanism and always works
 
-### Backend Development (run from `backend/` directory)
-- Start dev server: `npm run start:dev` (watches for changes)
-- Build for production: `npm run build`
-- Format code: `npm run format`
-- Lint code: `npm run lint`
+### Backend Development (run from `backend/` with `.venv` active)
+- Start dev server: `uvicorn main:app --reload --port 4000`
+- Lint: `ruff check .`
+- Format: `ruff format .`
+- Type check: `mypy .`
 
 ### Frontend Development (run from `frontend/` directory)
 - Start dev server: `npm run dev` (Vite dev server on port 5173)
 - Build for production: `npm run build`
-- Preview production build: `npm run preview`
-- Lint code: `npm run lint`
+- Lint: `npm run lint`
 
-### Testing (run from `backend/` directory)
-- Unit tests: `npm run test`
-- Watch mode: `npm run test:watch`
-- Integration tests: `npm run test:e2e`
-- Coverage report: `npm run test:cov`
-- MECU validation: `npm run test:integration`
+### Testing (run from `backend/` with `.venv` active)
+- All tests: `pytest`
+- With coverage: `pytest --cov=app --cov-report=html`
+- Specific module: `pytest tests/unit/test_tariff_engine.py`
+- Integration tests: `pytest tests/integration/ -v`
 
-### Database (run from `backend/` directory)
-- Generate migration: `npm run typeorm migration:generate -- -n MigrationName`
-- Revert migration: `npm run typeorm migration:revert`
-- Check schema: `npm run typeorm schema:log`
+### Database (run from `backend/` with `.venv` active)
+- Generate migration: `alembic revision --autogenerate -m "description"`
+- Apply migrations: `alembic upgrade head`
+- Revert one step: `alembic downgrade -1`
+- Check current: `alembic current`
 
 ### Docker
 - Start services: `docker compose up -d`
@@ -98,114 +93,117 @@ SSL:      required (DB_SSL=true in .env)
 - Stop services: `docker compose down`
 - Clean volumes: `docker compose down -v`
 
-**Note:** Always use `npm` (not yarn) for consistency. All backend commands run from `backend/`, frontend from `frontend/`.
-
 ## CRITICAL RULES ⚠️
 
 ### 1. Row Level Security (RLS)
 **Every database query MUST run within tenant context.**
-```typescript
-await db.setTenantContext(tenantId); // REQUIRED before any query
-const data = await repo.find();
-await db.resetTenantContext();
+```python
+# Set tenant context before ANY query
+await db.execute(text("SET LOCAL app.current_tenant = :tid"), {"tid": str(tenant_id)})
+result = await db.execute(select(Shipment))
+# Context resets automatically at transaction end (SET LOCAL)
 ```
-TenantInterceptor handles this globally for HTTP requests. Test cross-tenant isolation with 2+ tenants.
+A FastAPI dependency handles this globally for HTTP requests. Test cross-tenant isolation with 2+ tenants.
 
 ### 2. Monetary Calculations
-**ALWAYS use `round()` from `src/utils/round.ts`:**
-```typescript
-import { round } from '@/utils/round';
-const total = round(base + diesel + toll); // ✅
-// NOT: const total = base + diesel + toll; // ❌ floating point errors
+**ALWAYS use `round_monetary()` from `app/utils/round.py`:**
+```python
+from app.utils.round import round_monetary
+total = round_monetary(base + diesel + toll)  # ✅
+# NOT: total = base + diesel + toll  # ❌ floating point errors
 ```
 
 ### 3. Currency Agnostic
 **NEVER hardcode EUR.** Store amounts in original currency, convert only for reporting.
-```typescript
-return `${amount} ${shipment.currency}`; // ✅
-// NOT: return `${amount} EUR`; // ❌
+```python
+return f"{amount} {shipment.currency}"  # ✅
+# NOT: return f"{amount} EUR"  # ❌
 ```
 
 ### 4. No Magic Numbers
 **Business rules from database, NOT hardcoded:**
-```typescript
-// LDM conversion factors stored in carrier-specific configuration
-const ldmToKg = carrier.ldm_to_kg_factor || 1850; // ✅ with logged fallback
-// NOT: const ldmToKg = 1850; // ❌ hardcoded without context
+```python
+# LDM conversion factors stored in carrier-specific tariff_rule rows
+rule = await get_tariff_rule(db, tenant_id, carrier_id, "ldm_conversion")
+ldm_to_kg = rule.param_json["ldm_to_kg"] if rule else None
+if ldm_to_kg is None:
+    logger.warning("missing_ldm_rule", tenant_id=tenant_id, carrier_id=carrier_id)
+    # fail or use documented fallback — never silently guess
 ```
-**If fallback needed:** Document in code comments + log warning with `logger.warn()`.
-**MVP Exception:** Zone fallbacks (1 for DE, 3 for international) are temporarily allowed during MVP phase with extensive logging. See tariff-engine.service.ts for documentation.
+**If fallback needed:** Document in comments + `logger.warning()`.
 
-### 5. TypeScript Guidelines
-**Note:** TypeScript strict mode is currently **disabled** for MVP development speed. However, new code should still follow best practices:
+### 5. Python Style
+```python
+# ✅ GOOD: Explicit return types, Pydantic models for I/O
+async def calculate_benchmark(shipment: Shipment) -> BenchmarkResult: ...
 
-```typescript
-// ✅ GOOD: Explicit return types for all public methods
-async calculateCost(s: Shipment): Promise<BenchmarkResult> { }
+# ✅ GOOD: snake_case everywhere in Python; DB columns are also snake_case
+expected_total_amount: Decimal
 
-// ❌ BAD: No return type
-async calculateCost(s: Shipment) { }
+# ✅ GOOD: camelCase JSON responses (for frontend compatibility)
+model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-// ✅ GOOD: Explicit parameter types
-function round(value: number): number { }
-
-// ❌ BAD: Avoid 'any' when possible
-function process(data: any): any { }
+# ❌ BAD: bare except, silent failures
+try:
+    zone = calculate_zone(...)
+except Exception:
+    zone = 1  # never guess
 ```
 
-**Post-MVP:** Strict mode will be re-enabled gradually. See `@docs/claude/coding-standards.md` for full guidelines.
+Use `ruff` (linting + formatting) and `mypy --strict` for new modules.
 
 ## Repository Structure
 
 ```
 Repository/
-├── backend/                 # NestJS API Backend
+├── backend/                     # FastAPI Backend (Python)
+│   ├── main.py                  # FastAPI app entry point
+│   ├── pyproject.toml           # Dependencies + tool config
+│   ├── app/
+│   │   ├── routers/             # FastAPI routers (one per domain)
+│   │   │   ├── auth.py
+│   │   │   ├── upload.py
+│   │   │   ├── tariff.py
+│   │   │   ├── report.py
+│   │   │   └── project.py
+│   │   ├── services/            # Business logic (pure functions + DB calls)
+│   │   │   ├── tariff_engine.py
+│   │   │   ├── zone_calculator.py
+│   │   │   ├── benchmark.py
+│   │   │   ├── fx_service.py
+│   │   │   └── llm_parser.py
+│   │   ├── models/              # SQLAlchemy ORM models
+│   │   ├── schemas/             # Pydantic request/response schemas
+│   │   ├── db/
+│   │   │   └── session.py       # Async engine, get_db dependency
+│   │   └── utils/
+│   │       ├── round.py         # round_monetary() — CRITICAL
+│   │       ├── date_parser.py   # EU date formats (dd.mm.yyyy)
+│   │       └── hash.py          # SHA256 file hashing
+│   ├── alembic/                 # Database migrations
+│   │   └── versions/
+│   └── tests/
+│       ├── unit/                # Pure logic tests (no DB)
+│       ├── integration/         # DB tests (real Supabase or local PG)
+│       └── fixtures/mecu/       # Real customer test data
+├── backend_legacy/              # NestJS/TypeScript (reference only, do not modify)
+├── frontend/                    # React + Vite Frontend
 │   ├── src/
-│   │   ├── modules/
-│   │   │   ├── auth/       # JWT + Tenant Interceptor (RLS)
-│   │   │   ├── upload/     # File handling + Bull Queue
-│   │   │   ├── parsing/    # CSV/PDF parsers + LLM integration
-│   │   │   ├── tariff/     # Core calculation engine
-│   │   │   ├── project/    # Project management (Phase 4.1)
-│   │   │   ├── report/     # Report generation
-│   │   │   └── invoice/    # Invoice entities
-│   │   ├── database/
-│   │   │   ├── migrations/ # SQL migrations (001_, 002_, ...)
-│   │   │   └── seeds/      # Test/dev seed data
-│   │   ├── utils/
-│   │   │   ├── round.ts    # Monetary rounding (CRITICAL)
-│   │   │   ├── date-parser.ts  # EU date formats (dd.mm.yyyy)
-│   │   │   └── hash.ts     # SHA256 file hashing
-│   │   └── types/          # Shared TypeScript interfaces
-│   ├── test/
-│   │   ├── fixtures/mecu/  # Real customer test data
-│   │   └── integration/    # E2E tests
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── hooks/
+│   │   ├── services/            # API client
+│   │   └── types/
 │   ├── package.json
-│   ├── tsconfig.json
-│   └── .env.example
-├── frontend/                # React + Vite Frontend
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── pages/          # Page components
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── services/       # API client services
-│   │   ├── types/          # TypeScript types
-│   │   └── utils/          # Helper functions
-│   ├── public/             # Static assets
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── .env.example
-├── docs/                    # Documentation
-│   └── claude/             # Claude Code documentation
-│       ├── architecture.md
-│       ├── database-patterns.md
-│       ├── business-logic.md
-│       ├── project-workflow.md
-│       ├── coding-standards.md
-│       └── testing-standards.md
-├── docker-compose.yml       # PostgreSQL + Redis
-├── CLAUDE.md               # This file
-└── README.md               # Project overview
+│   └── vite.config.ts
+├── docs/                        # Documentation
+│   ├── ARCHITECTURE.md          # Full platform architecture (authoritative)
+│   └── REFACTORING_PYTHON_MIGRATION.md
+├── data/                        # Tariff/invoice JSON fixtures
+├── supabase/                    # Supabase config + SQL migrations
+├── docker-compose.yml           # PostgreSQL only (no Redis)
+├── CLAUDE.md                    # This file
+└── README.md
 ```
 
 ## Core Data Flow
@@ -215,10 +213,9 @@ Repository/
 1. Upload file → Hash (SHA256)
 2. Check deduplication (file_hash + tenant_id)
 3. Save to storage → Create upload record (status='pending')
-4. Enqueue parse job
-5. Worker: Parse → Map carriers → Save shipments
-6. Calculate benchmarks (parallel, 5 concurrent)
-7. Update status='parsed'
+4. FastAPI BackgroundTask: Parse → Map carriers → Save shipments
+5. Calculate benchmarks (asyncio.gather with semaphore, max 5 concurrent)
+6. Update status='parsed'
 ```
 
 **Tariff Calculation:**
@@ -230,7 +227,7 @@ Repository/
 5. FX conversion (if tariff.currency ≠ shipment.currency)
 6. Add diesel surcharge (from diesel_floater with basis)
 7. Add toll (prefer shipment.toll_amount, else estimate)
-8. Calculate delta = actual - expected
+8. delta = actual - expected
 9. Classify: 'unter' / 'im_markt' / 'drüber' (±5% threshold)
 10. Convert to tenant reporting currency & save benchmark
 ```
@@ -238,7 +235,7 @@ Repository/
 ## Critical Tables
 
 - **tenant**: Settings (currency, default_diesel_floater, data_retention_days)
-- **project**: Project management (Phase 4.1) with workflow tracking
+- **project**: Project management with workflow tracking
 - **upload**: File uploads linked to projects with parse metadata
 - **shipment**: Core entity (tenant_id, currency, amounts, zone, weight, project_id)
 - **tariff_table**: Tariffs (carrier, lane, zone, weight range, valid_from/until)
@@ -254,49 +251,60 @@ Repository/
 
 ## Testing Standards
 
-**Unit Tests:**
-- Mock external dependencies (ZoneCalculator, FXService)
-- Test pure functions (round, date parsing)
-- Known input/output pairs from MECU data
+**Unit Tests (no DB required):**
+```python
+# tests/unit/test_round.py
+def test_round_monetary_two_decimals():
+    assert round_monetary(Decimal("10.126")) == Decimal("10.13")
 
-**Integration Tests:**
-- Use MECU fixtures: `test/fixtures/mecu/sample.csv`
-- Test full flow: Upload → Parse → Benchmark → Report
-- Verify RLS isolation with 2+ tenants
-- Check >50% overpay detection rate (MECU benchmark)
+# Mock DB dependencies with pytest fixtures / unittest.mock
+```
+
+**Integration Tests (real DB, transaction rollback):**
+```python
+@pytest.fixture
+async def db_session(engine):
+    async with engine.begin() as conn:
+        await conn.execute(text("SET LOCAL app.current_tenant = :tid"), {"tid": TEST_TENANT_ID})
+        yield conn
+        await conn.rollback()  # auto-cleanup
+```
+
+**RLS Isolation (mandatory for every tenant-scoped table):**
+- Create data as tenant_1, switch to tenant_2, assert not visible
+- See `backend_legacy/test/` for reference test patterns
 
 **Key Metrics:**
 - Parsing coverage ≥90%
-- Tariff plausibility ≥85% (expected vs actual within ±5%)
+- Tariff match rate ≥85%
 - Report generation <30s for 10k shipments
 
 ## Common Pitfalls
 
-❌ **Forgetting to round:** `const total = base + diesel;` → `348.74999999998`  
-✅ **Fix:** `const total = round(base + diesel);`
+❌ **Forgetting to round:** `total = base + diesel` → `Decimal('348.74999999998')`
+✅ **Fix:** `total = round_monetary(base + diesel)`
 
-❌ **Missing tenant context in tests:** `await repo.find();` → returns nothing  
-✅ **Fix:** `await db.setTenantContext(tenantId);` before query
+❌ **Missing tenant context:** `await db.execute(select(Shipment))` → returns nothing (RLS blocks all)
+✅ **Fix:** `SET LOCAL app.current_tenant = :tid` before query
 
-❌ **Hardcoded EUR:** `return '€' + amount;`  
-✅ **Fix:** `return shipment.currency + ' ' + amount;`
+❌ **Hardcoded EUR:** `return f"€{amount}"`
+✅ **Fix:** `return f"{shipment.currency} {amount}"`
 
-❌ **Magic numbers:** `const minWeight = pallets * 300;`
-✅ **Fix:** Load from carrier configuration or use documented fallback with warning
+❌ **Magic numbers:** `min_weight = pallets * 300`
+✅ **Fix:** Load from `tariff_rule` table with logged fallback
 
-See @docs/claude/common-pitfalls.md for complete list.
+❌ **snake_case JSON to frontend:** `{"expected_total_amount": 100}` — frontend expects camelCase
+✅ **Fix:** Use `model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)` in Pydantic schemas
 
 ## Code Style
 
-- **Naming:** camelCase (TS), snake_case (DB), kebab-case (files)
-- **Imports:** Absolute paths via `@/` alias
-- **Error Handling:** NestJS exceptions (`BadRequestException`, `NotFoundException`)
-- **Logging:** Structured JSON with `logger.info/warn/error({ event, ...context })`
+- **Naming:** snake_case (Python + DB), PascalCase (classes), kebab-case (files optional)
+- **Imports:** absolute from `app.` package root
+- **Error Handling:** `HTTPException(status_code=..., detail=...)` for API errors
+- **Logging:** structlog with `logger.info("event_name", key=value, ...)`
 - **Commits:** Conventional commits (`feat:`, `fix:`, `test:`, `docs:`)
-
-See @docs/claude/coding-standards.md for details.
 
 ---
 
-**Last Updated:** 2025-10-14
-**Version:** 1.2 (MVP + Phase 4.1 + Frontend Integration)
+**Last Updated:** 2026-03-19
+**Version:** 2.0 (Python/FastAPI migration — Phase 0)
