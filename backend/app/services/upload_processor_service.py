@@ -669,6 +669,7 @@ class UploadProcessorService:
                         price_ct_max=bracket.price_ct_max,
                         floater_pct=bracket.floater_pct,
                         basis=result.basis,
+                        **({"valid_from": result.valid_from} if result.valid_from else {}),
                     )
                     .on_conflict_do_update(
                         index_elements=[

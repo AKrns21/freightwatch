@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 
 import anthropic
@@ -36,6 +37,7 @@ Each row means: if the reference diesel price is ≤ price_ct_max, apply floater
 Return a JSON object with this exact structure:
 {{
   "carrier_name": "string or null",
+  "valid_from": "YYYY-MM-DD or null",
   "basis": "base | base_plus_toll | total",
   "brackets": [
     {{"price_ct_max": number, "floater_pct": number}},
@@ -45,6 +47,9 @@ Return a JSON object with this exact structure:
 }}
 
 Rules:
+- valid_from: the date from which this table is effective — use the document/letter date \
+(e.g. "Datum: 31. Mai 2023" → "2023-05-31"); convert German month names to numbers; \
+if no explicit validity date is stated, use the document date; null only if no date at all
 - price_ct_max: the upper price threshold in Cent/Liter \
 (e.g. 150 for "≤ 1,50 EUR/l" or "≤ 150 Ct/l")
 - floater_pct: the surcharge percentage as a decimal (e.g. 13.5 for "13,50%")
@@ -68,6 +73,7 @@ class DieselBracket:
 class DieselFloaterParseResult:
     brackets: list[DieselBracket]
     carrier_name: str | None
+    valid_from: date | None
     basis: str
     issues: list[str] = field(default_factory=list)
     confidence: float = 0.0
@@ -112,6 +118,14 @@ class DieselFloaterParser:
             if basis not in ("base", "base_plus_toll", "total"):
                 basis = "base"
 
+            valid_from: date | None = None
+            raw_date = data.get("valid_from")
+            if raw_date:
+                try:
+                    valid_from = date.fromisoformat(raw_date)
+                except ValueError:
+                    pass
+
             confidence = len(brackets) / max(len(brackets), 1) if brackets else 0.0
 
             self.logger.info(
@@ -119,11 +133,13 @@ class DieselFloaterParser:
                 filename=filename,
                 bracket_count=len(brackets),
                 carrier_name=data.get("carrier_name"),
+                valid_from=str(valid_from),
             )
 
             return DieselFloaterParseResult(
                 brackets=brackets,
                 carrier_name=data.get("carrier_name"),
+                valid_from=valid_from,
                 basis=basis,
                 issues=data.get("issues") or [],
                 confidence=confidence,
@@ -134,6 +150,7 @@ class DieselFloaterParser:
             return DieselFloaterParseResult(
                 brackets=[],
                 carrier_name=None,
+                valid_from=None,
                 basis="base",
                 issues=[f"Extraction failed: {exc}"],
                 confidence=0.0,
