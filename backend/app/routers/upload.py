@@ -79,6 +79,7 @@ class UploadListItemResponse(BaseModel):
     filename: str
     file_hash: str
     mime_type: str | None = None
+    doc_type: str | None = None
     status: str | None = None
     parse_method: str | None = None
     confidence: float | None = None
