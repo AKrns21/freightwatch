@@ -49,6 +49,7 @@ from app.services.document_service import DocumentExtractionResult, get_document
 from app.services.document_type_detector import get_document_type_detector
 from app.services.extraction_validator_service import (
     ExtractionValidatorService,
+    ShipmentCountryInput,
     ShipmentInput,
 )
 from app.services.parsing.csv_parser import ParsedShipment, RowParseError, parse_with_template
@@ -311,9 +312,24 @@ class UploadProcessorService:
             for i, s in enumerate(shipments)
         ]
         validation = self._validator.validate_shipments(shipment_inputs, existing_refs)
+
+        # Stage 6.1: ZIP / country consistency check (issue #54)
+        country_inputs = [
+            ShipmentCountryInput(
+                index=i,
+                origin_zip=s.origin_zip,
+                origin_country=s.origin_country,
+                dest_zip=s.dest_zip,
+                dest_country=s.dest_country,
+            )
+            for i, s in enumerate(shipments)
+        ]
+        country_validation = self._validator.validate_zip_countries(country_inputs)
+
+        all_violations = validation.violations + country_validation.violations
         rejected_indices = {
             v.index
-            for v in validation.violations
+            for v in all_violations
             if v.action == "reject" and v.index is not None
         }
         valid_shipments = [s for i, s in enumerate(shipments) if i not in rejected_indices]
@@ -324,7 +340,7 @@ class UploadProcessorService:
                 "message": v.detail,
                 "timestamp": datetime.now(UTC).isoformat(),
             }
-            for v in validation.violations
+            for v in all_violations
         ]
 
         # Stage 7 + 8: carrier resolution + persist

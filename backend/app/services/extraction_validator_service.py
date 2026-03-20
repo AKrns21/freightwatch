@@ -2,7 +2,7 @@
 
 Port of backend_legacy/src/modules/upload/extraction-validator.service.ts
 
-No LLM, no magic numbers. Applies six deterministic rules across all parser
+No LLM, no magic numbers. Applies deterministic rules across all parser
 outputs (invoice, CSV shipment list, tariff rate table, zone map).
 
 Rule table:
@@ -12,6 +12,7 @@ Rule table:
   shipment        | reference_number not in existing set (dedup) | reject
   tariff_rate     | weight_from_kg < weight_to_kg               | reject
   tariff_zone_map | plz_prefix matches ^\\d{1,5}$               | reject
+  shipment        | ZIP length inconsistent with country field   | warn  (issue #54)
 """
 
 from __future__ import annotations
@@ -31,6 +32,7 @@ logger = structlog.get_logger(__name__)
 INVOICE_TOTAL_TOLERANCE_PCT: float = 0.02
 _DE_ZIP_PATTERN = re.compile(r"^\d{5}$")
 _PLZ_PREFIX_PATTERN = re.compile(r"^\d{1,5}$")
+_FOUR_DIGIT_ZIP_PATTERN = re.compile(r"^\d{4}$")
 
 # ---------------------------------------------------------------------------
 # Types
@@ -39,6 +41,11 @@ _PLZ_PREFIX_PATTERN = re.compile(r"^\d{1,5}$")
 ValidationAction = Literal["reject", "hold_for_review", "warn"]
 ValidationStatus = Literal["pass", "review", "fail"]
 EntityType = Literal["invoice_line", "shipment", "tariff_rate", "tariff_zone_map"]
+
+# Countries whose postal codes are 5 digits (safe to infer from length alone)
+_FIVE_DIGIT_COUNTRIES = {"DE", "FR", "ES", "IT", "US"}
+# Countries whose postal codes are 4 digits — cannot distinguish without context
+_FOUR_DIGIT_COUNTRIES = {"AT", "CH", "BE", "LU", "HU", "NL", "AU", "DK", "NO"}
 
 
 @dataclass
@@ -92,6 +99,47 @@ class TariffRateInput:
 class TariffZoneMapInput:
     index: int
     plz_prefix: str
+
+
+@dataclass
+class ShipmentCountryInput:
+    """ZIP + country pair for one shipment (issue #54)."""
+
+    index: int
+    origin_zip: str | None = None
+    origin_country: str | None = None
+    dest_zip: str | None = None
+    dest_country: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Public helper — also used directly in unit tests
+# ---------------------------------------------------------------------------
+
+
+def infer_country_from_zip(zip_str: str | None) -> str | None:
+    """Infer ISO-2 country code from ZIP code format.
+
+    Rules (deterministic, no external data):
+      - 5 digits → DE  (German PLZ are always 5 digits)
+      - 4 digits → None  (ambiguous: AT / CH / BE / LU / HU / …)
+      - anything else → None
+
+    A return value of None means the country cannot be determined from the
+    ZIP alone and a warning should be raised.
+
+    Args:
+        zip_str: Raw ZIP code string (may be None or empty).
+
+    Returns:
+        ISO-2 country code string, or None if ambiguous / unknown.
+    """
+    if not zip_str:
+        return None
+    clean = zip_str.strip()
+    if _DE_ZIP_PATTERN.match(clean):
+        return "DE"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -269,6 +317,75 @@ class ExtractionValidatorService:
                         index=rate.index,
                     )
                 )
+
+        return ExtractionValidationResult(
+            status=_derive_status(violations),
+            violations=violations,
+        )
+
+    # ------------------------------------------------------------------
+    # Rule 7: ZIP / country consistency  (issue #54)
+    # ------------------------------------------------------------------
+
+    def validate_zip_countries(
+        self,
+        inputs: list[ShipmentCountryInput],
+    ) -> ExtractionValidationResult:
+        """Warn when ZIP length is inconsistent with the country field.
+
+        Rules applied per shipment (both origin and dest):
+          - 4-digit ZIP with country == "DE" or None
+            → warn: DE postal codes are always 5 digits; likely AT/CH/BE
+          - 5-digit ZIP with country in _FOUR_DIGIT_COUNTRIES
+            → warn: country uses 4-digit codes; ZIP may be wrong
+          - 5-digit ZIP with country "DE" (or None)
+            → consistent, no violation
+
+        Args:
+            inputs: List of ShipmentCountryInput, one per parsed shipment.
+
+        Returns:
+            ExtractionValidationResult with warn-level violations only.
+        """
+        violations: list[ValidationViolation] = []
+
+        for inp in inputs:
+            for side, zip_val, country_val in [
+                ("origin", inp.origin_zip, inp.origin_country),
+                ("dest", inp.dest_zip, inp.dest_country),
+            ]:
+                if not zip_val:
+                    continue
+                clean = zip_val.strip()
+                country_upper = (country_val or "DE").upper()
+
+                if _FOUR_DIGIT_ZIP_PATTERN.match(clean) and country_upper == "DE":
+                    violations.append(
+                        ValidationViolation(
+                            entity="shipment",
+                            rule="zip_country_mismatch",
+                            action="warn",
+                            detail=(
+                                f"Shipment {inp.index}: {side}_zip '{clean}' is 4 digits "
+                                f"but country is '{country_upper}' — "
+                                "German PLZ are always 5 digits; possible AT/CH/BE"
+                            ),
+                            index=inp.index,
+                        )
+                    )
+                elif _DE_ZIP_PATTERN.match(clean) and country_upper in _FOUR_DIGIT_COUNTRIES:
+                    violations.append(
+                        ValidationViolation(
+                            entity="shipment",
+                            rule="zip_country_mismatch",
+                            action="warn",
+                            detail=(
+                                f"Shipment {inp.index}: {side}_zip '{clean}' is 5 digits "
+                                f"but country '{country_upper}' uses 4-digit postal codes"
+                            ),
+                            index=inp.index,
+                        )
+                    )
 
         return ExtractionValidationResult(
             status=_derive_status(violations),
