@@ -271,6 +271,11 @@ export const UploadDetailPage: React.FC = () => {
       setDetail(detailRes.data);
       setShipments(shipmentsRes.data);
 
+      if (detailRes.data.docType === 'diesel_floater') {
+        navigate(`/uploads/${uploadId}/diesel-floater`, { replace: true });
+        return;
+      }
+
       const tariffTableId = detailRes.data.llmAnalysis?.tariff_table_id;
       if (detailRes.data.docType === 'tariff' && tariffTableId) {
         const tariffRes = await api.get<TariffDetail>(`/api/tariffs/${tariffTableId}`);
