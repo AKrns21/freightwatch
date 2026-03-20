@@ -373,6 +373,92 @@ class TestUploadProcessorService:
         assert p1 is p2
 
     # ============================================================================
+    # NON-INVOICE PDF ROUTING — tariff / shipment_csv PDFs
+    # ============================================================================
+
+    @pytest.mark.asyncio
+    async def test_tariff_pdf_does_not_enter_invoice_parser(self) -> None:
+        """A PDF detected as 'tariff' must never call InvoiceParserService."""
+        upload = _make_upload(mime_type="application/pdf", filename="AS 04.2022 Dirk Beese.pdf")
+        tariff_result = ProcessingResult(upload_id=UPLOAD_ID, final_status=STATUS_NEEDS_MANUAL_REVIEW)
+
+        with (
+            patch(f"{_MODULE}._TenantSession", return_value=_mock_tenant_session()),
+            patch.object(self.svc, "_load_upload", return_value=upload),
+            patch.object(self.svc, "_extract_document", new_callable=AsyncMock, return_value=None),
+            patch.object(self.svc, "_detect_doc_type", new_callable=AsyncMock, return_value=("tariff", None)),
+            patch.object(self.svc, "_update_status", new_callable=AsyncMock),
+            patch.object(self.svc, "_process_invoice_upload", new_callable=AsyncMock) as mock_invoice,
+            patch.object(self.svc, "_process_tariff_upload", new_callable=AsyncMock, return_value=tariff_result),
+        ):
+            result = await self.svc._pipeline_stages(UPLOAD_ID, TENANT_ID, MagicMock())
+
+        mock_invoice.assert_not_called()
+        assert result.final_status == STATUS_NEEDS_MANUAL_REVIEW
+
+    @pytest.mark.asyncio
+    async def test_tariff_pdf_routes_to_tariff_parser(self) -> None:
+        """A PDF detected as 'tariff' must call _process_tariff_upload."""
+        upload = _make_upload(mime_type="application/pdf", filename="tariff_2022.pdf")
+        tariff_result = ProcessingResult(
+            upload_id=UPLOAD_ID, final_status=STATUS_PARSED, parse_method="llm"
+        )
+
+        with (
+            patch(f"{_MODULE}._TenantSession", return_value=_mock_tenant_session()),
+            patch.object(self.svc, "_load_upload", return_value=upload),
+            patch.object(self.svc, "_extract_document", new_callable=AsyncMock, return_value=None),
+            patch.object(self.svc, "_detect_doc_type", new_callable=AsyncMock, return_value=("tariff", None)),
+            patch.object(self.svc, "_update_status", new_callable=AsyncMock),
+            patch.object(
+                self.svc, "_process_tariff_upload", new_callable=AsyncMock, return_value=tariff_result
+            ) as mock_tariff,
+        ):
+            result = await self.svc._pipeline_stages(UPLOAD_ID, TENANT_ID, MagicMock())
+
+        mock_tariff.assert_called_once()
+        assert result.final_status == STATUS_PARSED
+
+    @pytest.mark.asyncio
+    async def test_shipment_csv_pdf_sets_needs_manual_review(self) -> None:
+        """A PDF misclassified as shipment_csv should be held, not crashed."""
+        upload = _make_upload(mime_type="application/pdf", filename="sendungsliste.pdf")
+
+        with (
+            patch(f"{_MODULE}._TenantSession", return_value=_mock_tenant_session()),
+            patch.object(self.svc, "_load_upload", return_value=upload),
+            patch.object(self.svc, "_extract_document", new_callable=AsyncMock, return_value=None),
+            patch.object(self.svc, "_detect_doc_type", new_callable=AsyncMock, return_value=("shipment_csv", None)),
+            patch.object(self.svc, "_update_status", new_callable=AsyncMock),
+            patch.object(self.svc, "_process_invoice_upload", new_callable=AsyncMock) as mock_invoice,
+        ):
+            result = await self.svc._pipeline_stages(UPLOAD_ID, TENANT_ID, MagicMock())
+
+        mock_invoice.assert_not_called()
+        assert result.final_status == STATUS_NEEDS_MANUAL_REVIEW
+
+    @pytest.mark.asyncio
+    async def test_invoice_pdf_still_routes_to_invoice_parser(self) -> None:
+        """Regression: 'invoice' PDFs must still enter InvoiceParserService."""
+        upload = _make_upload(mime_type="application/pdf", filename="rechnung_2024.pdf")
+        invoice_result = MagicMock()
+        invoice_result.final_status = STATUS_PARSED
+
+        with (
+            patch(f"{_MODULE}._TenantSession", return_value=_mock_tenant_session()),
+            patch.object(self.svc, "_load_upload", return_value=upload),
+            patch.object(self.svc, "_extract_document", new_callable=AsyncMock, return_value=None),
+            patch.object(self.svc, "_detect_doc_type", new_callable=AsyncMock, return_value=("invoice", None)),
+            patch.object(self.svc, "_update_status", new_callable=AsyncMock),
+            patch.object(
+                self.svc, "_process_invoice_upload", new_callable=AsyncMock, return_value=invoice_result
+            ) as mock_invoice,
+        ):
+            await self.svc._pipeline_stages(UPLOAD_ID, TENANT_ID, MagicMock())
+
+        mock_invoice.assert_called_once()
+
+    # ============================================================================
     # VALIDATE SHIPMENTS — partial reject produces issues list
     # ============================================================================
 

@@ -13,6 +13,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [docType, setDocType] = useState<string>('auto');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export const ProjectDetailPage: React.FC = () => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('project_id', projectId!);
+    if (docType !== 'auto') formData.append('doc_type', docType);
 
     try {
       const res = await api.post<UploadCreatedResponse>('/api/uploads', formData, {
@@ -102,6 +104,22 @@ export const ProjectDetailPage: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Datei hochladen</h2>
 
           <div className="flex gap-4 items-end">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Dokumenttyp
+              </label>
+              <select
+                value={docType}
+                onChange={(e) => setDocType(e.target.value)}
+                disabled={uploading}
+                className="block text-sm border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                <option value="auto">Automatisch erkennen</option>
+                <option value="invoice">Rechnung / Invoice</option>
+                <option value="tariff">Tarif / Preisliste</option>
+                <option value="shipment_csv">Sendungsliste (CSV/XLSX)</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Datei (PDF, Excel, CSV — max. 10 MB)

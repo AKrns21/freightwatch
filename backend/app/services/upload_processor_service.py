@@ -55,6 +55,7 @@ from app.services.extraction_validator_service import (
 )
 from app.services.parsing.csv_parser import ParsedShipment, RowParseError, parse_with_template
 from app.services.parsing.invoice_parser import InvoiceParseResult, InvoiceParserService
+from app.services.parsing.tariff_parser import get_tariff_parser
 from app.services.template_service import TemplateMatch, get_template_service
 
 logger = structlog.get_logger(__name__)
@@ -156,6 +157,7 @@ class UploadProcessorService:
         self._validator = ExtractionValidatorService()
         self._benchmark_service = get_benchmark_service()
         self._invoice_parser = InvoiceParserService()
+        self._tariff_parser = get_tariff_parser()
 
     # -----------------------------------------------------------------------
     # Public: main entry point
@@ -257,13 +259,19 @@ class UploadProcessorService:
                 )
             else:
                 log.info(
-                    "non_tabular_file_routing_to_invoice_parser",
+                    "non_tabular_file_detected",
                     doc_type=doc_type,
                     mime=_mime,
                 )
 
-        # Non-tabular files (PDF / image): run InvoiceParserService pipeline
+        # Non-tabular files (PDF / image): branch on detected doc_type
         if not _is_tabular:
+            if doc_type == "tariff":
+                return await self._process_tariff_upload(upload, upload_id, tenant_id, log)
+            if doc_type == "shipment_csv":
+                # Shipment list as PDF — unsupported, ask user to re-upload as CSV/XLSX
+                return await self._hold_non_invoice_pdf(upload_id, tenant_id, doc_type, log)
+            # "invoice", "other", or None → existing InvoiceParserService pipeline
             return await self._process_invoice_upload(upload, upload_id, tenant_id, log)
 
         if match is None:
@@ -400,6 +408,160 @@ class UploadProcessorService:
             row_error_count=len(row_errors),
             parse_method="template",
             issues=all_issues,
+        )
+
+    # -----------------------------------------------------------------------
+    # Non-invoice PDF handling
+    # -----------------------------------------------------------------------
+
+    async def _hold_non_invoice_pdf(
+        self,
+        upload_id: UUID,
+        tenant_id: UUID,
+        doc_type: str,
+        log: Any,
+    ) -> ProcessingResult:
+        """Hold non-invoice PDFs as needs_manual_review.
+
+        Used for doc_types that have no PDF parser yet (tariff → issue #59)
+        or that are unexpected as PDFs (shipment_csv → re-upload as CSV/XLSX).
+        """
+        _MESSAGES: dict[str, str] = {
+            "tariff": (
+                "Tariff document detected — tariff import pipeline not yet available via upload. "
+                "The document has been saved for manual import (issue #59)."
+            ),
+            "shipment_csv": (
+                "Shipment list detected as PDF — re-upload as CSV or XLSX for automatic parsing."
+            ),
+        }
+        message = _MESSAGES.get(doc_type, f"Document type '{doc_type}' cannot be processed as PDF.")
+        log.info("non_invoice_pdf_held_for_review", doc_type=doc_type, message=message)
+        await self._update_status(
+            upload_id,
+            tenant_id,
+            STATUS_NEEDS_MANUAL_REVIEW,
+            extra={
+                "parse_method": "manual",
+                "parsing_issues": [
+                    {
+                        "type": "unsupported_doc_type_for_pdf",
+                        "message": message,
+                        "doc_type": doc_type,
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+                ],
+            },
+        )
+        return ProcessingResult(
+            upload_id=upload_id,
+            final_status=STATUS_NEEDS_MANUAL_REVIEW,
+            parse_method="manual",
+        )
+
+    # -----------------------------------------------------------------------
+    # Tariff processing (PDF uploads)
+    # -----------------------------------------------------------------------
+
+    async def _process_tariff_upload(
+        self,
+        upload: Upload,
+        upload_id: UUID,
+        tenant_id: UUID,
+        log: Any,
+    ) -> ProcessingResult:
+        """Process a tariff PDF through TariffParserService.
+
+        Routes the result based on TariffParseResult.review_action:
+          auto_import      → parsed
+          hold_for_review  → needs_manual_review  (low confidence, human checks before use)
+          needs_manual_review → needs_manual_review  (carrier unresolved or no rates)
+        """
+        if not upload.storage_url:
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                error="No storage URL for upload",
+            )
+
+        file_path = Path(upload.storage_url)
+        if not file_path.exists():
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                error=f"File not found: {file_path}",
+            )
+
+        file_bytes = await asyncio.to_thread(file_path.read_bytes)
+
+        async with _TenantSession(tenant_id) as db:
+            result = await self._tariff_parser.parse(
+                file_bytes,
+                filename=upload.filename or "",
+                tenant_id=tenant_id,
+                upload_id=upload_id,
+                db=db,
+            )
+
+        log.info(
+            "tariff_parse_complete",
+            confidence=result.confidence,
+            review_action=result.review_action,
+            zone_count=len(result.zones),
+            rate_count=len(result.rates),
+            carrier_id=str(result.carrier_id) if result.carrier_id else None,
+        )
+
+        parse_issues = [
+            {"type": "tariff_issue", "message": issue, "timestamp": datetime.now(UTC).isoformat()}
+            for issue in result.issues
+        ]
+
+        if result.review_action == "auto_import":
+            await self._update_status(
+                upload_id,
+                tenant_id,
+                STATUS_PARSED,
+                extra={
+                    "parse_method": result.parsing_method,
+                    "confidence": result.confidence,
+                    "llm_analysis": result.to_dict(),
+                    **({"parsing_issues": parse_issues} if parse_issues else {}),
+                },
+            )
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_PARSED,
+                parse_method=result.parsing_method,
+                issues=parse_issues,
+            )
+
+        # hold_for_review or needs_manual_review → both land as needs_manual_review
+        review_issue = {
+            "type": "tariff_review_required",
+            "message": (
+                "Tariff imported but requires manual review — carrier unresolved or low confidence"
+                if result.review_action == "needs_manual_review"
+                else f"Confidence {result.confidence:.0%} below auto-import threshold"
+            ),
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+        await self._update_status(
+            upload_id,
+            tenant_id,
+            STATUS_NEEDS_MANUAL_REVIEW,
+            extra={
+                "parse_method": result.parsing_method,
+                "confidence": result.confidence,
+                "parsing_issues": [review_issue, *parse_issues],
+                "llm_analysis": result.to_dict(),
+            },
+        )
+        return ProcessingResult(
+            upload_id=upload_id,
+            final_status=STATUS_NEEDS_MANUAL_REVIEW,
+            parse_method=result.parsing_method,
+            issues=[review_issue, *parse_issues],
         )
 
     # -----------------------------------------------------------------------
@@ -748,6 +910,9 @@ class UploadProcessorService:
     ) -> tuple[str | None, str | None]:
         """Classify document type and build file_content for template matching.
 
+        If upload.doc_type is already set (user hint from the upload form), detection
+        is skipped and the hint is returned directly.
+
         For CSV/XLSX: passes column names (comma-joined header line) so that
         TemplateService._extract_characteristics() can score header keywords.
         For PDFs/images: passes Vision-extracted text.
@@ -765,6 +930,11 @@ class UploadProcessorService:
                 file_content = ",".join(column_names)
             elif doc_result.text:
                 file_content = doc_result.text
+
+        # User-provided hint takes precedence — skip LLM/heuristic detection
+        if upload.doc_type:
+            log.info("doc_type_from_hint", doc_type=upload.doc_type)
+            return upload.doc_type, file_content
 
         try:
             doc_type = await self._detector.detect(

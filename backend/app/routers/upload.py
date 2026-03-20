@@ -150,12 +150,16 @@ async def list_uploads(
     return [UploadListItemResponse.model_validate(u) for u in rows]
 
 
+_VALID_DOC_TYPES = {"invoice", "tariff", "shipment_csv"}
+
+
 @router.post("", response_model=UploadResponse, status_code=202)
 async def create_upload(
     request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile,
     project_id: UUID | None = Form(None),
+    doc_type: str | None = Form(None),
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> UploadResponse:
     """Receive a file, create an upload record, and kick off background processing.
@@ -163,7 +167,15 @@ async def create_upload(
     Returns 202 Accepted immediately; poll GET /uploads/{id} for status updates.
     Duplicate uploads (same file_hash + tenant) return the existing record without
     re-processing.
+
+    doc_type (optional): explicit type hint — skips auto-detection when provided.
+    Allowed values: "invoice", "tariff", "shipment_csv".
     """
+    if doc_type is not None and doc_type not in _VALID_DOC_TYPES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid doc_type '{doc_type}'. Must be one of: {sorted(_VALID_DOC_TYPES)}",
+        )
 
     content = await file.read()
     file_hash = sha256_bytes(content)
@@ -209,6 +221,7 @@ async def create_upload(
         project_id=project_id,
         storage_url=str(storage_path),
         status="pending",
+        doc_type=doc_type,
     )
     db.add(upload)
     try:
@@ -275,6 +288,7 @@ async def get_upload_status(
 async def reprocess_upload(
     upload_id: UUID,
     background_tasks: BackgroundTasks,
+    doc_type: str | None = Form(None),
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> UploadStatusResponse:
     """Reset an upload to 'pending' and re-run the processing pipeline.
@@ -282,7 +296,15 @@ async def reprocess_upload(
     Uses an atomic UPDATE … WHERE status != 'parsing' RETURNING … to avoid
     blocking on a row lock when a background task is actively processing.
     Returns 409 immediately if the upload is already being processed.
+
+    doc_type (optional): override the document type for this reprocess run.
+    Allowed values: "invoice", "tariff", "shipment_csv".
     """
+    if doc_type is not None and doc_type not in _VALID_DOC_TYPES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid doc_type '{doc_type}'. Must be one of: {sorted(_VALID_DOC_TYPES)}",
+        )
     from datetime import UTC, datetime
 
     from sqlalchemy import update as sa_update
@@ -319,7 +341,7 @@ async def reprocess_upload(
             confidence=None,
             parse_errors=None,
             parsing_issues=None,
-            doc_type=None,
+            doc_type=doc_type,  # None → auto-detect; explicit value → skip detection
             updated_at=datetime.now(UTC),
         )
         .returning(Upload.tenant_id, Upload.filename)
