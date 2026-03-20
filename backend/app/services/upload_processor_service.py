@@ -648,8 +648,6 @@ class UploadProcessorService:
                         ),
                         "timestamp": datetime.now(UTC).isoformat(),
                     }, *parse_issues],
-                    "extracted_carrier_name": result.carrier_name,
-                    "bracket_count": len(result.brackets),
                 },
             )
             return ProcessingResult(
@@ -689,14 +687,20 @@ class UploadProcessorService:
             basis=result.basis,
         )
 
+        summary_issue = {
+            "type": "diesel_floater_imported",
+            "message": (
+                f"Imported {len(result.brackets)} brackets for carrier "
+                f"'{result.carrier_name}' (basis: {result.basis})"
+            ),
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
         await self._update_status(
             upload_id, tenant_id, STATUS_PARSED,
             extra={
                 "parse_method": "llm",
                 "confidence": result.confidence,
-                "bracket_count": len(result.brackets),
-                "carrier_name": result.carrier_name,
-                **({"parsing_issues": parse_issues} if parse_issues else {}),
+                "parsing_issues": [summary_issue, *parse_issues] if parse_issues else [summary_issue],
             },
         )
         return ProcessingResult(
