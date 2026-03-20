@@ -43,17 +43,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.session import AsyncSessionLocal
-from app.models.database import Carrier, CarrierAlias, Shipment, Upload
+from app.models.database import Carrier, CarrierAlias, DieselPriceBracket, Shipment, Upload
 from app.services.benchmark_service import get_benchmark_service
+from app.services.carrier_service import get_carrier_service
 from app.services.document_service import DocumentExtractionResult, get_document_service
 from app.services.document_type_detector import get_document_type_detector
-from app.services.carrier_service import get_carrier_service
 from app.services.extraction_validator_service import (
     ExtractionValidatorService,
     ShipmentCountryInput,
     ShipmentInput,
 )
 from app.services.parsing.csv_parser import ParsedShipment, RowParseError, parse_with_template
+from app.services.parsing.diesel_floater_parser import get_diesel_floater_parser
 from app.services.parsing.invoice_parser import InvoiceParseResult, InvoiceParserService
 from app.services.parsing.tariff_parser import get_tariff_parser
 from app.services.template_service import TemplateMatch, get_template_service
@@ -268,6 +269,10 @@ class UploadProcessorService:
         if not _is_tabular:
             if doc_type == "tariff":
                 return await self._process_tariff_upload(upload, upload_id, tenant_id, log)
+            if doc_type == "diesel_floater":
+                return await self._process_diesel_floater_upload(
+                    upload, upload_id, tenant_id, log
+                )
             if doc_type == "shipment_csv":
                 # Shipment list as PDF — unsupported, ask user to re-upload as CSV/XLSX
                 return await self._hold_non_invoice_pdf(upload_id, tenant_id, doc_type, log)
@@ -565,6 +570,142 @@ class UploadProcessorService:
         )
 
     # -----------------------------------------------------------------------
+    # Diesel floater processing
+    # -----------------------------------------------------------------------
+
+    async def _process_diesel_floater_upload(
+        self,
+        upload: Upload,
+        upload_id: UUID,
+        tenant_id: UUID,
+        log: Any,
+    ) -> ProcessingResult:
+        """Parse a diesel floater PDF and store brackets in diesel_price_bracket.
+
+        Carrier is identified from the document itself via LLM extraction,
+        then resolved through the standard carrier fallback chain.
+        """
+        if not upload.storage_url:
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                error="No storage URL for upload",
+            )
+
+        file_path = Path(upload.storage_url)
+        if not file_path.exists():
+            return ProcessingResult(
+                upload_id=upload_id, final_status=STATUS_FAILED,
+                error=f"File not found: {file_path}",
+            )
+
+        file_bytes = await asyncio.to_thread(file_path.read_bytes)
+        doc = await self._doc_service.process(file_bytes, filename=upload.filename or "")
+
+        parser = get_diesel_floater_parser()
+        result = await parser.parse(doc.text or "", filename=upload.filename or "")
+
+        parse_issues = [
+            {"type": "parse_issue", "message": i, "timestamp": datetime.now(UTC).isoformat()}
+            for i in result.issues
+        ]
+
+        if not result.brackets:
+            log.warning("diesel_floater_no_brackets", upload_id=str(upload_id))
+            await self._update_status(
+                upload_id, tenant_id, STATUS_FAILED,
+                extra={"parse_errors": {
+                    "message": "No brackets extracted from document",
+                    "issues": [i["message"] for i in parse_issues],
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }},
+            )
+            return ProcessingResult(
+                upload_id=upload_id, final_status=STATUS_FAILED,
+                error="No brackets extracted", issues=parse_issues,
+            )
+
+        # Resolve carrier from extracted name — same fallback chain as invoices
+        async with _TenantSession(tenant_id) as db:
+            carrier_id = await self._resolve_carrier(
+                db, result.carrier_name, tenant_id, upload_id, log
+            )
+
+        if carrier_id is None:
+            log.warning(
+                "diesel_floater_carrier_not_resolved",
+                carrier_name=result.carrier_name,
+                upload_id=str(upload_id),
+            )
+            await self._update_status(
+                upload_id, tenant_id, STATUS_NEEDS_MANUAL_REVIEW,
+                extra={
+                    "parsing_issues": [{
+                        "type": "carrier_not_found",
+                        "message": (
+                            f"Carrier '{result.carrier_name}' could not be resolved — "
+                            "assign the correct carrier manually before brackets can be saved"
+                        ),
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }, *parse_issues],
+                    "extracted_carrier_name": result.carrier_name,
+                    "bracket_count": len(result.brackets),
+                },
+            )
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_NEEDS_MANUAL_REVIEW,
+                error=f"Carrier '{result.carrier_name}' not resolved",
+                issues=parse_issues,
+            )
+
+        # Upsert all brackets
+        from sqlalchemy.dialects.postgresql import insert as pg_insert
+        async with _TenantSession(tenant_id) as db:
+            for bracket in result.brackets:
+                stmt = (
+                    pg_insert(DieselPriceBracket)
+                    .values(
+                        tenant_id=tenant_id,
+                        carrier_id=carrier_id,
+                        price_ct_max=bracket.price_ct_max,
+                        floater_pct=bracket.floater_pct,
+                        basis=result.basis,
+                    )
+                    .on_conflict_do_update(
+                        index_elements=[
+                            "tenant_id", "carrier_id", "price_ct_max", "valid_from"
+                        ],
+                        set_={"floater_pct": bracket.floater_pct, "basis": result.basis},
+                    )
+                )
+                await db.execute(stmt)
+
+        log.info(
+            "diesel_floater_brackets_saved",
+            bracket_count=len(result.brackets),
+            carrier_id=str(carrier_id),
+            carrier_name=result.carrier_name,
+            basis=result.basis,
+        )
+
+        await self._update_status(
+            upload_id, tenant_id, STATUS_PARSED,
+            extra={
+                "parse_method": "llm",
+                "confidence": result.confidence,
+                "bracket_count": len(result.brackets),
+                "carrier_name": result.carrier_name,
+                **({"parsing_issues": parse_issues} if parse_issues else {}),
+            },
+        )
+        return ProcessingResult(
+            upload_id=upload_id,
+            final_status=STATUS_PARSED,
+            parse_method="llm",
+        )
+
+    # -----------------------------------------------------------------------
     # Invoice processing (PDF / image uploads)
     # -----------------------------------------------------------------------
 
@@ -602,7 +743,7 @@ class UploadProcessorService:
         file_bytes = await asyncio.to_thread(file_path.read_bytes)
 
         async with _TenantSession(tenant_id) as db:
-            result = await self._invoice_parser.parse_invoice_pdf(
+            results = await self._invoice_parser.parse_invoice_pdf_multi(
                 file_bytes,
                 filename=upload.filename or "",
                 carrier_id=None,
@@ -613,113 +754,143 @@ class UploadProcessorService:
 
         log.info(
             "invoice_parse_complete",
-            confidence=result.confidence,
-            review_action=result.review_action,
-            line_count=len(result.lines),
-            parsing_method=result.parsing_method,
+            invoice_count=len(results),
+            invoice_numbers=[r.header.invoice_number for r in results],
+            confidences=[r.confidence for r in results],
+            review_actions=[r.review_action for r in results],
+            line_counts=[len(r.lines) for r in results],
+            parsing_method=results[0].parsing_method if results else "llm",
         )
 
-        parse_issues = [
-            {
-                "type": "llm_issue",
-                "message": issue,
-                "timestamp": datetime.now(UTC).isoformat(),
-            }
-            for issue in result.issues
-        ]
+        all_saved_ids: list[UUID] = []
+        all_parse_issues: list[dict] = []
+        has_hold = False
 
-        # ── auto_import / auto_import_flag: save shipments ──────────────────
-        if result.review_action in ("auto_import", "auto_import_flag"):
-            async with _TenantSession(tenant_id) as db:
-                saved_ids = await self._save_invoice_shipments(
-                    db, result, upload_id, tenant_id, log
-                )
-            if saved_ids:
+        for result in results:
+            parse_issues = [
+                {
+                    "type": "llm_issue",
+                    "message": issue,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                for issue in result.issues
+            ]
+            all_parse_issues.extend(parse_issues)
+
+            if result.review_action in ("auto_import", "auto_import_flag"):
                 async with _TenantSession(tenant_id) as db:
-                    await self._calculate_benchmarks(db, saved_ids, tenant_id, log)
+                    saved_ids = await self._save_invoice_shipments(
+                        db, result, upload_id, tenant_id, log
+                    )
+                all_saved_ids.extend(saved_ids)
 
-            final_status = (
-                STATUS_PARSED
-                if result.review_action == "auto_import"
-                else STATUS_PARTIAL_SUCCESS
-            )
+            elif result.review_action == "hold_for_review":
+                has_hold = True
+                review_issue = {
+                    "type": "low_confidence",
+                    "message": (
+                        f"Invoice {result.header.invoice_number}: "
+                        f"confidence {result.confidence:.0%} is below auto-import threshold "
+                        "— manual review required before shipments are accepted"
+                    ),
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                all_parse_issues.insert(0, review_issue)
+
+            # reject: skip silently — issue will surface in all_parse_issues if any
+
+        if all_saved_ids:
+            async with _TenantSession(tenant_id) as db:
+                await self._calculate_benchmarks(db, all_saved_ids, tenant_id, log)
+
+        parse_method = results[0].parsing_method if results else "llm"
+        avg_confidence = sum(r.confidence for r in results) / len(results) if results else 0.0
+
+        # ── determine upload status from combined actions ────────────────────
+        all_actions = {r.review_action for r in results}
+
+        if has_hold or "hold_for_review" in all_actions:
+            final_status = STATUS_NEEDS_MANUAL_REVIEW
+        elif all_saved_ids and all(r.review_action == "auto_import" for r in results):
+            final_status = STATUS_PARSED
+        elif all_saved_ids:
+            final_status = STATUS_PARTIAL_SUCCESS
+        else:
+            final_status = STATUS_FAILED
+
+        if final_status == STATUS_NEEDS_MANUAL_REVIEW:
             await self._update_status(
                 upload_id,
                 tenant_id,
                 final_status,
                 extra={
-                    "parse_method": result.parsing_method,
-                    "confidence": result.confidence,
-                    **({"parsing_issues": parse_issues} if parse_issues else {}),
-                },
-            )
-            return ProcessingResult(
-                upload_id=upload_id,
-                final_status=final_status,
-                shipment_count=len(saved_ids),
-                parse_method=result.parsing_method,
-                issues=parse_issues,
-            )
-
-        # ── hold_for_review: import lines but flag for human approval ────────
-        if result.review_action == "hold_for_review":
-            review_issue = {
-                "type": "low_confidence",
-                "message": (
-                    f"Confidence {result.confidence:.0%} is below auto-import threshold "
-                    "— manual review required before shipments are accepted"
-                ),
-                "timestamp": datetime.now(UTC).isoformat(),
-            }
-            await self._update_status(
-                upload_id,
-                tenant_id,
-                STATUS_NEEDS_MANUAL_REVIEW,
-                extra={
-                    "parse_method": result.parsing_method,
-                    "confidence": result.confidence,
-                    "parsing_issues": [review_issue, *parse_issues],
+                    "parse_method": parse_method,
+                    "confidence": avg_confidence,
+                    "parsing_issues": all_parse_issues,
                     "llm_analysis": {
-                        "header": {
-                            "invoice_number": result.header.invoice_number,
-                            "invoice_date": result.header.invoice_date,
-                            "carrier_name": result.header.carrier_name,
-                            "total_amount": result.header.total_amount,
-                            "currency": result.header.currency,
-                        },
-                        "line_count": len(result.lines),
-                        "prompt_version": "freight_invoice_extractor_v1.0.0",
+                        "invoices": [
+                            {
+                                "invoice_number": r.header.invoice_number,
+                                "invoice_date": r.header.invoice_date,
+                                "carrier_name": r.header.carrier_name,
+                                "total_amount": r.header.total_amount,
+                                "currency": r.header.currency,
+                                "line_count": len(r.lines),
+                                "confidence": r.confidence,
+                                "review_action": r.review_action,
+                            }
+                            for r in results
+                        ],
+                        "prompt_version": settings.invoice_extractor_prompt_version,
                     },
                 },
             )
             return ProcessingResult(
                 upload_id=upload_id,
-                final_status=STATUS_NEEDS_MANUAL_REVIEW,
-                parse_method=result.parsing_method,
-                issues=[review_issue, *parse_issues],
+                final_status=final_status,
+                parse_method=parse_method,
+                issues=all_parse_issues,
             )
 
-        # ── reject: confidence too low, do not import ────────────────────────
+        if final_status == STATUS_FAILED:
+            await self._update_status(
+                upload_id,
+                tenant_id,
+                STATUS_FAILED,
+                extra={
+                    "parse_method": parse_method,
+                    "confidence": avg_confidence,
+                    "parse_errors": {
+                        "message": f"Confidence {avg_confidence:.0%} below reject threshold",
+                        "issues": [i["message"] for i in all_parse_issues],
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    },
+                },
+            )
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                parse_method=parse_method,
+                error=f"Confidence {avg_confidence:.0%} below reject threshold",
+                issues=all_parse_issues,
+            )
+
         await self._update_status(
             upload_id,
             tenant_id,
-            STATUS_FAILED,
+            final_status,
             extra={
-                "parse_method": result.parsing_method,
-                "confidence": result.confidence,
-                "parse_errors": {
-                    "message": f"Confidence {result.confidence:.0%} below reject threshold",
-                    "issues": [i["message"] for i in parse_issues],
-                    "timestamp": datetime.now(UTC).isoformat(),
-                },
+                "parse_method": parse_method,
+                "confidence": avg_confidence,
+                **({"parsing_issues": all_parse_issues} if all_parse_issues else {}),
             },
         )
         return ProcessingResult(
             upload_id=upload_id,
-            final_status=STATUS_FAILED,
-            parse_method=result.parsing_method,
-            error=f"Confidence {result.confidence:.0%} below reject threshold",
-            issues=parse_issues,
+            final_status=final_status,
+            shipment_count=len(all_saved_ids),
+            parse_method=parse_method,
+            issues=all_parse_issues,
         )
 
     async def _save_invoice_shipments(

@@ -33,20 +33,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.database import (
     Carrier,
     DieselFloater,
+    DieselPriceBracket,
     Shipment,
     ShipmentBenchmark,
     TariffRate,
     TariffTable,
 )
+from app.services.destatis_service import get_destatis_service
 from app.services.fx_service import FxService
 from app.services.zone_calculator_service import ZoneCalculatorService
 from app.utils.round import round_monetary
 
 logger = structlog.get_logger(__name__)
-
-# Fallback diesel % when no DB row found (documented; logged as warning)
-_DIESEL_FALLBACK_PCT = Decimal("18.5")
-_DIESEL_FALLBACK_BASIS = "base"
 
 # Heuristic toll threshold (vehicle-class proxy for MVP)
 _TOLL_WEIGHT_THRESHOLD_KG = Decimal("3500")
@@ -268,6 +266,15 @@ class TariffEngineService:
             carrier_id=shipment.carrier_id,
             shipment_date=shipment.date,
         )
+        if diesel_floater is None:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"No diesel floater data for carrier {shipment.carrier_id} "
+                    f"on {shipment.date} — upload a price bracket table or add a "
+                    f"manual rate before benchmarking this shipment"
+                ),
+            )
 
         diesel_base: Decimal
         if diesel_floater.basis == "base_plus_toll":
@@ -640,7 +647,49 @@ class TariffEngineService:
         tenant_id: UUID,
         carrier_id: UUID | None,
         shipment_date: date,
-    ) -> _DieselFloaterResult:
+    ) -> _DieselFloaterResult | None:
+        # ── 1. Bracket-based resolution (preferred) ──────────────────────
+        # Look up the Destatis reference price (2-month lag), then find the
+        # carrier's bracket row with the lowest price_ct_max >= reference price.
+        if carrier_id is not None:
+            try:
+                destatis = get_destatis_service()
+                ref_price = await destatis.resolve_for_date(db, shipment_date)
+                if ref_price is not None:
+                    bracket = (
+                        await db.execute(
+                            select(DieselPriceBracket)
+                            .where(
+                                DieselPriceBracket.tenant_id == tenant_id,
+                                DieselPriceBracket.carrier_id == carrier_id,
+                                DieselPriceBracket.price_ct_max >= ref_price,
+                                DieselPriceBracket.valid_from <= shipment_date,
+                                or_(
+                                    DieselPriceBracket.valid_until.is_(None),
+                                    DieselPriceBracket.valid_until >= shipment_date,
+                                ),
+                            )
+                            .order_by(DieselPriceBracket.price_ct_max.asc())
+                            .limit(1)
+                        )
+                    ).scalar_one_or_none()
+
+                    if bracket is not None:
+                        self.logger.info(
+                            "diesel_bracket_resolved",
+                            ref_price_ct=float(ref_price),
+                            bracket_max_ct=float(bracket.price_ct_max),
+                            floater_pct=float(bracket.floater_pct),
+                            date=shipment_date.isoformat(),
+                        )
+                        return _DieselFloaterResult(
+                            pct=Decimal(str(bracket.floater_pct)),
+                            basis=bracket.basis or "base",
+                        )
+            except Exception as exc:
+                self.logger.error("diesel_bracket_lookup_error", error=str(exc))
+
+        # ── 2. Manual flat override (diesel_floater table) ────────────────
         try:
             stmt = (
                 select(DieselFloater)
@@ -660,18 +709,18 @@ class TariffEngineService:
             if row is not None:
                 return _DieselFloaterResult(
                     pct=Decimal(str(row.floater_pct)),
-                    basis=row.basis or _DIESEL_FALLBACK_BASIS,
+                    basis=row.basis or "base",
                 )
         except Exception as exc:
             self.logger.error("diesel_floater_lookup_error", error=str(exc))
 
         self.logger.warning(
-            "diesel_floater_fallback",
+            "diesel_floater_missing",
             tenant_id=str(tenant_id),
             carrier_id=str(carrier_id),
             date=shipment_date.isoformat(),
         )
-        return _DieselFloaterResult(pct=_DIESEL_FALLBACK_PCT, basis=_DIESEL_FALLBACK_BASIS)
+        return None
 
     async def _create_shipment_benchmark(
         self,

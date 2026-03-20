@@ -6,6 +6,7 @@ import { UploadReviewPage } from './pages/UploadReview';
 import { UploadDetailPage } from './pages/UploadDetail';
 import { ReportViewerPage } from './pages/ReportViewer';
 import { ProjectDetailPage } from './pages/ProjectDetail';
+import { DieselFloaterPage } from './pages/DieselFloater';
 import { LoginPage } from './pages/Login';
 
 /**
@@ -37,6 +38,9 @@ function App() {
           <Route path="/projects" element={<RequireAuth><ProjectsPage /></RequireAuth>} />
           <Route path="/projects/new" element={<RequireAuth><NewProjectPage /></RequireAuth>} />
           <Route path="/projects/:projectId" element={<RequireAuth><ProjectDetailPage /></RequireAuth>} />
+
+          {/* Settings */}
+          <Route path="/settings/diesel-floaters" element={<RequireAuth><DieselFloaterPage /></RequireAuth>} />
 
           {/* Upload Review */}
           <Route path="/uploads/:uploadId/review" element={<RequireAuth><UploadReviewPage /></RequireAuth>} />

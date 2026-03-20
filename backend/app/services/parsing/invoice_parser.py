@@ -134,7 +134,8 @@ class InvoiceParserService:
                 text_len=len(doc.text or ""),
                 prompt_version=settings.invoice_extractor_prompt_version,
             )
-            return [await self._text_llm_fallback(doc.text or "", filename=filename)]
+            result = await self._text_llm_fallback(doc.text or "", filename=filename)
+            return self._split_by_invoice_number(result)
 
         # ── Text path: try template ─────────────────────────────────────────
         if doc.mode == "text" and db is not None:
@@ -169,7 +170,8 @@ class InvoiceParserService:
             mode=doc.mode,
             prompt_version=settings.invoice_extractor_prompt_version,
         )
-        return [await self._text_llm_fallback(doc.text or "", filename=filename)]
+        result = await self._text_llm_fallback(doc.text or "", filename=filename)
+        return self._split_by_invoice_number(result)
 
     async def parse_invoice_pdf(
         self,
@@ -193,6 +195,79 @@ class InvoiceParserService:
             db=db,
         )
         return results[0]
+
+    # ── multi-invoice splitting ───────────────────────────────────────────────
+
+    def _split_by_invoice_number(
+        self, result: InvoiceParseResult
+    ) -> list[InvoiceParseResult]:
+        """Split a combined result into one InvoiceParseResult per invoice number.
+
+        Lines without an invoice_number are assigned to the primary invoice.
+        Returns the original single-element list if only one invoice is found.
+        """
+        # Collect distinct invoice numbers in order of first appearance
+        seen: dict[str, list[InvoiceLine]] = {}
+        primary = result.header.invoice_number or "UNKNOWN"
+
+        for line in result.lines:
+            inv = line.invoice_number or primary
+            seen.setdefault(inv, []).append(line)
+
+        if len(seen) <= 1:
+            return [result]
+
+        logger.info(
+            "invoice_split_detected",
+            invoice_count=len(seen),
+            invoice_numbers=list(seen.keys()),
+        )
+
+        # Document-level issues are attached to the first invoice only to avoid duplication.
+        # Filter out the structural "multiple invoice numbers" observation — it's no longer
+        # an issue once we've split correctly.
+        doc_issues = [
+            i for i in result.issues
+            if "Multiple invoice numbers detected" not in i
+        ]
+
+        split_results: list[InvoiceParseResult] = []
+        for idx, (inv_num, inv_lines) in enumerate(seen.items()):
+            # Presence-based completeness: are the required fields (weight, zip, amount)
+            # populated for this invoice's lines? This drives the routing decision.
+            # LLM quality issues are shown to the user via the issues list — they should
+            # not suppress import when fields are present and readable.
+            confidence = self._calculate_confidence(inv_lines)
+            if confidence >= _THRESHOLD_AUTO_IMPORT:
+                review_action = "auto_import"
+            elif confidence >= _THRESHOLD_AUTO_FLAG:
+                review_action = "auto_import_flag"
+            elif confidence >= _THRESHOLD_HOLD:
+                review_action = "hold_for_review"
+            else:
+                review_action = "reject"
+
+            split_results.append(
+                InvoiceParseResult(
+                    header=InvoiceHeader(
+                        invoice_number=inv_num,
+                        invoice_date=result.header.invoice_date,
+                        carrier_name=result.header.carrier_name,
+                        carrier_id=result.header.carrier_id,
+                        customer_name=result.header.customer_name,
+                        customer_number=result.header.customer_number,
+                        total_amount=None,  # per-invoice total not available from merged doc
+                        currency=result.header.currency,
+                    ),
+                    lines=inv_lines,
+                    parsing_method=result.parsing_method,
+                    confidence=confidence,
+                    issues=doc_issues if idx == 0 else [],
+                    review_action=review_action,
+                )
+            )
+
+        return split_results
 
     # ── template matching ─────────────────────────────────────────────────────
 
@@ -309,26 +384,29 @@ class InvoiceParserService:
         prompt_version: str = prompt_data["VERSION"]
 
         client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-        # Cap at 40 000 chars (~10k tokens) — enough for a 30-page scanned invoice
-        truncated_text = pdf_text[:40000]
+        # Cap at 120 000 chars (~30k tokens) — fits a 30-page dense invoice within
+        # Sonnet's 200K context window; Haiku also supports 200K input tokens.
+        truncated_text = pdf_text[:120000]
         prompt = prompt_template.format(text=truncated_text)
 
         logger.info(
             "text_llm_extraction_start",
             filename=filename,
             text_len=len(truncated_text),
+            original_text_len=len(pdf_text),
+            was_truncated=len(pdf_text) > 120000,
             prompt_version=prompt_version,
         )
 
         try:
             response = await asyncio.wait_for(
                 client.messages.create(
-                    model="claude-haiku-4-5-20251001",
-                    max_tokens=8192,
+                    model="claude-sonnet-4-6",
+                    max_tokens=16000,
                     system=system_prompt,
                     messages=[{"role": "user", "content": prompt}],
                 ),
-                timeout=60,
+                timeout=120,
             )
             raw = response.content[0].text if response.content else ""
             cleaned = raw.replace("```json", "").replace("```", "").strip()

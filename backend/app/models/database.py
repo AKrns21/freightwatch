@@ -29,6 +29,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
+    SmallInteger,
     String,
     Text,
     UniqueConstraint,
@@ -558,6 +559,62 @@ class DieselFloater(Base):
     source: Mapped[str | None] = mapped_column(String(100))
 
     __table_args__ = (UniqueConstraint("tenant_id", "carrier_id", "valid_from"),)
+
+
+class DieselPriceBracket(Base):
+    """Carrier-specific lookup table: diesel price (ct/liter) → surcharge %.
+
+    For a given shipment date, look up the Destatis reference price (2-month lag),
+    find the matching bracket (highest price_ct_max that is >= reference price),
+    and apply floater_pct.
+
+    RLS: tenant_id = app.current_tenant.
+    """
+
+    __tablename__ = "diesel_price_bracket"
+
+    id: Mapped[UUID] = mapped_column(
+        primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenant.id"), nullable=False)
+    carrier_id: Mapped[UUID] = mapped_column(ForeignKey("carrier.id"), nullable=False)
+    price_ct_max: Mapped[Decimal] = mapped_column(Numeric(7, 2), nullable=False)
+    floater_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+    basis: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'base'"))
+    valid_from: Mapped[date] = mapped_column(
+        Date, nullable=False, server_default=text("'2000-01-01'")
+    )
+    valid_until: Mapped[date | None] = mapped_column(Date)
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "carrier_id", "price_ct_max", "valid_from"),
+    )
+
+
+class DestatisDieselPrice(Base):
+    """Cached monthly diesel reference prices fetched from Destatis GENESIS.
+
+    Global table (no tenant scope) — same Destatis price applies to all tenants.
+    """
+
+    __tablename__ = "destatis_diesel_price"
+
+    id: Mapped[UUID] = mapped_column(
+        primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    price_year: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    price_month: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    price_ct: Mapped[Decimal] = mapped_column(Numeric(7, 2), nullable=False)
+    series_code: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default=text("'61243-0001'")
+    )
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=text("now()")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("price_year", "price_month", "series_code"),
+    )
 
 
 class MautTable(Base):

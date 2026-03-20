@@ -30,8 +30,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     vision_model: str = "claude-sonnet-4-6"
     # Prompt versions — bump to roll out a new prompt version
-    invoice_extractor_prompt_version: str = "v1.1.0"
+    invoice_extractor_prompt_version: str = "v1.2.1"
     tariff_extractor_prompt_version: str = "v1.1.1"
+
+    # Destatis GENESIS API
+    # Series for "Heizöl leicht, 50–70 hl an Großverbraucher, frei Verbrauchsstelle, DE"
+    destatis_diesel_series: str = "61243-0001"
+    destatis_diesel_lag_months: int = 2  # standard 2-month lag in freight contracts
 
     # JWT Authentication
     jwt_auth_enabled: bool = True

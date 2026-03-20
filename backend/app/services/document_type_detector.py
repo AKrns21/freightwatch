@@ -20,9 +20,18 @@ from app.config import settings
 
 logger = structlog.get_logger(__name__)
 
-DocType = Literal["tariff", "invoice", "shipment_csv", "other"]
+DocType = Literal["tariff", "invoice", "shipment_csv", "diesel_floater", "other"]
 
 # ── keyword lists (lowercase) ──────────────────────────────────────────────
+
+_DIESEL_FLOATER_KEYWORDS: list[str] = [
+    "dieselfloater",
+    "diesel_floater",
+    "diesel floater",
+    "dieselzuschlag",
+    "kraftstoffzuschlag",
+    "treibstoffzuschlag",
+]
 
 _TARIFF_KEYWORDS: list[str] = [
     "tarif",          # tarif, tariff, tarifblatt
@@ -71,6 +80,9 @@ Content preview:
 ```
 
 Types:
+- "diesel_floater" — diesel/fuel surcharge lookup table: maps diesel price thresholds \
+(ct/liter) to surcharge percentages; often sent as a carrier letter with a table of \
+"Dieselpreis ≤ X ct → Zuschlag Y%"
 - "tariff"       — carrier pricing document: a rate/tariff table, a price announcement \
 letter (Ankündigungsschreiben / Preisankündigung) that contains a price table, or any \
 document whose main content is freight rates, zone prices, weight-band prices, or \
@@ -145,6 +157,10 @@ class DocumentTypeDetector:
     def _by_filename(self, filename: str) -> DocType | None:
         lower = filename.lower()
 
+        for kw in _DIESEL_FLOATER_KEYWORDS:
+            if kw in lower:
+                return "diesel_floater"
+
         for kw in _TARIFF_KEYWORDS:
             if kw in lower:
                 return "tariff"
@@ -199,6 +215,7 @@ class DocumentTypeDetector:
             "tariff": "tariff",
             "invoice": "invoice",
             "shipment_csv": "shipment_csv",
+            "diesel_floater": "diesel_floater",
         }
         return mapping.get(value, "other")
 
