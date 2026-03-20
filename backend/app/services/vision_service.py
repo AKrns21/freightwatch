@@ -111,7 +111,7 @@ class VisionService:
         Returns:
             Dict mapping page_num → extracted text.
         """
-        sem = asyncio.Semaphore(5)
+        sem = asyncio.Semaphore(10)
 
         async def _extract_one(page_num: int, img: bytes) -> tuple[int, str]:
             async with sem:

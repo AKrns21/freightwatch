@@ -623,7 +623,7 @@ class UploadProcessorService:
                 ]
                 pct_req = sum(1 for f in required if f is not None) / len(required) * 70
                 pct_opt = sum(1 for f in optional if f is not None) / len(optional) * 30
-                completeness = Decimal(str(round(pct_req + pct_opt, 2)))
+                completeness = Decimal(str(round((pct_req + pct_opt) / 100, 2)))
 
                 currency = line.currency or result.header.currency or "EUR"
 
@@ -658,7 +658,7 @@ class UploadProcessorService:
                     ),
                     completeness_score=completeness,
                     source_data={
-                        "invoice_number": result.header.invoice_number,
+                        "invoice_number": line.invoice_number or result.header.invoice_number,
                         "billing_type": line.billing_type,
                         "tour_number": line.tour_number,
                         "line_number": line.line_number,

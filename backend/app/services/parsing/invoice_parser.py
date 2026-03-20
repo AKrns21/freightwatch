@@ -53,6 +53,7 @@ class InvoiceHeader:
 @dataclass
 class InvoiceLine:
     currency: str = "EUR"
+    invoice_number: str | None = None
     line_number: int | None = None
     shipment_date: str | None = None   # YYYY-MM-DD
     shipment_reference: str | None = None
@@ -122,26 +123,18 @@ class InvoiceParserService:
             page_count=doc.page_count,
         )
 
-        # ── Vision path (scanned PDF / image) ──────────────────────────────
+        # ── Vision path: OCR already done by DocumentService — use combined text ──
+        # Processing pages individually loses cross-page context and misses shipments
+        # on blank/continuation pages. The OCR text from all pages is in doc.text;
+        # passing it to the LLM fallback gives a holistic extraction in one call.
         if doc.mode == "vision":
-            result = await self._vision_pipeline.run(
-                doc.pages,
-                carrier_id=carrier_id,
-                tenant_id=tenant_id,
-                upload_id=upload_id,
-                db=db,
-            )
-            compat = self._vision_pipeline.to_parser_compatible(result)
-
             logger.info(
-                "parse_invoice_vision_pipeline_complete",
+                "parse_invoice_vision_text_fallback",
                 filename=filename,
-                confidence=compat["confidence"],
-                review_action=compat["review_action"],
-                line_count=len(compat["lines"]),
+                text_len=len(doc.text or ""),
+                prompt_version=settings.invoice_extractor_prompt_version,
             )
-
-            return [self._compat_to_parse_result(compat)]
+            return [await self._text_llm_fallback(doc.text or "", filename=filename)]
 
         # ── Text path: try template ─────────────────────────────────────────
         if doc.mode == "text" and db is not None:
@@ -316,8 +309,8 @@ class InvoiceParserService:
         prompt_version: str = prompt_data["VERSION"]
 
         client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-        # Cap at 12 000 chars to stay well within token budget
-        truncated_text = pdf_text[:12000]
+        # Cap at 40 000 chars (~10k tokens) — enough for a 30-page scanned invoice
+        truncated_text = pdf_text[:40000]
         prompt = prompt_template.format(text=truncated_text)
 
         logger.info(
@@ -391,6 +384,27 @@ class InvoiceParserService:
         else:
             review_action = str(raw_action)
 
+        lines = [
+            InvoiceLine(
+                invoice_number=line.get("invoice_number") or h.get("invoice_number"),
+                line_number=line.get("line_number"),
+                shipment_date=line.get("shipment_date"),
+                shipment_reference=line.get("shipment_reference"),
+                billing_type=line.get("billing_type"),
+                tour_number=line.get("tour_number"),
+                referenz=line.get("referenz"),
+                origin_zip=line.get("origin_zip"),
+                origin_country=line.get("origin_country") or "DE",
+                dest_zip=line.get("dest_zip"),
+                dest_country=line.get("dest_country") or "DE",
+                weight_kg=line.get("weight_kg"),
+                base_amount=line.get("base_amount"),
+                line_total=line.get("line_total"),
+                currency=h.get("currency") or "EUR",
+            )
+            for line in compat.get("lines") or []
+        ]
+
         return InvoiceParseResult(
             header=InvoiceHeader(
                 invoice_number=h.get("invoice_number") or "UNKNOWN",
@@ -401,25 +415,7 @@ class InvoiceParserService:
                 total_amount=h.get("total_amount"),
                 currency=h.get("currency") or "EUR",
             ),
-            lines=[
-                InvoiceLine(
-                    line_number=line.get("line_number"),
-                    shipment_date=line.get("shipment_date"),
-                    shipment_reference=line.get("shipment_reference"),
-                    billing_type=line.get("billing_type"),
-                    tour_number=line.get("tour_number"),
-                    referenz=line.get("referenz"),
-                    origin_zip=line.get("origin_zip"),
-                    origin_country=line.get("origin_country") or "DE",
-                    dest_zip=line.get("dest_zip"),
-                    dest_country=line.get("dest_country") or "DE",
-                    weight_kg=line.get("weight_kg"),
-                    base_amount=line.get("base_amount"),
-                    line_total=line.get("line_total"),
-                    currency=h.get("currency") or "EUR",
-                )
-                for line in compat.get("lines") or []
-            ],
+            lines=lines,
             parsing_method="llm",
             confidence=confidence,
             issues=compat.get("issues") or [],

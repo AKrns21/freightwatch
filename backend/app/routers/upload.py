@@ -3,8 +3,9 @@
 POST /api/uploads                → create upload record + enqueue background processing
 GET  /api/uploads                → list uploads (optional ?project_id=)
 GET  /api/uploads/{upload_id}    → poll status
-GET  /api/uploads/{upload_id}/detail  → full upload record (all DB fields + shipments)
-GET  /api/uploads/{upload_id}/file    → download the original file
+GET    /api/uploads/{upload_id}/detail  → full upload record (all DB fields + shipments)
+GET    /api/uploads/{upload_id}/file    → download the original file
+DELETE /api/uploads/{upload_id}         → delete upload, shipments, and file from disk
 """
 
 from __future__ import annotations
@@ -20,12 +21,21 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Re
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.middleware.tenant_middleware import get_current_tenant_db
-from app.models.database import Shipment, Upload
+from app.models.database import (
+    ExtractionCorrection,
+    InvoiceHeader,
+    InvoiceLine,
+    ManualMapping,
+    RawExtraction,
+    Shipment,
+    ShipmentBenchmark,
+    Upload,
+)
 from app.services.upload_processor_service import get_upload_processor
 from app.utils.hash import sha256_bytes
 
@@ -111,6 +121,7 @@ class ShipmentSummary(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
     id: UUID
+    invoice_number: str | None = None
     shipment_date: date | None = Field(None, validation_alias="date")
     reference_number: str | None = None
     origin_zip: str | None = None
@@ -398,7 +409,13 @@ async def list_upload_shipments(
             .order_by(Shipment.date)
         )
     ).scalars().all()
-    return [ShipmentSummary.model_validate(s) for s in rows]
+    summaries = []
+    for s in rows:
+        summary = ShipmentSummary.model_validate(s)
+        if isinstance(s.source_data, dict):
+            summary.invoice_number = s.source_data.get("invoice_number")
+        summaries.append(summary)
+    return summaries
 
 
 @router.get("/{upload_id}/file")
@@ -426,3 +443,39 @@ async def download_upload_file(
         filename=upload.filename,
         media_type=upload.mime_type or "application/octet-stream",
     )
+
+
+@router.delete("/{upload_id}", status_code=204)
+async def delete_upload(
+    upload_id: UUID,
+    db: AsyncSession = Depends(get_current_tenant_db),
+) -> None:
+    """Delete an upload and all its associated shipments. Also removes the file from disk."""
+    upload = (
+        await db.execute(select(Upload).where(Upload.id == upload_id))
+    ).scalar_one_or_none()
+
+    if upload is None:
+        raise HTTPException(status_code=404, detail="Upload not found")
+
+    shipment_ids = select(Shipment.id).where(Shipment.upload_id == upload_id)
+
+    # Delete in FK-safe order
+    await db.execute(delete(ShipmentBenchmark).where(ShipmentBenchmark.shipment_id.in_(shipment_ids)))
+    await db.execute(delete(InvoiceLine).where(InvoiceLine.shipment_id.in_(shipment_ids)))
+    await db.execute(delete(Shipment).where(Shipment.upload_id == upload_id))
+    await db.execute(delete(InvoiceHeader).where(InvoiceHeader.upload_id == upload_id))
+    await db.execute(delete(ManualMapping).where(ManualMapping.upload_id == upload_id))
+    await db.execute(delete(RawExtraction).where(RawExtraction.upload_id == upload_id))
+    await db.execute(delete(ExtractionCorrection).where(ExtractionCorrection.upload_id == upload_id))
+    await db.execute(delete(Upload).where(Upload.id == upload_id))
+    await db.flush()
+
+    # Remove file from disk (best-effort)
+    if upload.storage_url:
+        file_path = Path(upload.storage_url)
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except OSError as exc:
+                logger.warning("delete_file_failed", upload_id=str(upload_id), error=str(exc))

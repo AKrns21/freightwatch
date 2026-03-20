@@ -235,7 +235,7 @@ class VisionPipeline:
             ],
             "confidence": result.confidence.overall,
             "issues": result.all_issues,
-            "review_action": result.review_action,
+            "review_action": result.review_action.value,
         }
 
     # ── dict helpers for audit trail ──────────────────────────────────────────

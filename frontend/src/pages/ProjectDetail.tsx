@@ -35,6 +35,16 @@ export const ProjectDetailPage: React.FC = () => {
     }
   };
 
+  const handleDeleteUpload = async (upload: Upload) => {
+    if (!window.confirm(`"${upload.filename}" wirklich löschen?`)) return;
+    try {
+      await api.delete(`/api/uploads/${upload.id}`);
+      setUploads((prev) => prev.filter((u) => u.id !== upload.id));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Löschen fehlgeschlagen');
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -145,7 +155,7 @@ export const ProjectDetailPage: React.FC = () => {
                         {upload.status}
                       </span>
                     </td>
-                    <td className="py-3 flex gap-3">
+                    <td className="py-3 flex gap-3 items-center">
                       {upload.status === 'needs_review' && (
                         <Link
                           to={`/uploads/${upload.id}/review`}
@@ -160,6 +170,13 @@ export const ProjectDetailPage: React.FC = () => {
                       >
                         Detail →
                       </Link>
+                      <button
+                        onClick={() => handleDeleteUpload(upload)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                        title="Löschen"
+                      >
+                        Löschen
+                      </button>
                     </td>
                   </tr>
                 ))}

@@ -84,6 +84,19 @@ export interface ParsingIssue {
   missingFields?: string[];
 }
 
+export interface ShipmentSummary {
+  id: string;
+  invoiceNumber: string | null;
+  shipmentDate: string | null;
+  referenceNumber: string | null;
+  originZip: string | null;
+  destZip: string | null;
+  weightKg: number | null;
+  currency: string | null;
+  actualTotalAmount: number | null;
+  completenessScore: number | null;
+}
+
 export interface CarrierOption {
   id: string;
   name: string;

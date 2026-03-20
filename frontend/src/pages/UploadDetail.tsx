@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
+import type { ShipmentSummary } from '../types';
 
 interface UploadDetail {
   id: string;
@@ -28,17 +29,6 @@ interface UploadDetail {
   shipmentCount: number;
 }
 
-interface ShipmentSummary {
-  id: string;
-  shipmentDate: string | null;
-  referenceNumber: string | null;
-  originZip: string | null;
-  destZip: string | null;
-  weightKg: number | null;
-  currency: string | null;
-  actualTotalAmount: number | null;
-  completenessScore: number | null;
-}
 
 const STATUS_COLORS: Record<string, string> = {
   parsed: 'bg-green-100 text-green-700',
@@ -68,7 +58,23 @@ export const UploadDetailPage: React.FC = () => {
   const [reprocessing, setReprocessing] = useState(false);
 
   useEffect(() => {
-    if (uploadId) loadData();
+    if (!uploadId) return;
+    let cancelled = false;
+
+    const pollUntilDone = async () => {
+      await loadData();
+      for (let i = 0; i < 60; i++) {
+        const statusRes = await api.get<{ status: string }>(`/api/uploads/${uploadId}`);
+        const status = statusRes.data.status;
+        if (status !== 'parsing' && status !== 'pending') break;
+        await new Promise((r) => setTimeout(r, 2000));
+        if (cancelled) return;
+        await loadData();
+      }
+    };
+
+    pollUntilDone();
+    return () => { cancelled = true; };
   }, [uploadId]);
 
   const handleReprocess = async () => {
@@ -127,7 +133,7 @@ export const UploadDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
+      <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <div className="mb-6">
           <button onClick={() => navigate(-1)} className="text-blue-600 hover:text-blue-700 text-sm mb-3 block">
@@ -245,26 +251,32 @@ export const UploadDetailPage: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-gray-500">
+                      <th className="pb-2 pr-3">Rechnung</th>
                       <th className="pb-2 pr-3">Datum</th>
                       <th className="pb-2 pr-3">Referenz</th>
                       <th className="pb-2 pr-3">Von PLZ</th>
                       <th className="pb-2 pr-3">Nach PLZ</th>
-                      <th className="pb-2 pr-3">Gewicht (kg)</th>
-                      <th className="pb-2 pr-3">Betrag</th>
+                      <th className="pb-2 pr-3 text-right">Gewicht (kg)</th>
+                      <th className="pb-2 pr-3 text-right">Betrag</th>
                       <th className="pb-2">Vollständigkeit</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shipments.map((s) => (
                       <tr key={s.id} className="border-b last:border-0 hover:bg-gray-50">
-                        <td className="py-2 pr-3">{s.shipmentDate ?? '—'}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">{s.invoiceNumber ?? '—'}</td>
+                        <td className="py-2 pr-3">
+                          {s.shipmentDate ? s.shipmentDate.split('-').reverse().join('.') : '—'}
+                        </td>
                         <td className="py-2 pr-3 font-mono text-xs">{s.referenceNumber ?? '—'}</td>
                         <td className="py-2 pr-3">{s.originZip ?? '—'}</td>
                         <td className="py-2 pr-3">{s.destZip ?? '—'}</td>
-                        <td className="py-2 pr-3">{s.weightKg ?? '—'}</td>
-                        <td className="py-2 pr-3">
-                          {s.actualTotalAmount !== null
-                            ? `${s.currency ?? ''} ${Number(s.actualTotalAmount).toFixed(2)}`
+                        <td className="py-2 pr-3 text-right tabular-nums">
+                          {s.weightKg != null ? Number(s.weightKg).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                        </td>
+                        <td className="py-2 pr-3 text-right tabular-nums">
+                          {s.actualTotalAmount != null
+                            ? `${Number(s.actualTotalAmount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${s.currency ?? ''}`
                             : '—'}
                         </td>
                         <td className="py-2">
