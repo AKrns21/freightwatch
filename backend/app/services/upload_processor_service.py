@@ -52,6 +52,7 @@ from app.services.extraction_validator_service import (
     ShipmentInput,
 )
 from app.services.parsing.csv_parser import ParsedShipment, RowParseError, parse_with_template
+from app.services.parsing.invoice_parser import InvoiceParseResult, InvoiceParserService
 from app.services.template_service import TemplateMatch, get_template_service
 
 logger = structlog.get_logger(__name__)
@@ -152,6 +153,7 @@ class UploadProcessorService:
         self._detector = get_document_type_detector()
         self._validator = ExtractionValidatorService()
         self._benchmark_service = get_benchmark_service()
+        self._invoice_parser = InvoiceParserService()
 
     # -----------------------------------------------------------------------
     # Public: main entry point
@@ -216,6 +218,7 @@ class UploadProcessorService:
         match: TemplateMatch | None
         upload: Upload
         doc_result: DocumentExtractionResult | None
+        _is_tabular: bool = True
         async with _TenantSession(tenant_id) as db:
             upload = await self._load_upload(db, upload_id, tenant_id)
             assert upload is not None
@@ -232,27 +235,39 @@ class UploadProcessorService:
                     .values(doc_type=doc_type, updated_at=datetime.now(UTC))
                 )
 
-            # Stage 3: template matching — now receives extracted column headers
-            log.info("template_matching_start", doc_type=doc_type)
-            match = await self._template_service.find_match(
-                db, upload, tenant_id, file_content=file_content
+            # Determine if file is tabular (CSV/XLSX) or unstructured (PDF/image)
+            _mime = (upload.mime_type or "").lower()
+            _fname = (upload.filename or "").lower()
+            _is_tabular = (
+                "csv" in _mime
+                or "spreadsheet" in _mime
+                or "excel" in _mime
+                or "plain" in _mime
+                or _fname.endswith((".csv", ".xlsx", ".xls"))
             )
+
+            # Stage 3: template matching — only for tabular files
+            match = None
+            if _is_tabular:
+                log.info("template_matching_start", doc_type=doc_type)
+                match = await self._template_service.find_match(
+                    db, upload, tenant_id, file_content=file_content
+                )
+            else:
+                log.info(
+                    "non_tabular_file_routing_to_invoice_parser",
+                    doc_type=doc_type,
+                    mime=_mime,
+                )
+
+        # Non-tabular files (PDF / image): run InvoiceParserService pipeline
+        if not _is_tabular:
+            return await self._process_invoice_upload(upload, upload_id, tenant_id, log)
 
         if match is None:
             log.warning("no_template_match", doc_type=doc_type)
-            _mime = (upload.mime_type or "").lower()
-            _is_tabular = (
-                "csv" in _mime or "spreadsheet" in _mime or "excel" in _mime or "plain" in _mime
-            )
-            if not _is_tabular:
-                _issue_type = "unsupported_file_type"
-                _message = (
-                    f"File type '{upload.mime_type}' cannot be auto-parsed — "
-                    "manual review or re-upload as CSV/XLSX required"
-                )
-            else:
-                _issue_type = "no_template_match"
-                _message = "No matching template found — manual review required"
+            _issue_type = "no_template_match"
+            _message = "No matching template found — manual review required"
             await self._update_status(
                 upload_id,
                 tenant_id,
@@ -369,6 +384,285 @@ class UploadProcessorService:
             parse_method="template",
             issues=all_issues,
         )
+
+    # -----------------------------------------------------------------------
+    # Invoice processing (PDF / image uploads)
+    # -----------------------------------------------------------------------
+
+    async def _process_invoice_upload(
+        self,
+        upload: Upload,
+        upload_id: UUID,
+        tenant_id: UUID,
+        log: Any,
+    ) -> ProcessingResult:
+        """Process a PDF or image upload through InvoiceParserService.
+
+        Routes the result to the appropriate upload status based on the
+        InvoiceParseResult.review_action confidence decision:
+          auto_import        → parsed
+          auto_import_flag   → partial_success  (imported, flagged for review)
+          hold_for_review    → needs_manual_review
+          reject             → failed
+        """
+        if not upload.storage_url:
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                error="No storage URL for upload",
+            )
+
+        file_path = Path(upload.storage_url)
+        if not file_path.exists():
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_FAILED,
+                error=f"File not found: {file_path}",
+            )
+
+        file_bytes = await asyncio.to_thread(file_path.read_bytes)
+
+        async with _TenantSession(tenant_id) as db:
+            result = await self._invoice_parser.parse_invoice_pdf(
+                file_bytes,
+                filename=upload.filename or "",
+                carrier_id=None,
+                tenant_id=tenant_id,
+                upload_id=upload_id,
+                db=db,
+            )
+
+        log.info(
+            "invoice_parse_complete",
+            confidence=result.confidence,
+            review_action=result.review_action,
+            line_count=len(result.lines),
+            parsing_method=result.parsing_method,
+        )
+
+        parse_issues = [
+            {
+                "type": "llm_issue",
+                "message": issue,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            for issue in result.issues
+        ]
+
+        # ── auto_import / auto_import_flag: save shipments ──────────────────
+        if result.review_action in ("auto_import", "auto_import_flag"):
+            async with _TenantSession(tenant_id) as db:
+                saved_ids = await self._save_invoice_shipments(
+                    db, result, upload_id, tenant_id, log
+                )
+            if saved_ids:
+                async with _TenantSession(tenant_id) as db:
+                    await self._calculate_benchmarks(db, saved_ids, tenant_id, log)
+
+            final_status = (
+                STATUS_PARSED
+                if result.review_action == "auto_import"
+                else STATUS_PARTIAL_SUCCESS
+            )
+            await self._update_status(
+                upload_id,
+                tenant_id,
+                final_status,
+                extra={
+                    "parse_method": result.parsing_method,
+                    "confidence": result.confidence,
+                    **({"parsing_issues": parse_issues} if parse_issues else {}),
+                },
+            )
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=final_status,
+                shipment_count=len(saved_ids),
+                parse_method=result.parsing_method,
+                issues=parse_issues,
+            )
+
+        # ── hold_for_review: import lines but flag for human approval ────────
+        if result.review_action == "hold_for_review":
+            review_issue = {
+                "type": "low_confidence",
+                "message": (
+                    f"Confidence {result.confidence:.0%} is below auto-import threshold "
+                    "— manual review required before shipments are accepted"
+                ),
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            await self._update_status(
+                upload_id,
+                tenant_id,
+                STATUS_NEEDS_MANUAL_REVIEW,
+                extra={
+                    "parse_method": result.parsing_method,
+                    "confidence": result.confidence,
+                    "parsing_issues": [review_issue, *parse_issues],
+                    "llm_analysis": {
+                        "header": {
+                            "invoice_number": result.header.invoice_number,
+                            "invoice_date": result.header.invoice_date,
+                            "carrier_name": result.header.carrier_name,
+                            "total_amount": result.header.total_amount,
+                            "currency": result.header.currency,
+                        },
+                        "line_count": len(result.lines),
+                        "prompt_version": "freight_invoice_extractor_v1.0.0",
+                    },
+                },
+            )
+            return ProcessingResult(
+                upload_id=upload_id,
+                final_status=STATUS_NEEDS_MANUAL_REVIEW,
+                parse_method=result.parsing_method,
+                issues=[review_issue, *parse_issues],
+            )
+
+        # ── reject: confidence too low, do not import ────────────────────────
+        await self._update_status(
+            upload_id,
+            tenant_id,
+            STATUS_FAILED,
+            extra={
+                "parse_method": result.parsing_method,
+                "confidence": result.confidence,
+                "parse_errors": {
+                    "message": f"Confidence {result.confidence:.0%} below reject threshold",
+                    "issues": [i["message"] for i in parse_issues],
+                    "timestamp": datetime.now(UTC).isoformat(),
+                },
+            },
+        )
+        return ProcessingResult(
+            upload_id=upload_id,
+            final_status=STATUS_FAILED,
+            parse_method=result.parsing_method,
+            error=f"Confidence {result.confidence:.0%} below reject threshold",
+            issues=parse_issues,
+        )
+
+    async def _save_invoice_shipments(
+        self,
+        db: AsyncSession,
+        result: InvoiceParseResult,
+        upload_id: UUID,
+        tenant_id: UUID,
+        log: Any,
+    ) -> list[UUID]:
+        """Persist InvoiceLine records as Shipment rows.
+
+        Date fallback: uses invoice_date from header if the line has no shipment_date.
+        """
+        from datetime import date as date_type
+        from decimal import Decimal
+
+        header_date: date_type | None = None
+        if result.header.invoice_date:
+            try:
+                header_date = date_type.fromisoformat(result.header.invoice_date)
+            except ValueError:
+                pass
+
+        saved_ids: list[UUID] = []
+        for idx, line in enumerate(result.lines):
+            try:
+                # Resolve shipment date
+                shipment_date: date_type | None = None
+                if line.shipment_date:
+                    try:
+                        shipment_date = date_type.fromisoformat(line.shipment_date)
+                    except ValueError:
+                        pass
+                shipment_date = shipment_date or header_date
+
+                if shipment_date is None:
+                    log.warning(
+                        "invoice_line_skipped_no_date",
+                        line_index=idx,
+                        reference=line.shipment_reference,
+                    )
+                    continue
+
+                carrier_id = await self._resolve_carrier(
+                    db,
+                    result.header.carrier_name,
+                    tenant_id,
+                    upload_id,
+                    log,
+                )
+
+                # Compute completeness score (required fields weighted at 70%)
+                required = [
+                    line.dest_zip,
+                    line.weight_kg,
+                    line.line_total or line.base_amount,
+                ]
+                optional = [
+                    line.origin_zip,
+                    line.shipment_reference or line.referenz,
+                    line.billing_type,
+                ]
+                pct_req = sum(1 for f in required if f is not None) / len(required) * 70
+                pct_opt = sum(1 for f in optional if f is not None) / len(optional) * 30
+                completeness = Decimal(str(round(pct_req + pct_opt, 2)))
+
+                currency = line.currency or result.header.currency or "EUR"
+
+                row = Shipment(
+                    tenant_id=tenant_id,
+                    upload_id=upload_id,
+                    carrier_id=carrier_id,
+                    date=shipment_date,
+                    reference_number=line.shipment_reference or line.referenz,
+                    service_level=line.service_level,
+                    origin_zip=line.origin_zip,
+                    origin_country=line.origin_country or "DE",
+                    dest_zip=line.dest_zip,
+                    dest_country=line.dest_country or "DE",
+                    weight_kg=(
+                        Decimal(str(line.weight_kg)) if line.weight_kg is not None else None
+                    ),
+                    currency=currency,
+                    actual_base_amount=(
+                        Decimal(str(line.base_amount)) if line.base_amount is not None else None
+                    ),
+                    actual_diesel_amount=(
+                        Decimal(str(line.diesel_amount))
+                        if line.diesel_amount is not None
+                        else None
+                    ),
+                    actual_toll_amount=(
+                        Decimal(str(line.toll_amount)) if line.toll_amount is not None else None
+                    ),
+                    actual_total_amount=(
+                        Decimal(str(line.line_total)) if line.line_total is not None else None
+                    ),
+                    completeness_score=completeness,
+                    source_data={
+                        "invoice_number": result.header.invoice_number,
+                        "billing_type": line.billing_type,
+                        "tour_number": line.tour_number,
+                        "line_number": line.line_number,
+                    },
+                    extraction_method="llm",
+                    confidence_score=Decimal(str(round(result.confidence, 2))),
+                )
+                db.add(row)
+                await db.flush()
+                saved_ids.append(row.id)
+
+            except Exception as exc:
+                log.error(
+                    "invoice_shipment_save_error",
+                    line_index=idx,
+                    error=str(exc),
+                    exc_info=True,
+                )
+
+        log.info("invoice_shipments_saved", count=len(saved_ids))
+        return saved_ids
 
     # -----------------------------------------------------------------------
     # Document extraction + type detection helpers

@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # Anthropic API
     anthropic_api_key: str = ""
     vision_model: str = "claude-sonnet-4-6"
+    # Prompt versions — bump to roll out a new prompt version
+    invoice_extractor_prompt_version: str = "v1.0.0"
 
     # JWT Authentication
     jwt_auth_enabled: bool = True

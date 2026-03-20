@@ -4,27 +4,36 @@ Strategy:
   1. Detect text vs. scanned (vision) mode via DocumentService
   2. For text PDFs: find matching ParseTemplate, extract via regex/template rules
   3. For vision PDFs: run 6-stage VisionPipeline
-  4. Text-mode fallback: LLM extraction (if no template matches)
+  4. Text-mode fallback: LLM extraction via Claude (freight_invoice_extractor v1.0.0)
 
 Port of backend_legacy/src/modules/invoice/invoice-parser.service.ts
 """
 
 from __future__ import annotations
 
+import asyncio
+import json
 import re
 from dataclasses import dataclass, field
-from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, text
+import anthropic
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.database import ParsingTemplate, Upload
+from app.config import settings
+from app.models.database import ParsingTemplate
 from app.services.document_service import DocumentService
 from app.services.parsing.vision_pipeline.vision_pipeline import VisionPipeline
+from app.services.prompts.versions import get_prompt_version
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+# Confidence thresholds (mirror ReviewGate logic)
+_THRESHOLD_AUTO_IMPORT = 0.90
+_THRESHOLD_AUTO_FLAG = 0.75
+_THRESHOLD_HOLD = 0.50
 
 
 @dataclass
@@ -70,6 +79,8 @@ class InvoiceParseResult:
     parsing_method: str   # 'template' | 'llm' | 'hybrid'
     confidence: float
     issues: list[str] = field(default_factory=list)
+    # Routing decision: 'auto_import' | 'auto_import_flag' | 'hold_for_review' | 'reject'
+    review_action: str = "hold_for_review"
 
 
 class InvoiceParserService:
@@ -158,26 +169,14 @@ class InvoiceParserService:
                     )
                     # Fall through to LLM
 
-        # ── Text-mode LLM fallback (stub — full LLM parser in Phase 4) ─────
-        logger.warning(
-            "parse_invoice_no_template_no_vision",
+        # ── Text-mode LLM fallback (freight_invoice_extractor, versioned prompt) ─────
+        logger.info(
+            "parse_invoice_text_llm_fallback",
             filename=filename,
             mode=doc.mode,
+            prompt_version=settings.invoice_extractor_prompt_version,
         )
-        return [
-            InvoiceParseResult(
-                header=InvoiceHeader(
-                    invoice_number="UNKNOWN",
-                    invoice_date=None,
-                    carrier_name="Unknown",
-                    currency="EUR",
-                ),
-                lines=[],
-                parsing_method="llm",
-                confidence=0.0,
-                issues=["No template matched and LLM fallback not yet implemented"],
-            )
-        ]
+        return [await self._text_llm_fallback(doc.text or "", filename=filename)]
 
     async def parse_invoice_pdf(
         self,
@@ -300,10 +299,98 @@ class InvoiceParserService:
         )
         return min(1.0, max(0.0, complete / len(lines)))
 
+    # ── LLM text extraction ────────────────────────────────────────────────────
+
+    async def _text_llm_fallback(self, pdf_text: str, filename: str) -> InvoiceParseResult:
+        """Extract structured invoice data from text-mode PDF using Claude.
+
+        Prompt loaded dynamically via get_prompt_version() — bump
+        settings.invoice_extractor_prompt_version to roll out a new version.
+        Falls back to an empty result on API or parse failure.
+        """
+        prompt_data = get_prompt_version(
+            "freight_invoice_extractor", settings.invoice_extractor_prompt_version
+        )
+        system_prompt: str = prompt_data["SYSTEM_PROMPT"]
+        prompt_template: str = prompt_data["PROMPT_TEMPLATE"]
+        prompt_version: str = prompt_data["VERSION"]
+
+        client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        # Cap at 12 000 chars to stay well within token budget
+        truncated_text = pdf_text[:12000]
+        prompt = prompt_template.format(text=truncated_text)
+
+        logger.info(
+            "text_llm_extraction_start",
+            filename=filename,
+            text_len=len(truncated_text),
+            prompt_version=prompt_version,
+        )
+
+        try:
+            response = await asyncio.wait_for(
+                client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=8192,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": prompt}],
+                ),
+                timeout=60,
+            )
+            raw = response.content[0].text if response.content else ""
+            cleaned = raw.replace("```json", "").replace("```", "").strip()
+            data: dict = json.loads(cleaned)
+
+            result = self._compat_to_parse_result(data)
+            logger.info(
+                "text_llm_extraction_complete",
+                filename=filename,
+                confidence=result.confidence,
+                review_action=result.review_action,
+                line_count=len(result.lines),
+            )
+            return result
+
+        except Exception as exc:
+            logger.error(
+                "text_llm_extraction_failed",
+                filename=filename,
+                error=str(exc),
+            )
+            return InvoiceParseResult(
+                header=InvoiceHeader(
+                    invoice_number="UNKNOWN",
+                    invoice_date=None,
+                    carrier_name="Unknown",
+                    currency="EUR",
+                ),
+                lines=[],
+                parsing_method="llm",
+                confidence=0.0,
+                issues=[f"LLM extraction failed: {exc}"],
+                review_action="reject",
+            )
+
     # ── conversion helpers ────────────────────────────────────────────────────
 
     def _compat_to_parse_result(self, compat: dict) -> InvoiceParseResult:
         h = compat["header"]
+        confidence = float(compat.get("confidence", 0.0))
+
+        # Determine review_action from confidence thresholds if not supplied by vision pipeline
+        raw_action = compat.get("review_action")
+        if raw_action is None or not isinstance(raw_action, str):
+            if confidence >= _THRESHOLD_AUTO_IMPORT:
+                review_action = "auto_import"
+            elif confidence >= _THRESHOLD_AUTO_FLAG:
+                review_action = "auto_import_flag"
+            elif confidence >= _THRESHOLD_HOLD:
+                review_action = "hold_for_review"
+            else:
+                review_action = "reject"
+        else:
+            review_action = str(raw_action)
+
         return InvoiceParseResult(
             header=InvoiceHeader(
                 invoice_number=h.get("invoice_number") or "UNKNOWN",
@@ -331,9 +418,10 @@ class InvoiceParserService:
                     line_total=line.get("line_total"),
                     currency=h.get("currency") or "EUR",
                 )
-                for line in compat["lines"]
+                for line in compat.get("lines") or []
             ],
             parsing_method="llm",
-            confidence=compat["confidence"],
-            issues=compat["issues"],
+            confidence=confidence,
+            issues=compat.get("issues") or [],
+            review_action=review_action,
         )
