@@ -245,8 +245,9 @@ class TestTariffRateWeightBand:
 
         result = self.svc.validate_tariff_rates(rates)
 
-        assert len(result.violations) == 2
-        assert [v.index for v in result.violations] == [1, 3]
+        integrity_violations = [v for v in result.violations if v.rule == "weight_band_integrity"]
+        assert len(integrity_violations) == 2
+        assert [v.index for v in integrity_violations] == [1, 3]
 
 
 # ---------------------------------------------------------------------------
@@ -290,6 +291,135 @@ class TestTariffZoneMapPlzPrefix:
         entries = [TariffZoneMapInput(index=0, plz_prefix="123456")]
         result = self.svc.validate_tariff_zone_map(entries)
         assert result.status == "fail"
+
+
+# ---------------------------------------------------------------------------
+# Rule 5 (issue #55) — weight band continuity checks
+# ---------------------------------------------------------------------------
+
+
+class TestTariffRateWeightBandContinuity:
+    def setup_method(self) -> None:
+        self.svc = ExtractionValidatorService()
+
+    # ============================================================================
+    # NO_ZERO_START
+    # ============================================================================
+
+    def test_warns_when_first_band_does_not_start_at_zero(self) -> None:
+        rates = [TariffRateInput(index=0, weight_from_kg=100.0, weight_to_kg=200.0, zone=1)]
+        result = self.svc.validate_tariff_rates(rates)
+
+        assert result.status == "pass"  # warn does not escalate
+        assert len(result.violations) == 1
+        assert result.violations[0].rule == "weight_band_no_zero_start"
+        assert result.violations[0].action == "warn"
+        assert result.violations[0].index == 0
+
+    def test_passes_when_first_band_starts_at_zero(self) -> None:
+        rates = [
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=100.0, weight_to_kg=500.0, zone=1),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        continuity_violations = [
+            v for v in result.violations
+            if v.rule in ("weight_band_no_zero_start", "weight_band_gap", "weight_band_overlap")
+        ]
+        assert continuity_violations == []
+
+    # ============================================================================
+    # GAP
+    # ============================================================================
+
+    def test_warns_when_gap_between_consecutive_bands(self) -> None:
+        rates = [
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=200.0, weight_to_kg=500.0, zone=1),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        gap_violations = [v for v in result.violations if v.rule == "weight_band_gap"]
+        assert len(gap_violations) == 1
+        assert gap_violations[0].action == "warn"
+        assert gap_violations[0].index == 1
+        assert "100.0" in gap_violations[0].detail
+        assert "200.0" in gap_violations[0].detail
+
+    def test_no_gap_violation_for_contiguous_bands(self) -> None:
+        rates = [
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=100.0, weight_to_kg=500.0, zone=1),
+            TariffRateInput(index=2, weight_from_kg=500.0, weight_to_kg=1000.0, zone=1),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        gap_violations = [v for v in result.violations if v.rule == "weight_band_gap"]
+        assert gap_violations == []
+
+    # ============================================================================
+    # OVERLAP
+    # ============================================================================
+
+    def test_warns_when_bands_overlap(self) -> None:
+        rates = [
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=150.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=100.0, weight_to_kg=500.0, zone=1),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        overlap_violations = [v for v in result.violations if v.rule == "weight_band_overlap"]
+        assert len(overlap_violations) == 1
+        assert overlap_violations[0].action == "warn"
+        assert overlap_violations[0].index == 1
+
+    # ============================================================================
+    # MULTI-ZONE
+    # ============================================================================
+
+    def test_checks_each_zone_independently(self) -> None:
+        rates = [
+            # Zone 1: contiguous, starts at 0 — clean
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=100.0, weight_to_kg=500.0, zone=1),
+            # Zone 2: gap between 100 and 200
+            TariffRateInput(index=2, weight_from_kg=0.0, weight_to_kg=100.0, zone=2),
+            TariffRateInput(index=3, weight_from_kg=200.0, weight_to_kg=500.0, zone=2),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        gap_violations = [v for v in result.violations if v.rule == "weight_band_gap"]
+        assert len(gap_violations) == 1
+        assert gap_violations[0].index == 3
+
+    def test_no_zero_start_reported_per_zone(self) -> None:
+        rates = [
+            # Zone 1 starts at 0 — ok
+            TariffRateInput(index=0, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+            # Zone 2 starts at 50 — warn
+            TariffRateInput(index=1, weight_from_kg=50.0, weight_to_kg=200.0, zone=2),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        no_zero = [v for v in result.violations if v.rule == "weight_band_no_zero_start"]
+        assert len(no_zero) == 1
+        assert no_zero[0].index == 1
+
+    # ============================================================================
+    # ORDERING — unsorted input should still work
+    # ============================================================================
+
+    def test_sorts_bands_before_checking(self) -> None:
+        # Bands provided in reverse order — should still detect no gap
+        rates = [
+            TariffRateInput(index=0, weight_from_kg=100.0, weight_to_kg=500.0, zone=1),
+            TariffRateInput(index=1, weight_from_kg=0.0, weight_to_kg=100.0, zone=1),
+        ]
+        result = self.svc.validate_tariff_rates(rates)
+
+        gap_violations = [v for v in result.violations if v.rule == "weight_band_gap"]
+        assert gap_violations == []
 
 
 # ---------------------------------------------------------------------------

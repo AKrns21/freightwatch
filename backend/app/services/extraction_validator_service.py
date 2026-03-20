@@ -11,6 +11,9 @@ Rule table:
   invoice_line    | dest_zip matches ^\\d{5}$ (DE only)          | warn
   shipment        | reference_number not in existing set (dedup) | reject
   tariff_rate     | weight_from_kg < weight_to_kg               | reject
+  tariff_rate     | no gap between consecutive bands (per zone)  | warn  (issue #55)
+  tariff_rate     | no overlap between consecutive bands (zone)  | warn  (issue #55)
+  tariff_rate     | first band starts at 0 (per zone)            | warn  (issue #55)
   tariff_zone_map | plz_prefix matches ^\\d{1,5}$               | reject
   shipment        | ZIP length inconsistent with country field   | warn  (issue #54)
 """
@@ -93,6 +96,7 @@ class TariffRateInput:
     index: int
     weight_from_kg: float
     weight_to_kg: float
+    zone: int | str | None = None
 
 
 @dataclass
@@ -299,7 +303,11 @@ class ExtractionValidatorService:
     ) -> ExtractionValidationResult:
         """Validate tariff rate weight bands.
 
-        Rule 5 — weight_from_kg must be strictly less than weight_to_kg.
+        Rule 5 — weight_from_kg must be strictly less than weight_to_kg (reject).
+        Rules from issue #55 (warn, per-zone):
+          - weight_band_no_zero_start : first band in a zone does not start at 0
+          - weight_band_gap           : gap between consecutive bands
+          - weight_band_overlap       : overlap between consecutive bands
         """
         violations: list[ValidationViolation] = []
 
@@ -317,6 +325,61 @@ class ExtractionValidatorService:
                         index=rate.index,
                     )
                 )
+
+        # Group by zone, sort each group by weight_from_kg, check continuity.
+        zones: dict[int | str | None, list[TariffRateInput]] = {}
+        for rate in rates:
+            zones.setdefault(rate.zone, []).append(rate)
+
+        for zone_key, zone_rates in zones.items():
+            sorted_rates = sorted(zone_rates, key=lambda r: r.weight_from_kg)
+            zone_label = f"zone={zone_key}" if zone_key is not None else "zone=<unset>"
+
+            first = sorted_rates[0]
+            if first.weight_from_kg != 0:
+                violations.append(
+                    ValidationViolation(
+                        entity="tariff_rate",
+                        rule="weight_band_no_zero_start",
+                        action="warn",
+                        detail=(
+                            f"Rate {first.index} ({zone_label}): first band starts at "
+                            f"{first.weight_from_kg} kg, not 0 — weights below "
+                            f"{first.weight_from_kg} kg are unmatched"
+                        ),
+                        index=first.index,
+                    )
+                )
+
+            for prev, curr in zip(sorted_rates, sorted_rates[1:]):
+                if curr.weight_from_kg > prev.weight_to_kg:
+                    violations.append(
+                        ValidationViolation(
+                            entity="tariff_rate",
+                            rule="weight_band_gap",
+                            action="warn",
+                            detail=(
+                                f"Rate {curr.index} ({zone_label}): gap between bands — "
+                                f"{prev.weight_to_kg}–{curr.weight_from_kg} kg is unmatched"
+                            ),
+                            index=curr.index,
+                        )
+                    )
+                elif curr.weight_from_kg < prev.weight_to_kg:
+                    violations.append(
+                        ValidationViolation(
+                            entity="tariff_rate",
+                            rule="weight_band_overlap",
+                            action="warn",
+                            detail=(
+                                f"Rate {curr.index} ({zone_label}): overlap — "
+                                f"band [{prev.weight_from_kg}, {prev.weight_to_kg}) and "
+                                f"[{curr.weight_from_kg}, {curr.weight_to_kg}) overlap "
+                                f"at {curr.weight_from_kg}–{prev.weight_to_kg} kg"
+                            ),
+                            index=curr.index,
+                        )
+                    )
 
         return ExtractionValidationResult(
             status=_derive_status(violations),
