@@ -7,7 +7,6 @@ import { UploadDetailPage } from './pages/UploadDetail';
 import { ReportViewerPage } from './pages/ReportViewer';
 import { ProjectDetailPage } from './pages/ProjectDetail';
 import { DieselFloaterPage } from './pages/DieselFloater';
-import { DieselFloaterDetailPage } from './pages/DieselFloaterDetail';
 import { LoginPage } from './pages/Login';
 
 /**
@@ -42,7 +41,6 @@ function App() {
 
           {/* Settings */}
           <Route path="/settings/diesel-floaters" element={<RequireAuth><DieselFloaterPage /></RequireAuth>} />
-          <Route path="/uploads/:uploadId/diesel-floater" element={<RequireAuth><DieselFloaterDetailPage /></RequireAuth>} />
 
           {/* Upload Review */}
           <Route path="/uploads/:uploadId/review" element={<RequireAuth><UploadReviewPage /></RequireAuth>} />

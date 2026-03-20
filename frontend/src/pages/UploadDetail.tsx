@@ -3,6 +3,55 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { ShipmentSummary } from '../types';
 
+interface DieselBracket {
+  id: string;
+  carrierId: string;
+  carrierName: string | null;
+  priceCtMax: string;
+  floaterPct: string;
+  basis: string;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+const DieselBracketView: React.FC<{ brackets: DieselBracket[] }> = ({ brackets }) => {
+  if (brackets.length === 0) return null;
+  const carrierName = brackets[0].carrierName ?? '—';
+  const basis = brackets[0].basis;
+  const validFrom = brackets[0].validFrom;
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Dieselfloater — Preisklassen ({brackets.length})</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Spediteur: <span className="font-medium text-gray-700">{carrierName}</span>
+          {' · '}Basis: <span className="font-medium text-gray-700">{basis}</span>
+          {' · '}Gültig ab: <span className="font-medium text-gray-700">{validFrom}</span>
+        </p>
+      </div>
+      <table className="text-sm border-collapse">
+        <thead>
+          <tr className="border-b border-gray-300">
+            <th className="text-left pb-2 pr-16 font-semibold text-gray-700">Dieselpreis Ct je Liter</th>
+            <th className="text-right pb-2 font-semibold text-gray-700">Zuschlag</th>
+          </tr>
+        </thead>
+        <tbody>
+          {brackets.map(b => (
+            <tr key={b.id} className="border-b border-gray-100">
+              <td className="py-1.5 pr-16 text-gray-700">≤ {parseFloat(b.priceCtMax).toFixed(0)}</td>
+              <td className={`py-1.5 text-right font-mono font-medium ${parseFloat(b.floaterPct) === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
+                {parseFloat(b.floaterPct).toFixed(2)} %
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 interface TariffRate {
   id: string;
   zone: number;
@@ -216,6 +265,7 @@ export const UploadDetailPage: React.FC = () => {
   const [detail, setDetail] = useState<UploadDetail | null>(null);
   const [shipments, setShipments] = useState<ShipmentSummary[]>([]);
   const [tariff, setTariff] = useState<TariffDetail | null>(null);
+  const [brackets, setBrackets] = useState<DieselBracket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
@@ -271,15 +321,14 @@ export const UploadDetailPage: React.FC = () => {
       setDetail(detailRes.data);
       setShipments(shipmentsRes.data);
 
-      if (detailRes.data.docType === 'diesel_floater') {
-        navigate(`/uploads/${uploadId}/diesel-floater`, { replace: true });
-        return;
-      }
-
       const tariffTableId = detailRes.data.llmAnalysis?.tariff_table_id;
       if (detailRes.data.docType === 'tariff' && tariffTableId) {
         const tariffRes = await api.get<TariffDetail>(`/api/tariffs/${tariffTableId}`);
         setTariff(tariffRes.data);
+      }
+      if (detailRes.data.docType === 'diesel_floater') {
+        const bracketsRes = await api.get<DieselBracket[]>('/api/diesel-floaters/brackets');
+        setBrackets(bracketsRes.data);
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load upload details');
@@ -416,8 +465,11 @@ export const UploadDetailPage: React.FC = () => {
           {/* Tariff Table */}
           {tariff && <TariffTableView tariff={tariff} />}
 
+          {/* Diesel Floater Brackets */}
+          {detail.docType === 'diesel_floater' && <DieselBracketView brackets={brackets} />}
+
           {/* Parsed Shipments */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {detail.docType !== 'diesel_floater' && <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Geparste Sendungen ({detail.shipmentCount})
             </h2>
@@ -473,7 +525,7 @@ export const UploadDetailPage: React.FC = () => {
                 </table>
               </div>
             )}
-          </div>
+          </div>}
         </div>
       </div>
     </div>
