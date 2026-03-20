@@ -600,7 +600,7 @@ class UploadProcessorService:
             )
 
         file_bytes = await asyncio.to_thread(file_path.read_bytes)
-        doc = await self._doc_service.process(file_bytes, filename=upload.filename or "")
+        doc = await self._document_service.process(file_bytes, filename=upload.filename or "")
 
         parser = get_diesel_floater_parser()
         result = await parser.parse(doc.text or "", filename=upload.filename or "")
