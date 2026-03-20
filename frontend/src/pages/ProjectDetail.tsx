@@ -183,7 +183,9 @@ export const ProjectDetailPage: React.FC = () => {
                         </Link>
                       )}
                       <Link
-                        to={`/uploads/${upload.id}/detail`}
+                        to={upload.docType === 'diesel_floater'
+                          ? `/uploads/${upload.id}/diesel-floater`
+                          : `/uploads/${upload.id}/detail`}
                         className="text-gray-500 hover:text-gray-700 text-xs"
                       >
                         Detail →

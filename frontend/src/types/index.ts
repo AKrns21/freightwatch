@@ -33,6 +33,7 @@ export interface Upload {
   filename: string;
   fileHash: string;
   mimeType: string | null;
+  docType: string | null;
   status: string | null;
   parseMethod: string | null;
   confidence: number | null;
