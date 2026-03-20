@@ -18,6 +18,18 @@ interface DieselFloaterEntry {
   source: string | null;
 }
 
+interface DieselBracket {
+  id: string;
+  carrierId: string;
+  carrierName: string | null;
+  priceCtMax: string;
+  floaterPct: string;
+  basis: string;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+type Tab = 'rates' | 'brackets' | 'destatis';
 type Mode = 'list' | 'add' | 'edit' | 'csv';
 
 const BASIS_LABELS: Record<string, string> = {
@@ -27,13 +39,16 @@ const BASIS_LABELS: Record<string, string> = {
 };
 
 export const DieselFloaterPage: React.FC = () => {
+  const [tab, setTab] = useState<Tab>('brackets');
   const [entries, setEntries] = useState<DieselFloaterEntry[]>([]);
+  const [brackets, setBrackets] = useState<DieselBracket[]>([]);
   const [carriers, setCarriers] = useState<Carrier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>('list');
   const [editing, setEditing] = useState<DieselFloaterEntry | null>(null);
   const [filterCarrierId, setFilterCarrierId] = useState('');
+  const [bracketFilterCarrierId, setBracketFilterCarrierId] = useState('');
 
   // Form state
   const [form, setForm] = useState({
@@ -65,12 +80,14 @@ export const DieselFloaterPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [entriesRes, carriersRes] = await Promise.all([
+      const [entriesRes, carriersRes, bracketsRes] = await Promise.all([
         api.get<DieselFloaterEntry[]>('/api/diesel-floaters'),
         api.get<Carrier[]>('/api/carriers'),
+        api.get<DieselBracket[]>('/api/diesel-floaters/brackets'),
       ]);
       setEntries(entriesRes.data);
       setCarriers(carriersRes.data);
+      setBrackets(bracketsRes.data);
     } catch (e: any) {
       setError(e.response?.data?.detail || 'Laden fehlgeschlagen');
     } finally {
@@ -198,25 +215,49 @@ export const DieselFloaterPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dieselfloater</h1>
-          <p className="text-sm text-gray-500 mt-1">Dieselzuschlag-Historie pro Spediteur</p>
+          <p className="text-sm text-gray-500 mt-1">Preisklassen und manuelle Zuschlagssätze pro Spediteur</p>
         </div>
-        <div className="flex gap-2">
+        {tab === 'rates' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setMode('csv'); setCsvResult(null); }}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              CSV-Import
+            </button>
+            <button
+              onClick={openAdd}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
+              + Neuer Eintrag
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        {([['brackets', 'Preisklassen'], ['rates', 'Manuelle Sätze'], ['destatis', 'Destatis-Preise']] as const).map(([key, label]) => (
           <button
-            onClick={() => { setMode('csv'); setCsvResult(null); }}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === key
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
           >
-            CSV-Import
+            {label}
+            {key === 'brackets' && brackets.length > 0 && (
+              <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                {brackets.length}
+              </span>
+            )}
           </button>
-          <button
-            onClick={openAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
-          >
-            + Neuer Eintrag
-          </button>
-        </div>
+        ))}
       </div>
 
       {/* Add / Edit form */}
@@ -379,6 +420,68 @@ export const DieselFloaterPage: React.FC = () => {
         </div>
       )}
 
+      {/* ── Brackets tab ─────────────────────────────────────────────── */}
+      {tab === 'brackets' && (
+        <>
+          <div className="flex items-center gap-3 mb-4">
+            <label className="text-sm font-medium text-gray-700">Filter Spediteur:</label>
+            <select
+              value={bracketFilterCarrierId}
+              onChange={e => setBracketFilterCarrierId(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-1.5 text-sm"
+            >
+              <option value="">Alle</option>
+              {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <span className="text-sm text-gray-400">
+              {brackets.filter(b => !bracketFilterCarrierId || b.carrierId === bracketFilterCarrierId).length} Zeilen
+            </span>
+          </div>
+          <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+            {brackets.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-lg mb-2">Keine Preisklassen vorhanden</p>
+                <p className="text-sm">Laden Sie ein Dieselfloater-PDF hoch — die Tabelle wird automatisch erkannt und importiert.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Spediteur</th>
+                    <th className="text-right px-4 py-3 font-medium text-gray-600">Dieselpreis ≤ (Ct/l)</th>
+                    <th className="text-right px-4 py-3 font-medium text-gray-600">Zuschlag %</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Basis</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Gültig ab</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Gültig bis</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {brackets
+                    .filter(b => !bracketFilterCarrierId || b.carrierId === bracketFilterCarrierId)
+                    .map(b => (
+                      <tr key={b.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 font-medium text-gray-900">{b.carrierName ?? b.carrierId}</td>
+                        <td className="px-4 py-2 text-right font-mono text-gray-700">
+                          {parseFloat(b.priceCtMax).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono font-medium text-gray-900">
+                          {parseFloat(b.floaterPct).toFixed(2)} %
+                        </td>
+                        <td className="px-4 py-2 text-gray-600">{BASIS_LABELS[b.basis] ?? b.basis}</td>
+                        <td className="px-4 py-2 text-gray-600">{b.validFrom}</td>
+                        <td className="px-4 py-2 text-gray-400">{b.validUntil ?? '—'}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Rates tab ────────────────────────────────────────────────── */}
+      {tab === 'rates' && <>
+
       {/* Filter */}
       {mode === 'list' && (
         <div className="flex items-center gap-3 mb-4">
@@ -450,6 +553,129 @@ export const DieselFloaterPage: React.FC = () => {
           )}
         </div>
       )}
+      </> /* end rates tab */}
+
+      {/* ── Destatis tab ─────────────────────────────────────────────── */}
+      {tab === 'destatis' && (
+        <DestatisPricesPanel carriers={carriers} />
+      )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Destatis prices sub-panel
+// ---------------------------------------------------------------------------
+
+interface DestatisPriceEntry {
+  year: number;
+  month: number;
+  priceCt: string;
+  seriesCode: string;
+  fetchedAt: string;
+}
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+const DestatisPricesPanel: React.FC<{ carriers: Carrier[] }> = () => {
+  const [prices, setPrices] = useState<DestatisPriceEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(false);
+  const [months, setMonths] = useState(36);
+  const [result, setResult] = useState<{ fetched: number } | null>(null);
+
+  useEffect(() => { load(); }, []);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get<DestatisPriceEntry[]>('/api/diesel-floaters/destatis-prices');
+      setPrices(res.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchHistory = async () => {
+    setFetching(true);
+    setResult(null);
+    try {
+      const res = await api.post<{ fetched: number }>(`/api/diesel-floaters/destatis-prices/fetch?months=${months}`);
+      setResult(res.data);
+      await load();
+    } catch (e: any) {
+      alert(e.response?.data?.detail || 'Abruf fehlgeschlagen');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Monate abrufen:</label>
+          <input
+            type="number"
+            min={1}
+            max={120}
+            value={months}
+            onChange={e => setMonths(parseInt(e.target.value) || 36)}
+            className="w-20 border border-gray-300 rounded px-2 py-1.5 text-sm"
+          />
+        </div>
+        <button
+          onClick={fetchHistory}
+          disabled={fetching}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+        >
+          {fetching ? 'Abrufen…' : 'Von Destatis abrufen'}
+        </button>
+        {result && (
+          <span className="text-sm text-green-600 font-medium">
+            {result.fetched} neue Preise geladen
+          </span>
+        )}
+        <span className="text-sm text-gray-400 ml-auto">{prices.length} Einträge im Cache</span>
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+        {loading ? (
+          <div className="text-center py-8 text-gray-400">Laden…</div>
+        ) : prices.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <p className="text-lg mb-2">Kein Cache vorhanden</p>
+            <p className="text-sm">Klicken Sie auf "Von Destatis abrufen" um historische Preise zu laden.</p>
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Monat</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600">Preis (Ct/l)</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Serie</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Abgerufen</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {prices.map(p => (
+                <tr key={`${p.year}-${p.month}`} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 font-medium text-gray-900">
+                    {MONTH_NAMES[p.month - 1]} {p.year}
+                  </td>
+                  <td className="px-4 py-2 text-right font-mono font-medium text-gray-900">
+                    {parseFloat(p.priceCt).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-2 text-gray-400 text-xs">{p.seriesCode}</td>
+                  <td className="px-4 py-2 text-gray-400 text-xs">
+                    {new Date(p.fetchedAt).toLocaleDateString('de-DE')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

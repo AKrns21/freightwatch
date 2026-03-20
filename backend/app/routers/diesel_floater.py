@@ -28,7 +28,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.middleware.tenant_middleware import get_current_tenant_db
-from app.models.database import Carrier, DestatisDieselPrice, DieselFloater
+from app.models.database import Carrier, DestatisDieselPrice, DieselFloater, DieselPriceBracket
 from app.services.destatis_service import get_destatis_service
 
 logger = structlog.get_logger(__name__)
@@ -406,3 +406,60 @@ async def fetch_destatis_prices(
         months_requested=months,
         series_code=settings.destatis_diesel_series,
     )
+
+
+# ---------------------------------------------------------------------------
+# Price bracket table
+# ---------------------------------------------------------------------------
+
+
+class DieselBracketOut(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+
+    id: UUID
+    carrier_id: UUID
+    carrier_name: str | None = None
+    price_ct_max: Decimal
+    floater_pct: Decimal
+    basis: str
+    valid_from: date
+    valid_until: date | None = None
+
+
+@router.get("/brackets", response_model=list[DieselBracketOut])
+async def list_brackets(
+    carrier_id: UUID | None = None,
+    db: AsyncSession = Depends(get_current_tenant_db),
+) -> list[DieselBracketOut]:
+    """List all diesel price brackets, optionally filtered by carrier."""
+    q = select(DieselPriceBracket).order_by(
+        DieselPriceBracket.carrier_id,
+        DieselPriceBracket.valid_from.desc(),
+        DieselPriceBracket.price_ct_max.asc(),
+    )
+    if carrier_id:
+        q = q.where(DieselPriceBracket.carrier_id == carrier_id)
+    rows = (await db.execute(q)).scalars().all()
+
+    if not rows:
+        return []
+
+    carrier_ids = {r.carrier_id for r in rows}
+    carriers = (
+        await db.execute(select(Carrier).where(Carrier.id.in_(carrier_ids)))
+    ).scalars().all()
+    name_map = {c.id: c.name for c in carriers}
+
+    return [
+        DieselBracketOut(
+            id=r.id,
+            carrier_id=r.carrier_id,
+            carrier_name=name_map.get(r.carrier_id),
+            price_ct_max=r.price_ct_max,
+            floater_pct=r.floater_pct,
+            basis=r.basis,
+            valid_from=r.valid_from,
+            valid_until=r.valid_until,
+        )
+        for r in rows
+    ]
