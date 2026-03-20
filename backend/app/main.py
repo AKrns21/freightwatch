@@ -17,6 +17,7 @@ from app.routers import auth as auth_router
 from app.routers import carriers as carriers_router
 from app.routers import projects as projects_router
 from app.routers import shipments as shipments_router
+from app.routers import tariff as tariff_router
 from app.routers import upload as upload_router
 from app.services.upload_processor_service import start_stale_watcher
 from app.utils.logger import get_logger, setup_logging
@@ -82,6 +83,7 @@ app.include_router(upload_router.router, prefix=settings.api_prefix)
 app.include_router(projects_router.router, prefix=settings.api_prefix)
 app.include_router(shipments_router.router, prefix=settings.api_prefix)
 app.include_router(carriers_router.router, prefix=settings.api_prefix)
+app.include_router(tariff_router.router, prefix=settings.api_prefix)
 
 
 @app.get("/health", tags=["health"])

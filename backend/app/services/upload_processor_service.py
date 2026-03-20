@@ -936,11 +936,36 @@ class UploadProcessorService:
             log.info("doc_type_from_hint", doc_type=upload.doc_type)
             return upload.doc_type, file_content
 
+        # For PDF/image files _extract_document returns None (template matching
+        # only needs tabular headers).  Extract text here so Haiku can classify.
+        if file_content is None and upload.storage_url:
+            _mime = (upload.mime_type or "").lower()
+            _fname = (upload.filename or "").lower()
+            _needs_text = "pdf" in _mime or "image" in _mime or _fname.endswith(
+                (".pdf", ".png", ".jpg", ".jpeg", ".webp")
+            )
+            if _needs_text:
+                try:
+                    _file_bytes = await asyncio.to_thread(Path(upload.storage_url).read_bytes)
+                    _extracted = await self._document_service.process(
+                        file_bytes=_file_bytes,
+                        filename=upload.filename,
+                        mime_type=upload.mime_type,
+                    )
+                    if _extracted.text:
+                        file_content = _extracted.text
+                    log.info(
+                        "pdf_text_extracted_for_detection",
+                        text_len=len(file_content or ""),
+                    )
+                except Exception as exc:
+                    log.warning("pdf_text_extraction_for_detection_failed", error=str(exc))
+
         try:
             doc_type = await self._detector.detect(
                 filename=upload.filename,
                 mime_type=upload.mime_type or "",
-                text_preview=file_content[:2000] if file_content else None,
+                text_preview=file_content[:8000] if file_content else None,
                 column_names=column_names,
             )
             log.info("doc_type_detected", doc_type=doc_type)

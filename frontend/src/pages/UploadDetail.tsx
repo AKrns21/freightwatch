@@ -1,7 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { ShipmentSummary } from '../types';
+
+interface TariffRate {
+  id: string;
+  zone: number;
+  weightFromKg: number;
+  weightToKg: number;
+  ratePerShipment: number | null;
+  ratePerKg: number | null;
+}
+
+interface TariffZoneMap {
+  id: string;
+  countryCode: string;
+  plzPrefix: string;
+  matchType: string;
+  zone: number;
+}
+
+interface TariffDetail {
+  id: string;
+  name: string | null;
+  carrierId: string;
+  uploadId: string | null;
+  laneType: string;
+  currency: string;
+  validFrom: string;
+  validUntil: string | null;
+  confidence: number | null;
+  rates: TariffRate[];
+  zoneMaps: TariffZoneMap[];
+}
 
 interface UploadDetail {
   id: string;
@@ -40,6 +71,137 @@ const STATUS_COLORS: Record<string, string> = {
   parsing: 'bg-blue-100 text-blue-600',
 };
 
+const fmt = (n: number | null, decimals = 2) =>
+  n != null ? n.toLocaleString('de-DE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : '—';
+
+/** Compact cross-tab: weight bands as rows, zones as columns */
+const RateMatrix: React.FC<{
+  rates: TariffRate[];
+  currency: string;
+  /** For Hauptlauf (zone=0): rate_per_kg is actually per km */
+  perKgLabel?: string;
+}> = ({ rates, currency, perKgLabel = '/kg' }) => {
+  const zones = Array.from(new Set(rates.map((r) => r.zone))).sort((a, b) => a - b);
+  const bands = Array.from(
+    new Map(rates.map((r) => [`${r.weightFromKg}`, r])).values()
+  ).sort((a, b) => a.weightFromKg - b.weightFromKg);
+  const rateMap = new Map(rates.map((r) => [`${r.zone}-${r.weightFromKg}`, r]));
+
+  const bandLabel = (r: TariffRate) =>
+    r.weightToKg >= 99000 ? `> ${fmt(r.weightFromKg, 0)} kg` : `≤ ${fmt(r.weightToKg, 0)} kg`;
+
+  const cellValue = (cell: TariffRate | undefined) => {
+    if (!cell) return '—';
+    if (cell.ratePerShipment != null) return `${fmt(cell.ratePerShipment)} ${currency}`;
+    if (cell.ratePerKg != null) return `${fmt(cell.ratePerKg, 4)} ${perKgLabel}`;
+    return '—';
+  };
+
+  if (rates.length === 0) return <p className="text-sm text-gray-400">Keine Einträge</p>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="text-sm border-collapse">
+        <thead>
+          <tr>
+            <th className="text-left text-gray-500 font-normal pr-6 pb-2 whitespace-nowrap">Gewicht</th>
+            {zones.map((z) => (
+              <th key={z} className="text-right text-gray-700 font-medium px-3 pb-2 whitespace-nowrap">
+                {z === 0 ? 'Hauptlauf' : z === -1 ? 'Direkt' : `Zone ${z}`}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {bands.map((band) => (
+            <tr key={band.weightFromKg} className="border-t border-gray-100">
+              <td className="pr-6 py-1.5 text-gray-500 whitespace-nowrap">{bandLabel(band)}</td>
+              {zones.map((z) => (
+                <td key={z} className="px-3 py-1.5 text-right tabular-nums text-gray-900">
+                  {cellValue(rateMap.get(`${z}-${band.weightFromKg}`))}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const TariffTableView: React.FC<{ tariff: TariffDetail }> = ({ tariff }) => {
+  const vorNachlauf = tariff.rates.filter((r) => r.zone > 0);
+  const hauptlauf   = tariff.rates.filter((r) => r.zone === 0);
+  const direkt      = tariff.rates.filter((r) => r.zone === -1);
+
+  // Group zone_maps by zone for the PLZ table
+  const zoneGroups = new Map<number, string[]>();
+  for (const zm of tariff.zoneMaps) {
+    if (!zoneGroups.has(zm.zone)) zoneGroups.set(zm.zone, []);
+    zoneGroups.get(zm.zone)!.push(zm.plzPrefix);
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6 space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">{tariff.name ?? 'Tarifblatt'}</h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Gültig ab {tariff.validFrom}
+          {tariff.validUntil && ` bis ${tariff.validUntil}`}
+          {' · '}{tariff.currency} · {tariff.laneType}
+          {tariff.confidence != null && (
+            <span className="ml-2 text-gray-400">
+              ({(tariff.confidence * 100).toFixed(0)} % Konfidenz)
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* Vor-/Nachlauf */}
+      {vorNachlauf.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Vor-/Nachlauf</h3>
+          <RateMatrix rates={vorNachlauf} currency={tariff.currency} />
+
+          {/* PLZ zone map */}
+          {zoneGroups.size > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-gray-500 mb-2">PLZ-Zonenzuordnung</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {Array.from(zoneGroups.entries()).sort(([a], [b]) => a - b).map(([zone, prefixes]) => (
+                  <div key={zone} className="bg-gray-50 rounded px-3 py-2">
+                    <div className="text-xs font-medium text-gray-600 mb-1">Zone {zone}</div>
+                    <div className="text-xs text-gray-500 font-mono leading-relaxed">
+                      {prefixes.sort().join(', ')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hauptlauf — rate_per_kg stores per-km rates for trunk haul */}
+      {hauptlauf.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Hauptlauf</h3>
+          <RateMatrix rates={hauptlauf} currency={tariff.currency} perKgLabel="/km" />
+        </div>
+      )}
+
+      {/* Direktverkehr */}
+      {direkt.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Direkt</h3>
+          <RateMatrix rates={direkt} currency={tariff.currency} />
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FieldRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex gap-2 py-1.5 border-b last:border-0">
     <span className="text-gray-500 w-48 shrink-0 text-sm">{label}</span>
@@ -53,6 +215,7 @@ export const UploadDetailPage: React.FC = () => {
 
   const [detail, setDetail] = useState<UploadDetail | null>(null);
   const [shipments, setShipments] = useState<ShipmentSummary[]>([]);
+  const [tariff, setTariff] = useState<TariffDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
@@ -107,6 +270,12 @@ export const UploadDetailPage: React.FC = () => {
       ]);
       setDetail(detailRes.data);
       setShipments(shipmentsRes.data);
+
+      const tariffTableId = detailRes.data.llmAnalysis?.tariff_table_id;
+      if (detailRes.data.docType === 'tariff' && tariffTableId) {
+        const tariffRes = await api.get<TariffDetail>(`/api/tariffs/${tariffTableId}`);
+        setTariff(tariffRes.data);
+      }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load upload details');
     } finally {
@@ -238,6 +407,9 @@ export const UploadDetailPage: React.FC = () => {
               </pre>
             </div>
           )}
+
+          {/* Tariff Table */}
+          {tariff && <TariffTableView tariff={tariff} />}
 
           {/* Parsed Shipments */}
           <div className="bg-white rounded-lg shadow p-6">

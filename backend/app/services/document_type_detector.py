@@ -71,7 +71,10 @@ Content preview:
 ```
 
 Types:
-- "tariff"       — carrier pricing table (zones, weight bands, rates, surcharges)
+- "tariff"       — carrier pricing document: a rate/tariff table, a price announcement \
+letter (Ankündigungsschreiben / Preisankündigung) that contains a price table, or any \
+document whose main content is freight rates, zone prices, weight-band prices, or \
+surcharge percentages — even if the document starts with a cover letter
 - "invoice"      — carrier invoice or credit note (invoice number, line items, total)
 - "shipment_csv" — list of shipments (origins, destinations, weights, references)
 - "other"        — does not fit above or cannot be determined
@@ -172,7 +175,7 @@ class DocumentTypeDetector:
             client = self._get_client()
             prompt = _LLM_PROMPT.format(
                 filename=filename,
-                preview=text_preview[:2000],
+                preview=text_preview[:8000],
             )
             response = await client.messages.create(
                 model="claude-haiku-4-5-20251001",

@@ -258,7 +258,12 @@ class TariffParserService:
     # -----------------------------------------------------------------------
 
     async def _extract_via_llm(self, text: str, *, filename: str) -> dict[str, Any]:
-        """Call Claude Haiku to extract structured tariff data from document text."""
+        """Call Claude to extract structured tariff data from document text.
+
+        Uses settings.vision_model (Sonnet) for the large output window — German
+        domestic tariffs can produce 600+ rate rows which overflow Haiku's 8 K
+        token limit.
+        """
         prompt_data = get_prompt_version(
             "tariff_extractor", settings.tariff_extractor_prompt_version
         )
@@ -271,19 +276,64 @@ class TariffParserService:
         try:
             response = await asyncio.wait_for(
                 client.messages.create(
-                    model="claude-haiku-4-5-20251001",
-                    max_tokens=8192,
+                    model=settings.vision_model,
+                    max_tokens=16384,
                     system=system_prompt,
                     messages=[{"role": "user", "content": prompt}],
                 ),
-                timeout=60,
+                timeout=120,
             )
             raw = response.content[0].text if response.content else ""
             cleaned = re.sub(r"```json\n?|```", "", raw).strip()
-            return json.loads(cleaned)
+            try:
+                return json.loads(cleaned)
+            except json.JSONDecodeError as json_exc:
+                # Truncated response safety net: recover whatever was parsed
+                recovered = self._recover_partial_json(cleaned)
+                if recovered:
+                    self.logger.warning(
+                        "tariff_llm_json_truncated_recovered",
+                        filename=filename,
+                        rates=len(recovered.get("rates", [])),
+                        zones=len(recovered.get("zones", [])),
+                        error=str(json_exc),
+                    )
+                    recovered.setdefault("issues", []).append(
+                        f"LLM response was truncated — partial extraction ({len(recovered.get('rates', []))} rates)"
+                    )
+                    return recovered
+                raise
         except Exception as exc:
             self.logger.error("tariff_llm_extraction_failed", filename=filename, error=str(exc))
             return {"confidence": 0.0, "issues": [f"LLM extraction failed: {exc}"]}
+
+    @staticmethod
+    def _recover_partial_json(text: str) -> dict[str, Any] | None:
+        """Attempt to recover a partially-truncated JSON object.
+
+        Scans for the last position where a top-level array element was cleanly
+        closed (``},`` or ``}`` followed by ``]``), then appends the minimum
+        closing tokens to make the fragment valid JSON.
+
+        Returns the parsed dict, or None if recovery fails.
+        """
+        # Find candidate cut points: positions just after a closing brace that
+        # ends an array element.  Try from the end backwards (at most ~20 tries).
+        matches = [m.end() for m in re.finditer(r"\}", text)]
+        for pos in reversed(matches[-20:]):
+            candidate = text[:pos].rstrip().rstrip(",")
+            depth_curly = candidate.count("{") - candidate.count("}")
+            depth_square = candidate.count("[") - candidate.count("]")
+            if depth_curly < 0 or depth_square < 0:
+                continue
+            closing = "]" * depth_square + "}" * depth_curly
+            try:
+                result: dict[str, Any] = json.loads(candidate + closing)
+                if isinstance(result, dict):
+                    return result
+            except json.JSONDecodeError:
+                continue
+        return None
 
     # -----------------------------------------------------------------------
     # Parsing helpers
