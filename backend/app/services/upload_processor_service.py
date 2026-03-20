@@ -47,6 +47,7 @@ from app.models.database import Carrier, CarrierAlias, Shipment, Upload
 from app.services.benchmark_service import get_benchmark_service
 from app.services.document_service import DocumentExtractionResult, get_document_service
 from app.services.document_type_detector import get_document_type_detector
+from app.services.carrier_service import get_carrier_service
 from app.services.extraction_validator_service import (
     ExtractionValidatorService,
     ShipmentCountryInput,
@@ -898,7 +899,8 @@ class UploadProcessorService:
     ) -> UUID | None:
         """Map raw carrier name → carrier.id.
 
-        Lookup order: tenant alias → global alias → placeholder creation.
+        Lookup order: fallback chain (exact → suffix strip → fuzzy → LLM)
+        then placeholder creation when all steps fail.
         Placeholder carriers are created idempotently (same code_norm reused).
         """
         if not carrier_name:
@@ -906,31 +908,21 @@ class UploadProcessorService:
 
         normalized = carrier_name.strip().lower()
 
-        # 1. Tenant-specific alias
-        row = (
-            await db.execute(
-                select(CarrierAlias.carrier_id).where(
-                    CarrierAlias.tenant_id == tenant_id,
-                    CarrierAlias.alias_text == normalized,
+        # Steps 1–4: exact alias, suffix strip, fuzzy, LLM
+        result = await get_carrier_service().resolve_carrier_id_with_fallback(
+            db, carrier_name, tenant_id
+        )
+        if result is not None:
+            if result.method != "exact":
+                log.info(
+                    "carrier_resolved_via_fallback",
+                    carrier_name=carrier_name,
+                    method=result.method,
+                    confidence=result.confidence,
+                    carrier_id=str(result.carrier_id),
                 )
-            )
-        ).scalar_one_or_none()
-        if row is not None:
-            return row  # type: ignore[return-value]
+            return result.carrier_id
 
-        # 2. Global alias (tenant_id IS NULL)
-        row = (
-            await db.execute(
-                select(CarrierAlias.carrier_id).where(
-                    CarrierAlias.tenant_id.is_(None),
-                    CarrierAlias.alias_text == normalized,
-                )
-            )
-        ).scalar_one_or_none()
-        if row is not None:
-            return row  # type: ignore[return-value]
-
-        # 3. Create placeholder so carrier_id is never null
         log.warning("carrier_not_found_creating_placeholder", carrier_name=carrier_name)
         code_norm = "PLACEHOLDER_" + carrier_name.upper().replace(" ", "_")[:40]
 
