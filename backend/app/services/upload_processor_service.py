@@ -265,10 +265,13 @@ class UploadProcessorService:
                     mime=_mime,
                 )
 
+        # Tariff files (any format) always go through TariffParserService —
+        # DocumentService.process() handles PDF, XLSX, and CSV alike.
+        if doc_type == "tariff":
+            return await self._process_tariff_upload(upload, upload_id, tenant_id, log)
+
         # Non-tabular files (PDF / image): branch on detected doc_type
         if not _is_tabular:
-            if doc_type == "tariff":
-                return await self._process_tariff_upload(upload, upload_id, tenant_id, log)
             if doc_type == "diesel_floater":
                 return await self._process_diesel_floater_upload(
                     upload, upload_id, tenant_id, log
@@ -475,7 +478,7 @@ class UploadProcessorService:
         tenant_id: UUID,
         log: Any,
     ) -> ProcessingResult:
-        """Process a tariff PDF through TariffParserService.
+        """Process a tariff file (PDF, XLSX, or CSV) through TariffParserService.
 
         Routes the result based on TariffParseResult.review_action:
           auto_import      → parsed
