@@ -8,11 +8,27 @@ Extracts structured shipment data from carrier invoice text
 VERSION = "v1.2.0"
 
 CHANGELOG = """
-v1.2.0 (2026-03-20)
-- Clarified skip rule: ONLY skip VAT/MwSt totals and invoice subtotal rows;
-  pages with "Vollständigkeit = XX%" headers are regular invoice pages — extract all shipment rows
-- Explicit rule: page-level annotations (Seite X von Y, Vollständigkeit, etc.) are headers only,
-  not rows to skip
+v1.2.0 (2026-03-20) - MINOR: Skip rule clarification for multi-page invoices
+- FIXED: Vollständigkeit-header pages are regular invoice pages, not skip targets — extract all shipment rows
+- FIXED: Page-level annotations (Seite X von Y, Vollständigkeit, etc.) are headers only, not rows to skip
+- Rationale: Extractor was dropping valid shipment rows on multi-page Mecu-style invoices
+- Quality impact: IMPROVED — shipment row completeness on paginated invoices
+
+v1.1.0 (2026-03-20) - MINOR: Multi-invoice support + date precision
+- ADDED: invoice_number per line item (supports multi-invoice documents)
+- CHANGED: shipment_reference: capture ALL reference numbers/identifiers, comma-separated
+- ADDED: Explicit rule: read every digit of dates carefully, do not guess ambiguous digits
+- FIXED: issues[]: only genuine data problems, not observations about document structure
+
+v1.0.0 (2026-03-20) - Initial version
+- Extracted from inline constants in invoice_parser.py
+- JSON schema: header (invoice_number, invoice_date, carrier_name,
+  customer_name, customer_number, total_amount, currency) +
+  lines[] (shipment_date, shipment_reference, billing_type, tour_number,
+  origin_zip, origin_country, dest_zip, dest_country, weight_kg,
+  base_amount, line_total) + confidence + issues[]
+- Rules: German date conversion, EU number format, PLZ extraction from addresses
+- Model: claude-haiku-4-5-20251001
 """
 
 SYSTEM_PROMPT = (

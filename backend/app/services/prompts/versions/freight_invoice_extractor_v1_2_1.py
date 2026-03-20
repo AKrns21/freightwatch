@@ -8,8 +8,32 @@ Extracts structured shipment data from carrier invoice text
 VERSION = "v1.2.1"
 
 CHANGELOG = """
-v1.2.1 (2026-03-20)
-- total_amount: explicitly net amount (Nettobetrag, excl. MwSt/VAT) — not the gross/Brutto total
+v1.2.1 (2026-03-20) - PATCH: total_amount net/gross clarification
+- FIXED: total_amount explicitly net amount (Nettobetrag, excl. MwSt/VAT), not gross/Brutto total
+- Rationale: Invoices with MwSt rows caused extractor to pick up Brutto total at end of page
+- Quality impact: CRITICAL FIX — total_amount was overstated by 19% on affected invoices
+
+v1.2.0 (2026-03-20) - MINOR: Skip rule clarification for multi-page invoices
+- FIXED: Vollständigkeit-header pages are regular invoice pages, not skip targets — extract all shipment rows
+- FIXED: Page-level annotations (Seite X von Y, Vollständigkeit, etc.) are headers only, not rows to skip
+- Rationale: Extractor was dropping valid shipment rows on multi-page Mecu-style invoices
+- Quality impact: IMPROVED — shipment row completeness on paginated invoices
+
+v1.1.0 (2026-03-20) - MINOR: Multi-invoice support + date precision
+- ADDED: invoice_number per line item (supports multi-invoice documents)
+- CHANGED: shipment_reference: capture ALL reference numbers/identifiers, comma-separated
+- ADDED: Explicit rule: read every digit of dates carefully, do not guess ambiguous digits
+- FIXED: issues[]: only genuine data problems, not observations about document structure
+
+v1.0.0 (2026-03-20) - Initial version
+- Extracted from inline constants in invoice_parser.py
+- JSON schema: header (invoice_number, invoice_date, carrier_name,
+  customer_name, customer_number, total_amount, currency) +
+  lines[] (shipment_date, shipment_reference, billing_type, tour_number,
+  origin_zip, origin_country, dest_zip, dest_country, weight_kg,
+  base_amount, line_total) + confidence + issues[]
+- Rules: German date conversion, EU number format, PLZ extraction from addresses
+- Model: claude-haiku-4-5-20251001
 """
 
 SYSTEM_PROMPT = (

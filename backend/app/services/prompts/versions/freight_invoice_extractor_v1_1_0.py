@@ -8,11 +8,21 @@ Extracts structured shipment data from carrier invoice text
 VERSION = "v1.1.0"
 
 CHANGELOG = """
-v1.1.0 (2026-03-20)
-- Added invoice_number per line item (supports multi-invoice documents)
-- shipment_reference: capture ALL reference numbers/identifiers, comma-separated
-- Explicit rule: read every digit of dates carefully, do not guess ambiguous digits
-- issues[]: only genuine data problems, not observations about document structure
+v1.1.0 (2026-03-20) - MINOR: Multi-invoice support + date precision
+- ADDED: invoice_number per line item (supports multi-invoice documents)
+- CHANGED: shipment_reference: capture ALL reference numbers/identifiers, comma-separated
+- ADDED: Explicit rule: read every digit of dates carefully, do not guess ambiguous digits
+- FIXED: issues[]: only genuine data problems, not observations about document structure
+
+v1.0.0 (2026-03-20) - Initial version
+- Extracted from inline constants in invoice_parser.py
+- JSON schema: header (invoice_number, invoice_date, carrier_name,
+  customer_name, customer_number, total_amount, currency) +
+  lines[] (shipment_date, shipment_reference, billing_type, tour_number,
+  origin_zip, origin_country, dest_zip, dest_country, weight_kg,
+  base_amount, line_total) + confidence + issues[]
+- Rules: German date conversion, EU number format, PLZ extraction from addresses
+- Model: claude-haiku-4-5-20251001
 """
 
 SYSTEM_PROMPT = (

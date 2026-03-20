@@ -8,17 +8,26 @@ Extracts structured rate-table data from carrier tariff PDFs
 VERSION = "v1.1.1"
 
 CHANGELOG = """
-v1.1.1 (2026-03-20)
-- Explicit numeric reasoning rule for per-km detection in Hauptlauf open-ended bands:
-  if the rate value is < 5.00 it cannot be per-shipment or per-kg — it is per-km by
-  German industry convention, even when the document does not state the unit.
+v1.1.1 (2026-03-20) - PATCH: Per-km detection heuristic for Hauptlauf
+- ADDED: Numeric reasoning rule: if Hauptlauf rate value < 5.00, classify as per-km
+- Rationale: German industry convention — per-shipment and per-kg rates are always ≥5.00;
+  sub-5.00 values in open-ended bands are per-km even without explicit unit in document
+- Quality impact: FIXED — extractor was misclassifying low per-km rates as per-kg
 
-v1.1.0 (2026-03-20)
-- Three-section model: Direkt (zone=-1), Vor-/Nachlauf (zone>0), Hauptlauf (zone=0)
-- Hauptlauf: rate_per_kg stores per-km rate (km pricing standard for trunk haul)
-- Direktverkehr: zone=-1 for direct-service rates if present
+v1.1.0 (2026-03-20) - MINOR: Three-section tariff model
+- ADDED: Three-section model: Direkt (zone=-1), Vor-/Nachlauf (zone>0), Hauptlauf (zone=0)
+- CHANGED: Hauptlauf: rate_per_kg field repurposed to store per-km rate (km pricing is the standard for trunk haul)
+- ADDED: Direktverkehr: zone=-1 for direct-service rates if present in tariff
+- Rationale: Single flat-zone model could not represent carrier tariffs with separate trunk-haul pricing
 
 v1.0.0 (2026-03-20) - Initial version
+- Handles German domestic zone-based tariffs with PLZ-prefix zone columns
+- Weight band rows: <300, <400, ..., >1500 kg (per-shipment flat rate or per-kg)
+- Hauptlauf / trunk-haul section: flat rates for heavy shipments (zone=0)
+- Extracts carrier name, customer name, valid_from date, currency, lane_type
+- JSON schema: carrier_name, customer_name, valid_from, currency, lane_type,
+  zones[], rates[], confidence, issues[]
+- Model: claude-haiku-4-5-20251001
 """
 
 SYSTEM_PROMPT = (
