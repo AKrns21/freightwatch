@@ -69,7 +69,6 @@ class UploadListItemResponse(BaseModel):
     filename: str
     file_hash: str
     mime_type: str | None = None
-    source_type: str | None = None
     status: str | None = None
     parse_method: str | None = None
     confidence: float | None = None
@@ -88,7 +87,6 @@ class UploadDetailResponse(BaseModel):
     file_hash: str
     raw_text_hash: str | None = None
     mime_type: str | None = None
-    source_type: str | None = None
     doc_type: str | None = None
     storage_url: str | None = None
     status: str | None = None
@@ -147,7 +145,6 @@ async def create_upload(
     background_tasks: BackgroundTasks,
     file: UploadFile,
     project_id: UUID | None = Form(None),
-    source_type: str | None = Form(None),
     db: AsyncSession = Depends(get_current_tenant_db),
 ) -> UploadResponse:
     """Receive a file, create an upload record, and kick off background processing.
@@ -198,7 +195,6 @@ async def create_upload(
         filename=file.filename or "upload",
         file_hash=file_hash,
         mime_type=file.content_type,
-        source_type=source_type,
         project_id=project_id,
         storage_url=str(storage_path),
         status="pending",

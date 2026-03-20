@@ -1,21 +1,18 @@
 ---
-name: Reprocess endpoint still broken as of session end
-description: The reprocess button on UploadDetail page was not working at end of session
+name: Reprocess race condition — root cause and fix
+description: The reprocess endpoint was failing due to a FastAPI background task vs session commit race condition
 type: feedback
 ---
 
-The reprocess endpoint (POST /api/uploads/{id}/reprocess) and the "Erneut verarbeiten" button on UploadDetail page were still not working correctly at the end of the 2026-03-19 session.
+**RESOLVED in commit a2f3fac.**
 
-**Why:** The session ended before fully debugging the issue. Multiple iterations were attempted.
+**Root cause:** FastAPI runs `BackgroundTasks` inside `response.__call__()`, which happens BEFORE the `Depends` generator's cleanup code (i.e., `session.commit()`). So the background task's first `UPDATE upload SET status='parsing'` was blocked by the HTTP handler's uncommitted row lock on the same upload row.
 
-**Known symptoms:**
-- Frontend shows "Wird verarbeitet..." and hangs
-- CORS 500 error in browser console
-- Backend logs show TimeoutError (empty string) in the reprocess endpoint
+**Why:** This is a fundamental FastAPI/Starlette ordering issue — not obvious from the docs.
 
-**Root causes identified:**
-1. Vision OCR timeout (120s) — FIXED by skipping PDFs in _extract_document
-2. DB row lock when background task is running — FIXED with atomic UPDATE WHERE status != 'parsing'
-3. But still not working — user ended session
+**How to apply:** Any time an endpoint does a DB write AND starts a background task that also writes the same row, add `await db.commit()` explicitly before `background_tasks.add_task(...)`. The dependency generator will call commit again as a no-op.
 
-**How to apply:** When a new session starts, check the current state of the reprocess endpoint and test it end-to-end. The fix might require checking if the server properly reloaded the latest code changes.
+**Additional fixes shipped at the same time:**
+- `lock_timeout='5s'` in `_update_status` and `lock_timeout='3s'` in reprocess endpoint for fast-fail on external lock contention
+- `statement_timeout=20s` + `idle_in_transaction_session_timeout=30s` in `server_settings` to auto-kill orphan Postgres backends
+- `command_timeout` reduced from 120s to 25s

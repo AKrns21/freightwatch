@@ -10,7 +10,6 @@ interface UploadDetail {
   fileHash: string;
   rawTextHash: string | null;
   mimeType: string | null;
-  sourceType: string | null;
   docType: string | null;
   storageUrl: string | null;
   status: string | null;
@@ -173,7 +172,6 @@ export const UploadDetailPage: React.FC = () => {
             <FieldRow label="file_hash" value={detail.fileHash} />
             <FieldRow label="raw_text_hash" value={detail.rawTextHash} />
             <FieldRow label="mime_type" value={detail.mimeType} />
-            <FieldRow label="source_type" value={detail.sourceType} />
             <FieldRow label="doc_type" value={detail.docType} />
             <FieldRow label="storage_url" value={detail.storageUrl} />
             <FieldRow label="status" value={detail.status} />

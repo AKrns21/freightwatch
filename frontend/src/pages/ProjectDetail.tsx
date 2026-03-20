@@ -3,12 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 import type { Project, Upload, UploadCreatedResponse } from '../types';
 
-const SOURCE_TYPE_LABELS: Record<string, string> = {
-  invoice: 'Rechnung',
-  rate_card: 'Tarifkarte',
-  fleet_log: 'Flottenlog',
-};
-
 export const ProjectDetailPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
@@ -17,7 +11,6 @@ export const ProjectDetailPage: React.FC = () => {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [sourceType, setSourceType] = useState<string>('invoice');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +46,6 @@ export const ProjectDetailPage: React.FC = () => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('project_id', projectId!);
-    formData.append('source_type', sourceType);
 
     try {
       const res = await api.post<UploadCreatedResponse>('/api/uploads', formData, {
@@ -101,19 +93,6 @@ export const ProjectDetailPage: React.FC = () => {
 
           <div className="flex gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Dokumenttyp</label>
-              <select
-                value={sourceType}
-                onChange={(e) => setSourceType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Datei (PDF, Excel, CSV — max. 10 MB)
               </label>
@@ -153,7 +132,7 @@ export const ProjectDetailPage: React.FC = () => {
                 {uploads.map((upload) => (
                   <tr key={upload.id} className="border-b last:border-0">
                     <td className="py-3 pr-4 font-medium text-gray-800">{upload.filename}</td>
-                    <td className="py-3 pr-4 text-gray-500">{upload.mimeType ?? upload.sourceType ?? '—'}</td>
+                    <td className="py-3 pr-4 text-gray-500">{upload.mimeType ?? '—'}</td>
                     <td className="py-3 pr-4">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                         upload.status === 'parsed' ? 'bg-green-100 text-green-700' :
