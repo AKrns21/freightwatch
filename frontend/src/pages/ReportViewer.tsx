@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { Report } from '../types';
@@ -19,13 +19,7 @@ export const ReportViewerPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (projectId) {
-      loadReport();
-    }
-  }, [projectId, reportId]);
-
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,13 +32,20 @@ export const ReportViewerPage: React.FC = () => {
       }
 
       setReport(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to load report');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to load report');
       console.error('Failed to load report:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, reportId]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadReport();
+    }
+  }, [projectId, loadReport]);
 
   if (loading) {
     return (

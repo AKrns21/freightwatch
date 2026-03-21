@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { ShipmentSummary } from '../types';
@@ -61,6 +61,10 @@ interface TariffRate {
   ratePerKg: number | null;
 }
 
+// Snake-case shapes coming from llm_analysis (raw LLM output)
+interface RawRate { zone: number; weight_from_kg: number; weight_to_kg: number; rate_per_shipment: number | null; rate_per_kg: number | null; }
+interface RawZone { plz_prefix: string; zone: number; }
+
 interface TariffZoneMap {
   id: string;
   countryCode: string;
@@ -96,11 +100,11 @@ interface UploadDetail {
   status: string | null;
   parseMethod: string | null;
   confidence: number | null;
-  llmAnalysis: Record<string, any> | null;
-  parseErrors: Record<string, any> | null;
-  parsingIssues: any[] | null;
-  suggestedMappings: Record<string, any> | null;
-  meta: Record<string, any> | null;
+  llmAnalysis: Record<string, unknown> | null;
+  parseErrors: Record<string, unknown> | null;
+  parsingIssues: unknown[] | null;
+  suggestedMappings: Record<string, unknown> | null;
+  meta: Record<string, unknown> | null;
   reviewedBy: string | null;
   reviewedAt: string | null;
   receivedAt: string | null;
@@ -251,6 +255,53 @@ const TariffTableView: React.FC<{ tariff: TariffDetail }> = ({ tariff }) => {
   );
 };
 
+const BILLING_LABELS: Record<string, string> = {
+  min_charge_eur:      'Mindestbetrag',
+  ldm_to_kg:           '1 LDM =',
+  cbm_to_kg:           '1 cbm =',
+  europalette_min_kg:  'Europalette mind.',
+  gitterbox_min_kg:    'Gitterbox mind.',
+  ldm_trigger_pallets: 'LDM-Abrechnung ab Stellplatz',
+  ldm_pallet_size_ldm: 'Stellplatzgröße',
+  diesel_pct:          'Dieselzuschlag',
+  eu_mobility_pct:     'EU-Mobilitätspaket',
+  payment_days:        'Zahlungsziel',
+};
+
+const BILLING_UNIT: Record<string, string> = {
+  min_charge_eur:      'EUR',
+  ldm_to_kg:           'kg',
+  cbm_to_kg:           'kg',
+  europalette_min_kg:  'kg',
+  gitterbox_min_kg:    'kg',
+  ldm_trigger_pallets: '',
+  ldm_pallet_size_ldm: 'ldm',
+  diesel_pct:          '%',
+  eu_mobility_pct:     '%',
+  payment_days:        'Tage',
+};
+
+const BillingConditionsView: React.FC<{ conditions: Record<string, number> }> = ({ conditions }) => {
+  const entries = Object.entries(conditions);
+  if (entries.length === 0) return null;
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Abrechnungsregeln</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-2">
+        {entries.map(([key, value]) => (
+          <div key={key} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
+            <span className="text-gray-500">{BILLING_LABELS[key] ?? key}</span>
+            <span className="font-mono font-medium text-gray-900 ml-4">
+              {typeof value === 'number' ? value.toLocaleString('de-DE') : value}
+              {BILLING_UNIT[key] ? ` ${BILLING_UNIT[key]}` : ''}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const FieldRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex gap-2 py-1.5 border-b last:border-0">
     <span className="text-gray-500 w-48 shrink-0 text-sm">{label}</span>
@@ -265,10 +316,72 @@ export const UploadDetailPage: React.FC = () => {
   const [detail, setDetail] = useState<UploadDetail | null>(null);
   const [shipments, setShipments] = useState<ShipmentSummary[]>([]);
   const [tariff, setTariff] = useState<TariffDetail | null>(null);
+  const [isTariffPreview, setIsTariffPreview] = useState(false);
   const [brackets, setBrackets] = useState<DieselBracket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [detailRes, shipmentsRes] = await Promise.all([
+        api.get<UploadDetail>(`/api/uploads/${uploadId}/detail`),
+        api.get<ShipmentSummary[]>(`/api/uploads/${uploadId}/shipments`),
+      ]);
+      setDetail(detailRes.data);
+      setShipments(shipmentsRes.data);
+
+      const la = detailRes.data.llmAnalysis;
+      const tariffTableId = la && typeof la['tariff_table_id'] === 'string' ? la['tariff_table_id'] : null;
+      const laRates = la && Array.isArray(la['rates']) ? (la['rates'] as RawRate[]) : null;
+      const laZones = la && Array.isArray(la['zones']) ? (la['zones'] as RawZone[]) : [];
+
+      if (detailRes.data.docType === 'tariff' && tariffTableId) {
+        const tariffRes = await api.get<TariffDetail>(`/api/tariffs/${tariffTableId}`);
+        setTariff(tariffRes.data);
+        setIsTariffPreview(false);
+      } else if (detailRes.data.docType === 'tariff' && laRates && laRates.length > 0) {
+        // Carrier not yet resolved — build a preview from llm_analysis
+        setTariff({
+          id: 'preview',
+          name: (la?.['carrier_name'] as string | undefined) ?? 'Tarifvorschau',
+          carrierId: '',
+          uploadId: detailRes.data.id,
+          laneType: (la?.['lane_type'] as string | undefined) ?? 'domestic_de',
+          currency: (la?.['currency'] as string | undefined) ?? 'EUR',
+          validFrom: (la?.['valid_from'] as string | undefined) ?? '',
+          validUntil: null,
+          confidence: (la?.['confidence'] as number | undefined) ?? null,
+          rates: laRates.map((r, i) => ({
+            id: `preview-${i}`,
+            zone: r.zone,
+            weightFromKg: r.weight_from_kg,
+            weightToKg: r.weight_to_kg,
+            ratePerShipment: r.rate_per_shipment,
+            ratePerKg: r.rate_per_kg,
+          })),
+          zoneMaps: laZones.map((z, i) => ({
+            id: `preview-zone-${i}`,
+            countryCode: 'DE',
+            plzPrefix: z.plz_prefix,
+            matchType: 'prefix',
+            zone: z.zone,
+          })),
+        });
+        setIsTariffPreview(true);
+      }
+      if (detailRes.data.docType === 'diesel_floater') {
+        const bracketsRes = await api.get<DieselBracket[]>('/api/diesel-floaters/brackets');
+        setBrackets(bracketsRes.data);
+      }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setError(e.response?.data?.detail || 'Failed to load upload details');
+    } finally {
+      setLoading(false);
+    }
+  }, [uploadId]);
 
   useEffect(() => {
     if (!uploadId) return;
@@ -288,7 +401,7 @@ export const UploadDetailPage: React.FC = () => {
 
     pollUntilDone();
     return () => { cancelled = true; };
-  }, [uploadId]);
+  }, [uploadId, loadData]);
 
   const handleReprocess = async () => {
     if (!uploadId) return;
@@ -304,36 +417,11 @@ export const UploadDetailPage: React.FC = () => {
         if (currentStatus !== 'parsing' && currentStatus !== 'pending') break;
       }
       await loadData();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Reprocess failed');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setError(e.response?.data?.detail || 'Reprocess failed');
     } finally {
       setReprocessing(false);
-    }
-  };
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [detailRes, shipmentsRes] = await Promise.all([
-        api.get<UploadDetail>(`/api/uploads/${uploadId}/detail`),
-        api.get<ShipmentSummary[]>(`/api/uploads/${uploadId}/shipments`),
-      ]);
-      setDetail(detailRes.data);
-      setShipments(shipmentsRes.data);
-
-      const tariffTableId = detailRes.data.llmAnalysis?.tariff_table_id;
-      if (detailRes.data.docType === 'tariff' && tariffTableId) {
-        const tariffRes = await api.get<TariffDetail>(`/api/tariffs/${tariffTableId}`);
-        setTariff(tariffRes.data);
-      }
-      if (detailRes.data.docType === 'diesel_floater') {
-        const bracketsRes = await api.get<DieselBracket[]>('/api/diesel-floaters/brackets');
-        setBrackets(bracketsRes.data);
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load upload details');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -463,7 +551,23 @@ export const UploadDetailPage: React.FC = () => {
           )}
 
           {/* Tariff Table */}
+          {tariff && isTariffPreview && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg px-5 py-3 flex items-start gap-3">
+              <span className="text-orange-500 text-lg leading-none mt-0.5">⚠</span>
+              <div>
+                <p className="text-sm font-medium text-orange-800">Vorschau — Spediteur noch nicht zugeordnet</p>
+                <p className="text-xs text-orange-600 mt-0.5">
+                  Der Tarif wurde extrahiert ({detail.llmAnalysis?.['rate_count'] as number | undefined} Zeilen, {detail.llmAnalysis?.['zone_count'] as number | undefined} PLZ-Einträge),
+                  aber noch nicht gespeichert. Ordnen Sie den Spediteur manuell zu und verarbeiten Sie das Dokument erneut.
+                </p>
+              </div>
+            </div>
+          )}
           {tariff && <TariffTableView tariff={tariff} />}
+          {detail.docType === 'tariff' && detail.llmAnalysis?.['billing_conditions'] &&
+            Object.keys(detail.llmAnalysis['billing_conditions'] as Record<string, unknown>).length > 0 && (
+            <BillingConditionsView conditions={detail.llmAnalysis['billing_conditions'] as Record<string, number>} />
+          )}
 
           {/* Diesel Floater Brackets */}
           {detail.docType === 'diesel_floater' && <DieselBracketView brackets={brackets} />}

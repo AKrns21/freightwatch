@@ -5,9 +5,10 @@ Issue: #59
 Key features:
 - Uses DocumentService for text/vision extraction from PDF
 - Claude LLM extracts carrier name, valid_from, zones (PLZ prefix → zone int),
-  weight-band × rate matrix, and Hauptlauf (trunk haul) flat rates
+  weight-band × rate matrix, Hauptlauf (trunk haul) flat rates, billing_conditions
 - Carrier resolved via CarrierService 4-step fallback chain
-- Persists to tariff_table + tariff_rate + tariff_zone_map (all within tenant RLS)
+- Persists to tariff_table + tariff_rate + tariff_zone_map + tariff_nebenkosten
+- billing_conditions: known keys → typed tariff_nebenkosten columns; unknown keys → raw_items JSONB
 - Returns TariffParseResult; caller decides upload status based on review_action
 """
 
@@ -18,7 +19,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -26,7 +27,7 @@ import anthropic
 import structlog
 
 from app.config import settings
-from app.models.database import TariffRate, TariffTable, TariffZoneMap
+from app.models.database import TariffNebenkosten, TariffRate, TariffTable, TariffZoneMap
 from app.services.carrier_service import get_carrier_service
 from app.services.document_service import DocumentService
 from app.services.prompts.versions import get_prompt_version
@@ -36,6 +37,17 @@ logger = structlog.get_logger(__name__)
 # Confidence thresholds — mirror ReviewGate
 _THRESHOLD_AUTO_IMPORT = 0.85
 _THRESHOLD_HOLD = 0.50
+
+# Maps billing_conditions keys (from LLM) to typed tariff_nebenkosten columns.
+# Keys absent from this map are stored in tariff_nebenkosten.raw_items (JSONB).
+_NEBENKOSTEN_COLUMN_MAP: dict[str, str] = {
+    "ldm_to_kg":          "min_weight_ldm_kg",
+    "cbm_to_kg":          "min_weight_cbm_kg",
+    "europalette_min_kg": "min_weight_pallet_kg",
+    "diesel_pct":         "diesel_floater_pct",
+    "eu_mobility_pct":    "eu_mobility_surcharge_pct",
+    "payment_days":       "payment_days",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -78,6 +90,7 @@ class TariffParseResult:
     confidence: float
     parsing_method: str
     issues: list[str] = field(default_factory=list)
+    billing_conditions: dict[str, Any] = field(default_factory=dict)
     # Routing decision: 'auto_import' | 'hold_for_review' | 'needs_manual_review'
     review_action: str = "hold_for_review"
 
@@ -95,7 +108,26 @@ class TariffParseResult:
             "confidence": self.confidence,
             "parsing_method": self.parsing_method,
             "issues": self.issues,
+            "billing_conditions": {
+                k: float(v) if isinstance(v, Decimal) else v
+                for k, v in self.billing_conditions.items()
+            },
             "review_action": self.review_action,
+            # Full extracted data — enables tariff preview even before DB persistence
+            "zones": [
+                {"plz_prefix": z.plz_prefix, "zone": z.zone}
+                for z in self.zones
+            ],
+            "rates": [
+                {
+                    "zone": r.zone,
+                    "weight_from_kg": float(r.weight_from_kg),
+                    "weight_to_kg": float(r.weight_to_kg),
+                    "rate_per_shipment": float(r.rate_per_shipment) if r.rate_per_shipment is not None else None,
+                    "rate_per_kg": float(r.rate_per_kg) if r.rate_per_kg is not None else None,
+                }
+                for r in self.rates
+            ],
         }
 
 
@@ -201,6 +233,9 @@ class TariffParserService:
         issues: list[str] = list(extracted.get("issues") or [])
         if carrier_issue:
             issues.append(carrier_issue)
+        billing_conditions = self._parse_billing_conditions(
+            extracted.get("billing_conditions") or {}
+        )
 
         # Stage 5: persist (only if carrier resolved and confidence sufficient)
         tariff_table_id: UUID | None = None
@@ -218,6 +253,7 @@ class TariffParserService:
                 confidence=confidence,
                 zones=zones,
                 rates=rates,
+                billing_conditions=billing_conditions,
                 source_data=extracted,
             )
 
@@ -242,6 +278,7 @@ class TariffParserService:
             confidence=confidence,
             parsing_method="llm",
             issues=issues,
+            billing_conditions=billing_conditions,
             review_action=review_action,
         )
 
@@ -343,15 +380,46 @@ class TariffParserService:
         zones: list[TariffZoneEntry] = []
         for item in raw:
             try:
-                zones.append(
-                    TariffZoneEntry(
-                        plz_prefix=str(item["plz_prefix"]),
-                        zone=int(item["zone"]),
-                    )
-                )
+                zone = int(item["zone"])
+                plz_str = str(item["plz_prefix"])
+                for prefix in self._expand_plz_prefixes(plz_str):
+                    zones.append(TariffZoneEntry(plz_prefix=prefix, zone=zone))
             except (KeyError, ValueError, TypeError) as exc:
                 self.logger.warning("tariff_zone_parse_error", item=item, error=str(exc))
         return zones
+
+    @staticmethod
+    def _expand_plz_prefixes(plz_str: str) -> list[str]:
+        """Expand a PLZ prefix string into individual prefix values.
+
+        Handles the following formats produced by LLM extraction:
+          - Single:         "80"           → ["80"]
+          - Range:          "80-81"        → ["80", "81"]
+          - Padded range:   "07-09"        → ["07", "08", "09"]
+          - En-dash range:  "80–82"        → ["80", "81", "82"]
+          - Comma list:     "07-09, 36"    → ["07", "08", "09", "36"]
+          - Mixed:          "80-81, 89"    → ["80", "81", "89"]
+
+        Falls back to returning the raw string as a single entry if no
+        numeric tokens are found (e.g. unexpected format).
+        """
+        result: list[str] = []
+        parts = re.split(r"[,;]+", plz_str)
+        for part in parts:
+            part = part.strip()
+            if not part:
+                continue
+            # Range: digits [- or –] digits
+            range_match = re.match(r"^(\d+)\s*[-\u2013]\s*(\d+)$", part)
+            if range_match:
+                start_str, end_str = range_match.group(1), range_match.group(2)
+                pad = len(start_str)
+                for i in range(int(start_str), int(end_str) + 1):
+                    result.append(str(i).zfill(pad))
+            elif re.match(r"^\d+$", part):
+                result.append(part)
+            # else: skip unrecognised token
+        return result if result else [plz_str]
 
     def _parse_rates(self, raw: list[dict]) -> list[TariffRateEntry]:
         rates: list[TariffRateEntry] = []
@@ -381,6 +449,32 @@ class TariffParserService:
             self.logger.warning("tariff_date_parse_error", value=value)
             return None
 
+    def _parse_billing_conditions(self, raw: dict[str, Any]) -> dict[str, Any]:
+        """Validate and coerce billing_conditions from LLM output.
+
+        All values are coerced to Decimal (or int for payment_days).
+        Non-numeric values are dropped with a warning.
+
+        Returns a dict of {key: Decimal | int}.
+        """
+        result: dict[str, Any] = {}
+        for key, value in raw.items():
+            if value is None:
+                continue
+            try:
+                if key == "payment_days":
+                    result[key] = int(value)
+                else:
+                    result[key] = Decimal(str(value))
+            except (ValueError, TypeError, InvalidOperation) as exc:
+                self.logger.warning(
+                    "billing_condition_parse_error",
+                    key=key,
+                    value=value,
+                    error=str(exc),
+                )
+        return result
+
     # -----------------------------------------------------------------------
     # DB persistence
     # -----------------------------------------------------------------------
@@ -400,9 +494,10 @@ class TariffParserService:
         confidence: float,
         zones: list[TariffZoneEntry],
         rates: list[TariffRateEntry],
+        billing_conditions: dict[str, Any],
         source_data: dict[str, Any],
     ) -> UUID:
-        """Persist tariff_table + tariff_rate + tariff_zone_map rows."""
+        """Persist tariff_table + tariff_rate + tariff_zone_map + tariff_nebenkosten rows."""
         from datetime import datetime
 
         effective_from = valid_from or date.today()
@@ -448,14 +543,44 @@ class TariffParserService:
                 )
             )
 
+        if billing_conditions:
+            self._persist_nebenkosten(db, tariff_table.id, billing_conditions)
+
         await db.flush()
         self.logger.info(
             "tariff_persisted",
             tariff_table_id=str(tariff_table.id),
             zone_count=len(zones),
             rate_count=len(rates),
+            billing_condition_count=len(billing_conditions),
         )
         return tariff_table.id
+
+    def _persist_nebenkosten(
+        self,
+        db: Any,
+        tariff_table_id: UUID,
+        billing_conditions: dict[str, Any],
+    ) -> None:
+        """Create a TariffNebenkosten row from extracted billing_conditions.
+
+        Known keys are written to their typed columns; any remaining keys are
+        stored in raw_items JSONB so they are not lost.
+        """
+        kwargs: dict[str, Any] = {"tariff_table_id": tariff_table_id}
+        raw_items: dict[str, Any] = {}
+
+        for key, value in billing_conditions.items():
+            col = _NEBENKOSTEN_COLUMN_MAP.get(key)
+            if col:
+                kwargs[col] = value
+            else:
+                raw_items[key] = float(value) if isinstance(value, Decimal) else value
+
+        if raw_items:
+            kwargs["raw_items"] = raw_items
+
+        db.add(TariffNebenkosten(**kwargs))
 
     # -----------------------------------------------------------------------
     # Routing

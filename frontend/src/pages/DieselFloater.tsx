@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { api } from '../api';
 
 interface Carrier { id: string; name: string; codeNorm: string; }
@@ -36,9 +36,7 @@ export const DieselFloaterPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { loadAll(); }, []);
-
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -50,12 +48,15 @@ export const DieselFloaterPage: React.FC = () => {
       setEntries(entriesRes.data);
       setCarriers(carriersRes.data);
       setBrackets(bracketsRes.data);
-    } catch (e: any) {
-      setError(e.response?.data?.detail || 'Laden fehlgeschlagen');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      setError(err.response?.data?.detail || 'Laden fehlgeschlagen');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-gray-600">Laden…</div></div>;
   if (error) return <div className="container mx-auto p-6"><div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">{error}</div></div>;
@@ -210,14 +211,14 @@ const RatesTab: React.FC<{ entries: DieselFloaterEntry[]; carriers: Carrier[]; o
       if (mode === 'edit' && editing) await api.put(`/api/diesel-floaters/${editing.id}`, payload);
       else await api.post('/api/diesel-floaters', payload);
       onRefresh(); setMode('list');
-    } catch (e: any) { setFormError(e.response?.data?.detail || 'Speichern fehlgeschlagen'); }
+    } catch (e: unknown) { const err = e as { response?: { data?: { detail?: string } } }; setFormError(err.response?.data?.detail || 'Speichern fehlgeschlagen'); }
     finally { setSaving(false); }
   };
 
   const deleteEntry = async (id: string) => {
     if (!confirm('Eintrag löschen?')) return;
     try { await api.delete(`/api/diesel-floaters/${id}`); onRefresh(); }
-    catch (e: any) { alert(e.response?.data?.detail || 'Löschen fehlgeschlagen'); }
+    catch (e: unknown) { const err = e as { response?: { data?: { detail?: string } } }; alert(err.response?.data?.detail || 'Löschen fehlgeschlagen'); }
   };
 
   const importCsv = async () => {
@@ -226,7 +227,7 @@ const RatesTab: React.FC<{ entries: DieselFloaterEntry[]; carriers: Carrier[]; o
     try {
       const res = await api.post<typeof csvResult>('/api/diesel-floaters/import-csv', { carrierId: csvCarrierId, csvText, source: csvSource || null });
       setCsvResult(res.data); onRefresh();
-    } catch (e: any) { alert(e.response?.data?.detail || 'Import fehlgeschlagen'); }
+    } catch (e: unknown) { const err = e as { response?: { data?: { detail?: string } } }; alert(err.response?.data?.detail || 'Import fehlgeschlagen'); }
     finally { setCsvImporting(false); }
   };
 
@@ -361,20 +362,20 @@ const DestatisPricesTab: React.FC = () => {
   const [months, setMonths] = useState(36);
   const [result, setResult] = useState<{ fetched: number } | null>(null);
 
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try { const res = await api.get<DestatisPriceEntry[]>('/api/diesel-floaters/destatis-prices'); setPrices(res.data); }
     finally { setLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const fetchHistory = async () => {
     setFetching(true); setResult(null);
     try {
       const res = await api.post<{ fetched: number }>(`/api/diesel-floaters/destatis-prices/fetch?months=${months}`);
       setResult(res.data); await load();
-    } catch (e: any) { alert(e.response?.data?.detail || 'Abruf fehlgeschlagen'); }
+    } catch (e: unknown) { const err = e as { response?: { data?: { detail?: string } } }; alert(err.response?.data?.detail || 'Abruf fehlgeschlagen'); }
     finally { setFetching(false); }
   };
 

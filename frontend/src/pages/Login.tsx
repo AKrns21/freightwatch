@@ -21,8 +21,9 @@ export const LoginPage: React.FC = () => {
       );
       localStorage.setItem('auth_token', response.data.token);
       navigate('/projects', { replace: true });
-    } catch (err: any) {
-      const detail = err.response?.data?.detail;
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: unknown } } };
+      const detail = e.response?.data?.detail;
       setError(typeof detail === 'string' ? detail : 'Login failed');
     } finally {
       setLoading(false);

@@ -67,6 +67,14 @@ _GOOD_LLM_RESPONSE = {
     ],
     "confidence": 0.92,
     "issues": [],
+    "billing_conditions": {
+        "ldm_to_kg": 1250,
+        "cbm_to_kg": 200,
+        "europalette_min_kg": 150,
+        "gitterbox_min_kg": 250,
+        "ldm_trigger_pallets": 4,
+        "ldm_pallet_size_ldm": 0.4,
+    },
 }
 
 
@@ -108,6 +116,62 @@ class TestTariffParserService:
 
     def test_parse_zones_empty(self) -> None:
         assert self.svc._parse_zones([]) == []
+
+    # ============================================================================
+    # _expand_plz_prefixes — range expansion (Type B / abstract-zone tariffs)
+    # ============================================================================
+
+    def test_expand_single_prefix(self) -> None:
+        assert TariffParserService._expand_plz_prefixes("80") == ["80"]
+
+    def test_expand_range_hyphen(self) -> None:
+        assert TariffParserService._expand_plz_prefixes("80-82") == ["80", "81", "82"]
+
+    def test_expand_range_padded_zeros(self) -> None:
+        # "07-09" must preserve zero-padding
+        assert TariffParserService._expand_plz_prefixes("07-09") == ["07", "08", "09"]
+
+    def test_expand_range_en_dash(self) -> None:
+        assert TariffParserService._expand_plz_prefixes("80\u201382") == ["80", "81", "82"]
+
+    def test_expand_comma_separated(self) -> None:
+        assert TariffParserService._expand_plz_prefixes("80, 85, 89") == ["80", "85", "89"]
+
+    def test_expand_mixed_range_and_single(self) -> None:
+        result = TariffParserService._expand_plz_prefixes("07-09, 36")
+        assert result == ["07", "08", "09", "36"]
+
+    def test_expand_complex_multi_range(self) -> None:
+        # Zone 5 from Kelbasha tariff (first two rows only)
+        result = TariffParserService._expand_plz_prefixes("55, 60-67")
+        assert result == ["55", "60", "61", "62", "63", "64", "65", "66", "67"]
+
+    def test_expand_unrecognised_falls_back(self) -> None:
+        # Unknown format → return the raw string as a single entry
+        assert TariffParserService._expand_plz_prefixes("?unknown") == ["?unknown"]
+
+    def test_parse_zones_abstract_zone_expands_ranges(self) -> None:
+        """Type B tariff: LLM emits range notation, _parse_zones expands it."""
+        zones = self.svc._parse_zones([
+            {"plz_prefix": "80-81", "zone": 1},
+            {"plz_prefix": "85-86", "zone": 1},
+            {"plz_prefix": "89",    "zone": 1},
+            {"plz_prefix": "82-84", "zone": 2},
+        ])
+        assert len(zones) == 8  # 2+2+1+3
+        zone1 = [z for z in zones if z.zone == 1]
+        zone2 = [z for z in zones if z.zone == 2]
+        assert [z.plz_prefix for z in zone1] == ["80", "81", "85", "86", "89"]
+        assert [z.plz_prefix for z in zone2] == ["82", "83", "84"]
+
+    def test_parse_zones_abstract_zone_comma_list(self) -> None:
+        """LLM emits a comma-separated list for a zone row."""
+        zones = self.svc._parse_zones([
+            {"plz_prefix": "07-09, 36", "zone": 5},
+        ])
+        assert len(zones) == 4
+        assert [z.plz_prefix for z in zones] == ["07", "08", "09", "36"]
+        assert all(z.zone == 5 for z in zones)
 
     # ============================================================================
     # _parse_rates
@@ -331,6 +395,128 @@ class TestTariffParserService:
         assert d["rate_count"] == 1
         assert d["valid_from"] == "2022-04-01"
         assert d["review_action"] == "auto_import"
+
+    # ============================================================================
+    # _parse_billing_conditions
+    # ============================================================================
+
+    def test_parse_billing_conditions_coerces_to_decimal(self) -> None:
+        result = self.svc._parse_billing_conditions({
+            "ldm_to_kg": 1250,
+            "cbm_to_kg": 200.0,
+            "europalette_min_kg": 150,
+        })
+        assert result["ldm_to_kg"] == Decimal("1250")
+        assert result["cbm_to_kg"] == Decimal("200.0")
+        assert result["europalette_min_kg"] == Decimal("150")
+
+    def test_parse_billing_conditions_payment_days_int(self) -> None:
+        result = self.svc._parse_billing_conditions({"payment_days": 30})
+        assert result["payment_days"] == 30
+        assert isinstance(result["payment_days"], int)
+
+    def test_parse_billing_conditions_skips_none_values(self) -> None:
+        result = self.svc._parse_billing_conditions({"ldm_to_kg": None, "cbm_to_kg": 200})
+        assert "ldm_to_kg" not in result
+        assert "cbm_to_kg" in result
+
+    def test_parse_billing_conditions_skips_non_numeric(self) -> None:
+        result = self.svc._parse_billing_conditions({
+            "ldm_to_kg": 1250,
+            "notes": "some text",  # non-numeric — dropped with warning
+        })
+        assert "ldm_to_kg" in result
+        assert "notes" not in result
+
+    def test_parse_billing_conditions_unknown_keys_preserved(self) -> None:
+        """Unknown keys (not in _NEBENKOSTEN_COLUMN_MAP) pass through as Decimal."""
+        result = self.svc._parse_billing_conditions({
+            "gitterbox_min_kg": 250,
+            "ldm_trigger_pallets": 4,
+            "ldm_pallet_size_ldm": 0.4,
+        })
+        assert result["gitterbox_min_kg"] == Decimal("250")
+        assert result["ldm_trigger_pallets"] == Decimal("4")
+        assert result["ldm_pallet_size_ldm"] == Decimal("0.4")
+
+    def test_parse_billing_conditions_empty(self) -> None:
+        assert self.svc._parse_billing_conditions({}) == {}
+
+    # ============================================================================
+    # _persist_nebenkosten — column mapping
+    # ============================================================================
+
+    def test_persist_nebenkosten_maps_known_columns(self) -> None:
+        """Known keys are passed as typed kwargs; unknown keys go to raw_items."""
+        from app.services.parsing.tariff_parser import _NEBENKOSTEN_COLUMN_MAP
+        db = MagicMock()
+        tariff_table_id = uuid4()
+
+        conditions = {
+            "ldm_to_kg":          Decimal("1250"),
+            "cbm_to_kg":          Decimal("200"),
+            "europalette_min_kg": Decimal("150"),
+            "gitterbox_min_kg":   Decimal("250"),   # unknown → raw_items
+            "ldm_trigger_pallets": Decimal("4"),     # unknown → raw_items
+        }
+        self.svc._persist_nebenkosten(db, tariff_table_id, conditions)
+
+        db.add.assert_called_once()
+        added = db.add.call_args[0][0]
+
+        assert added.tariff_table_id == tariff_table_id
+        assert added.min_weight_ldm_kg == Decimal("1250")
+        assert added.min_weight_cbm_kg == Decimal("200")
+        assert added.min_weight_pallet_kg == Decimal("150")
+        assert added.raw_items == {"gitterbox_min_kg": 250.0, "ldm_trigger_pallets": 4.0}
+
+    def test_persist_nebenkosten_no_raw_items_when_all_known(self) -> None:
+        db = MagicMock()
+        conditions = {
+            "ldm_to_kg": Decimal("1250"),
+            "cbm_to_kg": Decimal("200"),
+        }
+        self.svc._persist_nebenkosten(db, uuid4(), conditions)
+        added = db.add.call_args[0][0]
+        assert not hasattr(added, "raw_items") or added.raw_items is None or added.raw_items == {}
+
+    # ============================================================================
+    # parse() — billing_conditions flows through to result
+    # ============================================================================
+
+    @pytest.mark.asyncio
+    async def test_parse_billing_conditions_in_result(self) -> None:
+        """billing_conditions from LLM response appear in TariffParseResult."""
+        db = AsyncMock()
+        db.flush = AsyncMock()
+
+        doc_result = MagicMock()
+        doc_result.text = "some tariff text"
+        doc_result.mode = "text"
+        doc_result.page_count = 1
+
+        with (
+            patch.object(self.svc._doc_service, "process", new_callable=AsyncMock, return_value=doc_result),
+            patch.object(self.svc, "_extract_via_llm", new_callable=AsyncMock, return_value=_GOOD_LLM_RESPONSE),
+            patch.object(
+                self.svc._carrier_service,
+                "resolve_carrier_id_with_fallback",
+                new_callable=AsyncMock,
+                return_value=_make_carrier_resolution(),
+            ),
+        ):
+            result = await self.svc.parse(
+                b"fake-pdf-bytes",
+                filename="kelbasha_01_2022.pdf",
+                tenant_id=TENANT_ID,
+                upload_id=UPLOAD_ID,
+                db=db,
+            )
+
+        assert result.billing_conditions["ldm_to_kg"] == Decimal("1250")
+        assert result.billing_conditions["europalette_min_kg"] == Decimal("150")
+        assert result.billing_conditions["gitterbox_min_kg"] == Decimal("250")
+        assert "billing_conditions" in result.to_dict()
 
     # ============================================================================
     # Singleton

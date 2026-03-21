@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
@@ -17,7 +17,7 @@ interface UploadInfo {
   id: string;
   filename: string;
   status: string | null;
-  parsingIssues: any[] | null;
+  parsingIssues: unknown[] | null;
   createdAt: string | null;
 }
 
@@ -35,12 +35,7 @@ export const DieselFloaterDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!uploadId) return;
-    load();
-  }, [uploadId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [uploadRes, bracketsRes] = await Promise.all([
@@ -51,19 +46,25 @@ export const DieselFloaterDetailPage: React.FC = () => {
       // Show brackets for the carrier detected in this upload
       // The summary issue contains the carrier name — filter brackets to that carrier
       const importIssue = uploadRes.data.parsingIssues?.find(
-        (i: any) => i.type === 'diesel_floater_imported'
-      );
+        (i: unknown) => (i as { type?: string }).type === 'diesel_floater_imported'
+      ) as { message?: string } | undefined;
       const carrierName = importIssue?.message?.match(/carrier '([^']+)'/)?.[1];
       const filtered = carrierName
         ? bracketsRes.data.filter(b => b.carrierName === carrierName)
         : bracketsRes.data;
       setBrackets(filtered);
-    } catch (e: any) {
-      setError(e.response?.data?.detail || 'Laden fehlgeschlagen');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      setError(err.response?.data?.detail || 'Laden fehlgeschlagen');
     } finally {
       setLoading(false);
     }
-  };
+  }, [uploadId]);
+
+  useEffect(() => {
+    if (!uploadId) return;
+    load();
+  }, [uploadId, load]);
 
   if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-600">Laden…</div>;
   if (error || !upload) return (
@@ -72,7 +73,9 @@ export const DieselFloaterDetailPage: React.FC = () => {
     </div>
   );
 
-  const importIssue = upload.parsingIssues?.find((i: any) => i.type === 'diesel_floater_imported');
+  const importIssue = upload.parsingIssues?.find(
+    (i: unknown) => (i as { type?: string }).type === 'diesel_floater_imported'
+  ) as { message?: string } | undefined;
   const carrierName = brackets[0]?.carrierName ?? '—';
   const basis = brackets[0] ? (BASIS_LABELS[brackets[0].basis] ?? brackets[0].basis) : '—';
   const validFrom = brackets[0]?.validFrom ?? '—';

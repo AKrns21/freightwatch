@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 import type { Project, Upload, UploadCreatedResponse } from '../types';
@@ -16,11 +16,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [docType, setDocType] = useState<string>('auto');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [projectId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [projectRes, uploadsRes] = await Promise.all([
@@ -29,20 +25,25 @@ export const ProjectDetailPage: React.FC = () => {
       ]);
       setProject(projectRes.data);
       setUploads(uploadsRes.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load project', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDeleteUpload = async (upload: Upload) => {
     if (!window.confirm(`"${upload.filename}" wirklich löschen?`)) return;
     try {
       await api.delete(`/api/uploads/${upload.id}`);
       setUploads((prev) => prev.filter((u) => u.id !== upload.id));
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Löschen fehlgeschlagen');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      alert(e.response?.data?.detail || 'Löschen fehlgeschlagen');
     }
   };
 
@@ -65,8 +66,9 @@ export const ProjectDetailPage: React.FC = () => {
       });
       setUploadSuccess(`"${file.name}" wurde hochgeladen. Status: ${res.data.status ?? 'pending'}`);
       await loadData();
-    } catch (err: any) {
-      setUploadError(err.response?.data?.detail || err.response?.data?.message || 'Upload fehlgeschlagen');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      setUploadError(e.response?.data?.detail || e.response?.data?.message || 'Upload fehlgeschlagen');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

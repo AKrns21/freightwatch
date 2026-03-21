@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     vision_model: str = "claude-sonnet-4-6"
     # Prompt versions — bump to roll out a new prompt version
     invoice_extractor_prompt_version: str = "v1.2.1"
-    tariff_extractor_prompt_version: str = "v1.1.1"
+    tariff_extractor_prompt_version: str = "v1.3.1"
 
     # Destatis GENESIS API
     # Series for "Heizöl leicht, 50–70 hl an Großverbraucher, frei Verbrauchsstelle, DE"

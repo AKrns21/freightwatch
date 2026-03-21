@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { UploadReviewData, CarrierOption, ParsingIssue } from '../types';
@@ -23,13 +23,7 @@ export const UploadReviewPage: React.FC = () => {
   const [carrierSelections, setCarrierSelections] = useState<Record<string, string>>({});
   const [resolving, setResolving] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (uploadId) {
-      loadReviewData();
-    }
-  }, [uploadId]);
-
-  const loadReviewData = async () => {
+  const loadReviewData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,13 +33,20 @@ export const UploadReviewPage: React.FC = () => {
       ]);
       setReviewData(reviewResponse.data);
       setCarriers(carriersResponse.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to load review data');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to load review data');
       console.error('Failed to load review data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [uploadId]);
+
+  useEffect(() => {
+    if (uploadId) {
+      loadReviewData();
+    }
+  }, [uploadId, loadReviewData]);
 
   const handleResolveCarrier = async (carrierName: string) => {
     const realCarrierId = carrierSelections[carrierName];
@@ -67,8 +68,9 @@ export const UploadReviewPage: React.FC = () => {
           ),
         };
       });
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to resolve carrier');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to resolve carrier');
     } finally {
       setResolving((prev) => ({ ...prev, [carrierName]: false }));
     }
@@ -85,8 +87,9 @@ export const UploadReviewPage: React.FC = () => {
       });
       // Navigate back to project page
       navigate(`/projects/${reviewData.upload.projectId}`);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to accept mappings');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to accept mappings');
       console.error('Failed to accept mappings:', err);
     } finally {
       setSubmitting(false);
@@ -103,8 +106,9 @@ export const UploadReviewPage: React.FC = () => {
       });
       // Navigate back to project page
       navigate(`/projects/${reviewData.upload.projectId}`);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to reject upload');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to reject upload');
       console.error('Failed to reject upload:', err);
     } finally {
       setSubmitting(false);

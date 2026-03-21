@@ -26,8 +26,9 @@ export const ProjectsPage: React.FC = () => {
       setError(null);
       const response = await api.get<Project[]>('/api/projects');
       setProjects(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to load projects');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(e.response?.data?.error?.message || 'Failed to load projects');
       console.error('Failed to load projects:', err);
     } finally {
       setLoading(false);

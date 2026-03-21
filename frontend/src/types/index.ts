@@ -12,7 +12,7 @@ export interface Project {
   phase: string | null;
   status: string | null;
   consultantId?: string | null;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -37,9 +37,9 @@ export interface Upload {
   status: string | null;
   parseMethod: string | null;
   confidence: number | null;
-  llmAnalysis?: Record<string, any> | null;
-  parseErrors?: Record<string, any> | null;
-  parsingIssues?: any[] | null;
+  llmAnalysis?: Record<string, unknown> | null;
+  parseErrors?: Record<string, unknown> | null;
+  parsingIssues?: unknown[] | null;
   receivedAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -59,7 +59,7 @@ export interface UploadReviewData {
     fileType: string;
     confidence: number;
     description: string;
-    structureAnalysis: any;
+    structureAnalysis: unknown;
   };
   suggestedMappings: Array<{
     field: string;
@@ -67,7 +67,7 @@ export interface UploadReviewData {
     confidence: number;
     sampleValues: string[];
   }>;
-  preview: Array<Record<string, any>>;
+  preview: Array<Record<string, unknown>>;
   qualityScore: number;
   parsingIssues?: ParsingIssue[];
 }
@@ -79,7 +79,7 @@ export interface ParsingIssue {
   carrierName?: string;
   placeholderCarrierId?: string;
   row?: number;
-  rawData?: Record<string, any>;
+  rawData?: Record<string, unknown>;
   invoiceNumber?: string;
   lineNumber?: number;
   missingFields?: string[];

@@ -20,8 +20,9 @@ export const NewProjectPage: React.FC = () => {
     try {
       await api.post('/api/projects', formData);
       navigate('/projects');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to create project');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      setError(e.response?.data?.detail || e.response?.data?.message || 'Failed to create project');
     } finally {
       setLoading(false);
     }
