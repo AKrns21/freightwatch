@@ -170,7 +170,7 @@ const RateMatrix: React.FC<{
             <tr key={band.weightFromKg} className="border-t border-gray-100">
               <td className="pr-6 py-1.5 text-gray-500 whitespace-nowrap">{bandLabel(band)}</td>
               {zones.map((z) => (
-                <td key={z} className="px-3 py-1.5 text-right tabular-nums text-gray-900">
+                <td key={z} className="px-3 py-1.5 text-right tabular-nums text-gray-900 whitespace-nowrap">
                   {cellValue(rateMap.get(`${z}-${band.weightFromKg}`))}
                 </td>
               ))}
@@ -211,28 +211,28 @@ const TariffTableView: React.FC<{ tariff: TariffDetail }> = ({ tariff }) => {
         </p>
       </div>
 
+      {/* PLZ zone map — shown before the rate matrix */}
+      {zoneGroups.size > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">PLZ-Zonenzuordnung</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {Array.from(zoneGroups.entries()).sort(([a], [b]) => a - b).map(([zone, prefixes]) => (
+              <div key={zone} className="bg-gray-50 rounded px-3 py-2">
+                <div className="text-xs font-medium text-gray-600 mb-1">Zone {zone}</div>
+                <div className="text-xs text-gray-500 font-mono leading-relaxed">
+                  {prefixes.sort().join(', ')}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Vor-/Nachlauf */}
       {vorNachlauf.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-gray-800 mb-3">Vor-/Nachlauf</h3>
           <RateMatrix rates={vorNachlauf} currency={tariff.currency} />
-
-          {/* PLZ zone map */}
-          {zoneGroups.size > 0 && (
-            <div className="mt-4">
-              <p className="text-xs text-gray-500 mb-2">PLZ-Zonenzuordnung</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {Array.from(zoneGroups.entries()).sort(([a], [b]) => a - b).map(([zone, prefixes]) => (
-                  <div key={zone} className="bg-gray-50 rounded px-3 py-2">
-                    <div className="text-xs font-medium text-gray-600 mb-1">Zone {zone}</div>
-                    <div className="text-xs text-gray-500 font-mono leading-relaxed">
-                      {prefixes.sort().join(', ')}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -321,6 +321,12 @@ export const UploadDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
+  const [showCarrierForm, setShowCarrierForm] = useState(false);
+  const [carrierName, setCarrierName] = useState('');
+  const [carrierCode, setCarrierCode] = useState('');
+  const [carrierCountry, setCarrierCountry] = useState('DE');
+  const [creatingCarrier, setCreatingCarrier] = useState(false);
+  const [carrierFormError, setCarrierFormError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -402,6 +408,43 @@ export const UploadDetailPage: React.FC = () => {
     pollUntilDone();
     return () => { cancelled = true; };
   }, [uploadId, loadData]);
+
+  const suggestCode = (name: string): string =>
+    name
+      .toLowerCase()
+      .replace(/[äöü]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue' }[c] ?? c))
+      .replace(/ß/g, 'ss')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 50);
+
+  const handleOpenCarrierForm = () => {
+    const name = (detail?.llmAnalysis?.['carrier_name'] as string | undefined) ?? '';
+    setCarrierName(name);
+    setCarrierCode(suggestCode(name));
+    setCarrierFormError(null);
+    setShowCarrierForm(true);
+  };
+
+  const handleCreateCarrier = async () => {
+    setCreatingCarrier(true);
+    setCarrierFormError(null);
+    try {
+      await api.post('/api/carriers', {
+        name: carrierName,
+        codeNorm: carrierCode,
+        country: carrierCountry || null,
+        aliasText: carrierName,
+      });
+      setShowCarrierForm(false);
+      await handleReprocess();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setCarrierFormError(e.response?.data?.detail ?? 'Fehler beim Anlegen des Spediteurs');
+    } finally {
+      setCreatingCarrier(false);
+    }
+  };
 
   const handleReprocess = async () => {
     if (!uploadId) return;
@@ -506,12 +549,17 @@ export const UploadDetailPage: React.FC = () => {
 
           {/* JSONB Fields */}
           {detail.parsingIssues && detail.parsingIssues.length > 0 && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-orange-800 mb-3">parsing_issues ({detail.parsingIssues.length})</h2>
-              <pre className="text-xs text-orange-900 overflow-auto bg-orange-100 p-3 rounded">
-                {JSON.stringify(detail.parsingIssues, null, 2)}
-              </pre>
-            </div>
+            <details className="bg-orange-50 border border-orange-200 rounded-lg" open>
+              <summary className="px-6 py-4 cursor-pointer list-none flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-orange-800">parsing_issues ({detail.parsingIssues.length})</h2>
+                <span className="text-orange-400 text-xs">▼</span>
+              </summary>
+              <div className="px-6 pb-6">
+                <pre className="text-xs text-orange-900 overflow-auto bg-orange-100 p-3 rounded">
+                  {JSON.stringify(detail.parsingIssues, null, 2)}
+                </pre>
+              </div>
+            </details>
           )}
 
           {detail.parseErrors && (
@@ -524,12 +572,17 @@ export const UploadDetailPage: React.FC = () => {
           )}
 
           {detail.llmAnalysis && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">llm_analysis</h2>
-              <pre className="text-xs text-gray-700 overflow-auto bg-gray-50 p-3 rounded">
-                {JSON.stringify(detail.llmAnalysis, null, 2)}
-              </pre>
-            </div>
+            <details className="bg-white rounded-lg shadow">
+              <summary className="px-6 py-4 cursor-pointer list-none flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">llm_analysis</h2>
+                <span className="text-gray-400 text-xs">▼</span>
+              </summary>
+              <div className="px-6 pb-6">
+                <pre className="text-xs text-gray-700 overflow-auto bg-gray-50 p-3 rounded">
+                  {JSON.stringify(detail.llmAnalysis, null, 2)}
+                </pre>
+              </div>
+            </details>
           )}
 
           {detail.suggestedMappings && (
@@ -552,14 +605,84 @@ export const UploadDetailPage: React.FC = () => {
 
           {/* Tariff Table */}
           {tariff && isTariffPreview && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg px-5 py-3 flex items-start gap-3">
-              <span className="text-orange-500 text-lg leading-none mt-0.5">⚠</span>
-              <div>
-                <p className="text-sm font-medium text-orange-800">Vorschau — Spediteur noch nicht zugeordnet</p>
-                <p className="text-xs text-orange-600 mt-0.5">
-                  Der Tarif wurde extrahiert ({detail.llmAnalysis?.['rate_count'] as number | undefined} Zeilen, {detail.llmAnalysis?.['zone_count'] as number | undefined} PLZ-Einträge),
-                  aber noch nicht gespeichert. Ordnen Sie den Spediteur manuell zu und verarbeiten Sie das Dokument erneut.
-                </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg px-5 py-4">
+              <div className="flex items-start gap-3">
+                <span className="text-orange-500 text-lg leading-none mt-0.5">⚠</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-medium text-orange-800">Vorschau — Spediteur noch nicht zugeordnet</p>
+                    {!showCarrierForm && (
+                      <button
+                        onClick={handleOpenCarrierForm}
+                        className="shrink-0 text-sm bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700"
+                      >
+                        Spediteur anlegen
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-orange-600 mt-0.5">
+                    Der Tarif wurde extrahiert ({detail.llmAnalysis?.['rate_count'] as number | undefined} Zeilen, {detail.llmAnalysis?.['zone_count'] as number | undefined} PLZ-Einträge),
+                    aber noch nicht gespeichert. Legen Sie den Spediteur an — der Tarif wird danach automatisch importiert.
+                  </p>
+
+                  {showCarrierForm && (
+                    <div className="mt-4 border-t border-orange-200 pt-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-orange-800 mb-1">Name</label>
+                          <input
+                            type="text"
+                            value={carrierName}
+                            onChange={(e) => {
+                              setCarrierName(e.target.value);
+                              setCarrierCode(suggestCode(e.target.value));
+                            }}
+                            className="w-full text-sm border border-orange-300 rounded px-2.5 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-orange-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-orange-800 mb-1">Kürzel (code)</label>
+                          <input
+                            type="text"
+                            value={carrierCode}
+                            onChange={(e) => setCarrierCode(e.target.value)}
+                            className="w-full text-sm border border-orange-300 rounded px-2.5 py-1.5 bg-white font-mono focus:outline-none focus:ring-1 focus:ring-orange-400"
+                          />
+                        </div>
+                      </div>
+                      <div className="w-24">
+                        <label className="block text-xs font-medium text-orange-800 mb-1">Land</label>
+                        <input
+                          type="text"
+                          value={carrierCountry}
+                          onChange={(e) => setCarrierCountry(e.target.value.toUpperCase().slice(0, 2))}
+                          maxLength={2}
+                          placeholder="DE"
+                          className="w-full text-sm border border-orange-300 rounded px-2.5 py-1.5 bg-white font-mono uppercase focus:outline-none focus:ring-1 focus:ring-orange-400"
+                        />
+                      </div>
+                      {carrierFormError && (
+                        <p className="text-xs text-red-600">{carrierFormError}</p>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleCreateCarrier}
+                          disabled={creatingCarrier || !carrierName.trim() || !carrierCode.trim()}
+                          className="text-sm bg-orange-600 text-white px-4 py-1.5 rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {creatingCarrier ? 'Wird angelegt…' : 'Anlegen & importieren'}
+                        </button>
+                        <button
+                          onClick={() => setShowCarrierForm(false)}
+                          disabled={creatingCarrier}
+                          className="text-sm text-orange-700 px-3 py-1.5 rounded hover:bg-orange-100 disabled:opacity-50"
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -573,7 +696,7 @@ export const UploadDetailPage: React.FC = () => {
           {detail.docType === 'diesel_floater' && <DieselBracketView brackets={brackets} />}
 
           {/* Parsed Shipments */}
-          {detail.docType !== 'diesel_floater' && <div className="bg-white rounded-lg shadow p-6">
+          {detail.docType !== 'diesel_floater' && detail.docType !== 'tariff' && <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Geparste Sendungen ({detail.shipmentCount})
             </h2>

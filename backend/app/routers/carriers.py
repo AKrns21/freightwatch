@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 from sqlalchemy import delete, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,6 +53,16 @@ class AliasResponse(BaseModel):
     carrier_id: UUID
 
 
+class CreateCarrierRequest(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    name: str = Field(..., max_length=255)
+    code_norm: str = Field(..., max_length=50)
+    country: str | None = Field(None, max_length=2)
+    # First alias to register for this tenant (defaults to name.lower())
+    alias_text: str | None = Field(None, max_length=255)
+
+
 class CreateAliasRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
@@ -61,6 +72,44 @@ class CreateAliasRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+@router.post("", response_model=CarrierResponse, status_code=201)
+async def create_carrier(
+    body: CreateCarrierRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_current_tenant_db),
+) -> CarrierResponse:
+    """Create a new global carrier and register the first tenant-scoped alias."""
+    existing = (
+        await db.execute(select(Carrier).where(Carrier.code_norm == body.code_norm))
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise HTTPException(status_code=409, detail=f"Carrier code '{body.code_norm}' already exists")
+
+    carrier = Carrier(
+        name=body.name.strip(),
+        code_norm=body.code_norm.strip(),
+        country=body.country,
+        conversion_rules={},
+        billing_type_map={},
+    )
+    db.add(carrier)
+    await db.flush()  # populate carrier.id
+
+    alias_text = (body.alias_text or body.name).strip().lower()
+    tenant_id = getattr(request.state, "tenant_id", None)
+    await db.execute(
+        pg_insert(CarrierAlias)
+        .values(tenant_id=tenant_id, alias_text=alias_text, carrier_id=carrier.id)
+        .on_conflict_do_update(
+            index_elements=["tenant_id", "alias_text"],
+            set_={"carrier_id": carrier.id},
+        )
+    )
+
+    logger.info("carrier_created", carrier_id=str(carrier.id), name=carrier.name, code=carrier.code_norm)
+    return CarrierResponse.model_validate(carrier)
 
 
 @router.get("", response_model=list[CarrierResponse])
