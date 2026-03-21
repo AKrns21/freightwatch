@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { ShipmentSummary } from '../types';
@@ -117,7 +117,6 @@ interface UploadDetail {
 const STATUS_COLORS: Record<string, string> = {
   parsed: 'bg-green-100 text-green-700',
   failed: 'bg-red-100 text-red-700',
-  needs_review: 'bg-yellow-100 text-yellow-700',
   needs_manual_review: 'bg-orange-100 text-orange-700',
   partial_success: 'bg-blue-100 text-blue-700',
   pending: 'bg-gray-100 text-gray-600',
@@ -135,13 +134,15 @@ const RateMatrix: React.FC<{
   perKgLabel?: string;
 }> = ({ rates, currency, perKgLabel = '/kg' }) => {
   const zones = Array.from(new Set(rates.map((r) => r.zone))).sort((a, b) => a - b);
+  // Deduplicate by weightFromKg — one representative row per band (label only; zone columns fill the data)
   const bands = Array.from(
     new Map(rates.map((r) => [`${r.weightFromKg}`, r])).values()
   ).sort((a, b) => a.weightFromKg - b.weightFromKg);
   const rateMap = new Map(rates.map((r) => [`${r.zone}-${r.weightFromKg}`, r]));
 
+  const OPEN_ENDED_WEIGHT_KG = 99_000;
   const bandLabel = (r: TariffRate) =>
-    r.weightToKg >= 99000 ? `> ${fmt(r.weightFromKg, 0)} kg` : `≤ ${fmt(r.weightToKg, 0)} kg`;
+    r.weightToKg >= OPEN_ENDED_WEIGHT_KG ? `> ${fmt(r.weightFromKg, 0)} kg` : `≤ ${fmt(r.weightToKg, 0)} kg`;
 
   const cellValue = (cell: TariffRate | undefined) => {
     if (!cell) return '—';
@@ -302,6 +303,15 @@ const BillingConditionsView: React.FC<{ conditions: Record<string, number> }> = 
   );
 };
 
+const suggestCode = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/[äöü]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue' }[c] ?? c))
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 50);
+
 const FieldRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex gap-2 py-1.5 border-b last:border-0">
     <span className="text-gray-500 w-48 shrink-0 text-sm">{label}</span>
@@ -405,18 +415,13 @@ export const UploadDetailPage: React.FC = () => {
       }
     };
 
-    pollUntilDone();
+    pollUntilDone().catch((err: unknown) => {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setError(e.response?.data?.detail || 'Failed to load upload details');
+      setLoading(false);
+    });
     return () => { cancelled = true; };
   }, [uploadId, loadData]);
-
-  const suggestCode = (name: string): string =>
-    name
-      .toLowerCase()
-      .replace(/[äöü]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue' }[c] ?? c))
-      .replace(/ß/g, 'ss')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 50);
 
   const handleOpenCarrierForm = () => {
     const name = (detail?.llmAnalysis?.['carrier_name'] as string | undefined) ?? '';
@@ -448,6 +453,7 @@ export const UploadDetailPage: React.FC = () => {
 
   const handleReprocess = async () => {
     if (!uploadId) return;
+    let cancelled = false;
     setReprocessing(true);
     setError(null);
     try {
@@ -455,11 +461,11 @@ export const UploadDetailPage: React.FC = () => {
       // Poll until the pipeline finishes (leaves 'parsing' / 'pending' state)
       for (let i = 0; i < 60; i++) {
         await new Promise((r) => setTimeout(r, 2000));
+        if (cancelled) return;
         await loadData();
         const currentStatus = (await api.get<{ status: string }>(`/api/uploads/${uploadId}`)).data.status;
         if (currentStatus !== 'parsing' && currentStatus !== 'pending') break;
       }
-      await loadData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string } } };
       setError(e.response?.data?.detail || 'Reprocess failed');
@@ -516,7 +522,7 @@ export const UploadDetailPage: React.FC = () => {
                   {reprocessing ? 'Wird verarbeitet…' : 'Erneut verarbeiten'}
                 </button>
                 <a
-                  href={`/api/uploads/${uploadId}/file`}
+                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/uploads/${uploadId}/file`}
                   download={detail.filename}
                   className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700"
                 >
